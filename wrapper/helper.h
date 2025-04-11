@@ -30,102 +30,36 @@ struct is_aggregate_constructible_from_n {
 
 template <class T>
 constexpr std::size_t CountMembers() {
-    if constexpr (detail::is_aggregate_constructible_from_n<T, 0>::value) return 0;
-    else if (detail::is_aggregate_constructible_from_n<T,  1>::value) return  1;
-    else if (detail::is_aggregate_constructible_from_n<T,  2>::value) return  2;
-    else if (detail::is_aggregate_constructible_from_n<T,  3>::value) return  3;
-    else if (detail::is_aggregate_constructible_from_n<T,  4>::value) return  4;
-    else if (detail::is_aggregate_constructible_from_n<T,  5>::value) return  5;
-    else if (detail::is_aggregate_constructible_from_n<T,  6>::value) return  6;
-    else if (detail::is_aggregate_constructible_from_n<T,  7>::value) return  7;
-    else if (detail::is_aggregate_constructible_from_n<T,  8>::value) return  8;
-    else if (detail::is_aggregate_constructible_from_n<T,  9>::value) return  9;
-    else if (detail::is_aggregate_constructible_from_n<T, 10>::value) return 10;
+    if constexpr (detail::is_aggregate_constructible_from_n<T, 2>::value) return 2;
+    else if constexpr (detail::is_aggregate_constructible_from_n<T,  10>::value) return  10;
+    else if constexpr (detail::is_aggregate_constructible_from_n<T,  64>::value) return  64;
     else return 100;  // Silence warnings about missing return value
 }
 
 template <std::size_t M, class T, class S, class Functor>
 constexpr S apply_to_members(T t, Functor&& f) {
-    if constexpr (M == 0) {
-        return {};
-    } else if constexpr (M == 1) {
-        auto& [m00] = t;
-        return {f(m00, 0)};
-    } else if constexpr (M == 2) {
+    if constexpr (M == 2) {
         auto& [m00, m01] = t;
         return {f(m00, 0), f(m01, 1)};
-    } else if constexpr (M == 3) {
-        auto& [m00, m01, m02] = t;
-        return {f(m00, 0), f(m01, 1), f(m02, 2)};
-    } else if constexpr (M == 4) {
-        auto& [m00, m01, m02, m03] = t;
-        return {f(m00, 0), f(m01, 1), f(m02, 2), f(m03, 3)};
-    } else if constexpr (M == 5) {
-        auto& [m00, m01, m02, m03, m04] = t;
-        return {f(m00, 0), f(m01, 1), f(m02, 2), f(m03, 3), f(m04, 4)};
-    } else if constexpr (M == 6) {
-        auto& [m00, m01, m02, m03, m04, m05] = t;
-        return {f(m00, 0), f(m01, 1), f(m02, 2), f(m03, 3), f(m04, 4), f(m05, 5)};
-    } else if constexpr (M == 7) {
-        auto& [m00, m01, m02, m03, m04, m05, m06] = t;
-        return {f(m00, 0), f(m01, 1), f(m02, 2), f(m03, 3), f(m04, 4), f(m05, 5), f(m06, 6)};
-    } else if constexpr (M == 8) {
-        auto& [m00, m01, m02, m03, m04, m05, m06, m07] = t;
-        return {f(m00, 0), f(m01, 1), f(m02, 2), f(m03, 3), f(m04, 4), f(m05, 5), f(m06, 6), f(m07, 7)};
-    } else if constexpr (M == 9) {
-        auto& [m00, m01, m02, m03, m04, m05, m06, m07, m08] = t;
-        return {f(m00, 0), f(m01, 1), f(m02, 2), f(m03, 3), f(m04, 4), f(m05, 5), f(m06, 6), f(m07, 7), f(m08, 8)};
     } else if constexpr (M == 10) {
         auto& [m00, m01, m02, m03, m04, m05, m06, m07, m08, m09] = t;
         return {f(m00, 0), f(m01, 1), f(m02, 2), f(m03, 3), f(m04, 4), f(m05, 5), f(m06, 6), f(m07, 7), f(m08, 8), f(m09, 9)};
-    }
-}
-
-template <std::size_t M, class T, class Functor>
-constexpr void apply_to_member_pairs(T left, T right, Functor&& f) {
-    if constexpr (M == 0) {
-        f();
-    } else if constexpr (M == 1) {
-        auto& [m00] = left;
-        auto& [n00] = right;
-        f(m00, n00);
-    } else if constexpr (M == 2) {
-        auto& [m00, m01] = left;
-        auto& [n00, n01] = right;
-        f(m00, n00); f(m01, n01);
-    } else if constexpr (M == 3) {
-        auto& [m00, m01, m02] = left;
-        auto& [n00, n01, n02] = right;
-        f(m00, n00); f(m01, n01); f(m02, n02);
-    } else if constexpr (M == 4) {
-        auto& [m00, m01, m02, m03] = left;
-        auto& [n00, n01, n02, n03] = right;
-        f(m00, n00); f(m01, n01); f(m02, n02); f(m03, n03);
-    } else if constexpr (M == 5) {
-        auto& [m00, m01, m02, m03, m04] = left;
-        auto& [n00, n01, n02, n03, n04] = right;
-        f(m00, n00); f(m01, n01); f(m02, n02); f(m03, n03); f(m04, n04);
-    } else if constexpr (M == 6) {
-        auto& [m00, m01, m02, m03, m04, m05] = left;
-        auto& [n00, n01, n02, n03, n04, n05] = right;
-        f(m00, n00); f(m01, n01); f(m02, n02); f(m03, n03); f(m04, n04); f(m05, n05);
-    } else if constexpr (M == 7) {
-        auto& [m00, m01, m02, m03, m04, m05, m06] = left;
-        auto& [n00, n01, n02, n03, n04, n05, n06] = right;
-        f(m00, n00); f(m01, n01); f(m02, n02); f(m03, n03); f(m04, n04); f(m05, n05); f(m06, n06);
-    } else if constexpr (M == 8) {
-        auto& [m00, m01, m02, m03, m04, m05, m06, m07] = left;
-        auto& [n00, n01, n02, n03, n04, n05, n06, n07] = right;
-        f(m00, n00); f(m01, n01); f(m02, n02); f(m03, n03); f(m04, n04); f(m05, n05); f(m06, n06); f(m07, n07);
-    } else if constexpr (M == 9) {
-        auto& [m00, m01, m02, m03, m04, m05, m06, m07, m08] = left;
-        auto& [n00, n01, n02, n03, n04, n05, n06, n07, n08] = right;
-        f(m00, n00); f(m01, n01); f(m02, n02); f(m03, n03); f(m04, n04); f(m05, n05); f(m06, n06); f(m07, n07); f(m08, n08);
-    } else if constexpr (M == 10) {
-        auto& [m00, m01, m02, m03, m04, m05, m06, m07, m08, m09] = left;
-        auto& [n00, n01, n02, n03, n04, n05, n06, n07, n08, n09] = right;
-        f(m00, n00); f(m01, n01); f(m02, n02); f(m03, n03); f(m04, n04); f(m05, n05); f(m06, n06); f(m07, n07); f(m08, n08); f(m09, n09);
-    }
+    } else if constexpr (M == 64) {
+        auto& [m00, m01, m02, m03, m04, m05, m06, m07, m08, m09,
+            m10, m11, m12, m13, m14, m15, m16, m17, m18, m19,
+            m20, m21, m22, m23, m24, m25, m26, m27, m28, m29,
+            m30, m31, m32, m33, m34, m35, m36, m37, m38, m39,
+            m40, m41, m42, m43, m44, m45, m46, m47, m48, m49,
+            m50, m51, m52, m53, m54, m55, m56, m57, m58, m59,
+            m60, m61, m62, m63] = t;
+        return {f(m00,  0), f(m01,  1), f(m02,  2), f(m03,  3), f(m04,  4), f(m05,  5), f(m06,  6), f(m07,  7), f(m08,  8), f(m09,  9),
+                f(m10, 10), f(m11, 11), f(m12, 12), f(m13, 13), f(m14, 14), f(m15, 15), f(m16, 16), f(m17, 17), f(m18, 18), f(m19, 19),
+                f(m20, 20), f(m21, 21), f(m22, 22), f(m23, 23), f(m24, 24), f(m25, 25), f(m26, 26), f(m27, 27), f(m28, 28), f(m29, 29),
+                f(m30, 30), f(m31, 31), f(m32, 32), f(m33, 33), f(m34, 34), f(m35, 35), f(m36, 36), f(m37, 37), f(m38, 38), f(m39, 39),
+                f(m40, 40), f(m41, 41), f(m42, 42), f(m43, 43), f(m44, 44), f(m45, 45), f(m46, 46), f(m47, 47), f(m48, 48), f(m49, 49),
+                f(m50, 50), f(m51, 51), f(m52, 52), f(m53, 53), f(m54, 54), f(m55, 55), f(m56, 56), f(m57, 57), f(m58, 58), f(m59, 59),
+                f(m60, 60), f(m61, 61), f(m62, 62), f(m63, 63)};
+    } else return {};
 }
 
 }  // namespace helper
