@@ -1,7 +1,7 @@
 #define SOA_BOOST 
 
 #include "benchmark.h"
-#include "SoALayout.h"
+#include "boost/SoALayout.h"
 #include <Eigen/Dense>
 #include <Eigen/Core>
 
@@ -11,7 +11,7 @@ GENERATE_SOA_LAYOUT(SoALayout,
 
 using SoA = SoALayout<>;
 using SoAView = SoA::View;
-using SoAConstView = SoA::ConstView;    
+using SoAConstView = SoA::ConstView;
 
 GENERATE_SOA_LAYOUT(BigSoALayout,
     SOA_COLUMN(float, x0),

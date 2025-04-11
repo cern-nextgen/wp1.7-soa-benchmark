@@ -9,11 +9,11 @@ find_package(benchmark REQUIRED)
 find_package(Boost REQUIRED)
 
 add_executable(soa_wrapper soa_wrapper.cpp)
-target_include_directories(soa_wrapper PUBLIC ${CMAKE_SOURCE_DIR} /opt/eigen /workspace/benchmark)
+target_include_directories(soa_wrapper PUBLIC wrapper /opt/eigen /workspace/benchmark)
 target_link_libraries(soa_wrapper benchmark::benchmark)
 
 add_executable(soa_boost soa_boost.cpp)
-target_include_directories(soa_boost PUBLIC /opt/eigen /workspace/benchmark)
+target_include_directories(soa_boost PUBLIC boost /opt/eigen /workspace/benchmark)
 target_link_libraries(soa_boost benchmark::benchmark)
 
 # add_executable(soa_refl soa_refl.cpp)
