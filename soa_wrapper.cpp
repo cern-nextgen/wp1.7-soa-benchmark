@@ -13,11 +13,11 @@ struct S2 {
 
 template <template <class> class F>
 struct S10 {
-    F<double> x0, x1, x2;
-    F<float> x3, x4, x5;
-    F<int> x6, x7;
-    F<Eigen::Vector3d> x8;
-    F<Eigen::Matrix3d> x9;
+    F<float> x0, x1;
+    F<double> x2, x3;
+    F<int> x4, x5;
+    F<Eigen::Vector3d> x6, x7;
+    F<Eigen::Matrix3d> x8, x9;
 };
 
 template <template <class> class F>

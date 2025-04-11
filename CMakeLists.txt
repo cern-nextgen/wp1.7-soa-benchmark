@@ -6,14 +6,22 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(benchmark REQUIRED)
-find_package(Eigen REQUIRED)
+find_package(Boost REQUIRED)
+
+add_subdirectory(/opt/eigen eigen-build)
 
 add_executable(soa_wrapper soa_wrapper.cpp)
+target_include_directories(soa_wrapper PUBLIC ${CMAKE_SOURCE_DIR} /opt/eigen /opt/benchmark)
+target_link_libraries(soa_wrapper benchmark::benchmark)
+
 add_executable(soa_boost soa_boost.cpp)
+target_include_directories(soa_boost PUBLIC /opt/eigen /opt/benchmark)
+
 # add_executable(soa_refl soa_refl.cpp)
 
 link_libraries(
     benchmark::benchmark
     Eigen::Core
     Eigen::Dense
+    Boost::boost
 )
