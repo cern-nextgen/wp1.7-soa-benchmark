@@ -153,19 +153,23 @@ void BM_CPURealRW(benchmark::State &state, T &t) {
     constexpr auto n_elements = 100000;
     constexpr auto repetitions = 1;
 
+    Matrix3D m; 
+    m << 2, 2, 2, 2, 2, 2, 2, 2, 2;
+    Vector3D v(2, 2, 2);
+
     for (auto _ : state) {
         for (size_t _; _ < repetitions; ++_) {
             for (int i = 0; i < n_elements; ++i) {
-                t[i].MEMBER_ACCESS(x0) += (double) 2;
-                t[i].MEMBER_ACCESS(x1) += (double) 2;
-                t[i].MEMBER_ACCESS(x2) += (double) 2;
-                t[i].MEMBER_ACCESS(x3) += (float) 2;
-                t[i].MEMBER_ACCESS(x4) += (float) 2;
-                t[i].MEMBER_ACCESS(x5) += (float)2;
-                t[i].MEMBER_ACCESS(x6) += 2;
-                t[i].MEMBER_ACCESS(x7) += 2;
-                t[i].MEMBER_ACCESS(x8) += Eigen::Vector3d::Constant(2.0);
-                t[i].MEMBER_ACCESS(x9) += Eigen::Matrix3d::Constant(2.0);
+                t[i].MEMBER_ACCESS(x0) += 2.f;
+                t[i].MEMBER_ACCESS(x1) += 2.f;
+                t[i].MEMBER_ACCESS(x2) += 2.;
+                t[i].MEMBER_ACCESS(x3) += 2.;
+                t[i].MEMBER_ACCESS(x4) += 2;
+                t[i].MEMBER_ACCESS(x5) += 2;
+                t[i].MEMBER_ACCESS(x6) += v;
+                t[i].MEMBER_ACCESS(x7) += v;
+                t[i].MEMBER_ACCESS(x8) += m;
+                t[i].MEMBER_ACCESS(x9) += m;
             } 
         }
     }
