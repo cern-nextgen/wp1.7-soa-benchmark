@@ -164,8 +164,8 @@ void BM_CPURealRW(benchmark::State &state, T &t) {
                 t[i].MEMBER_ACCESS(x5) += (float)2;
                 t[i].MEMBER_ACCESS(x6) += 2;
                 t[i].MEMBER_ACCESS(x7) += 2;
-                t[i].MEMBER_ACCESS(x8) += Vector3D{2, 2, 2};
-                t[i].MEMBER_ACCESS(x9) += Matrix3D{2, 2, 2, 2, 2, 2, 2, 2, 2};
+                t[i].MEMBER_ACCESS(x8) += Eigen::Vector3d::Constant(2.0);
+                t[i].MEMBER_ACCESS(x9) += Eigen::Matrix3d::Constant(2.0);
             } 
         }
     }
