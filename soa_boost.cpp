@@ -1,5 +1,7 @@
 #define SOA_BOOST 
 
+#include <memory>
+
 #include "benchmark.h"
 #include "boost/SoALayout.h"
 #include <Eigen/Core>
