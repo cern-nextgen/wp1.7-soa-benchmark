@@ -11,15 +11,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: build and compile
         run: |
-          mkdir ${{github.workspace}}/build
-          cd ${{github.workspace}}/build
-          cmake ..
-          make
+          cmake -B ${{github.workspace}}/build
+          cmake --build ${{github.workspace}}/build
       - name: run soa_wrapper
         run: |
-          cd ${{github.workspace}}/build
-          ./soa_wrapper
+          ${{github.workspace}}/build/soa_wrapper
       - name: run soa_boost
         run: |
-          cd ${{github.workspace}}/build
-          ./soa_boost
+          ${{github.workspace}}/build/soa_boost
