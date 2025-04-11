@@ -1,0 +1,25 @@
+name: soa benchmark
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-gpu:
+    runs-on: cern-nextgen
+    container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark-container:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: build and compile
+        run: |
+          mkdir ${{github.workspace}}/build
+          cd ${{github.workspace}}/build
+          cmake ..
+          make
+      - name: run soa_wrapper
+        run: |
+          cd ${{github.workspace}}/build
+          ./soa_wrapper
+      - name: run soa_boost
+        run: |
+          cd ${{github.workspace}}/build
+          ./soa_boost
