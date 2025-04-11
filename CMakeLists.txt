@@ -21,6 +21,5 @@ target_link_libraries(soa_boost benchmark::benchmark)
 link_libraries(
     benchmark::benchmark
     Eigen::Core
-    Eigen::Dense
     Boost::boost
 )

@@ -2,7 +2,6 @@
 
 #include "benchmark.h"
 #include "boost/SoALayout.h"
-#include <Eigen/Dense>
 #include <Eigen/Core>
 
 GENERATE_SOA_LAYOUT(SoALayout,
