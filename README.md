@@ -1,7 +1,7 @@
 # wp1.7-soa-benchmark
 Repository for benchmarking different SoA libraries.
 
-# Build and Run
+## Build and Run
 ```
 git clone https://github.com/cern-nextgen/wp1.7-soa-benchmark.git
 cd wp1.7-soa-benchmark
@@ -11,7 +11,7 @@ cmake --build build
 ./build/soa_boost
 ```
 
-# Docker Container
+## Docker Container
 The following container contains the dependencies to run the benchmark.
 ```
 docker pull registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark:latest
