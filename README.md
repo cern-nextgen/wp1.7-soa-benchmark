@@ -1,5 +1,5 @@
 # wp1.7-soa-benchmark
-Repository for benchmarking the different SoA libraries.
+Repository for benchmarking different SoA libraries.
 
 # Build and Run
 ```
@@ -16,4 +16,4 @@ The following container contains the dependencies to run the benchmark.
 ```
 docker pull registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark:latest
 ```
-The Dockerfile fo this image can be found here: [wp1.7-soa-benchmark-image](https://github.com/cern-nextgen/wp1.7-soa-benchmark-image)
+The corresponding Dockerfile can be found here: [wp1.7-soa-benchmark-image](https://github.com/cern-nextgen/wp1.7-soa-benchmark-image)
