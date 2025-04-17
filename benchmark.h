@@ -22,7 +22,7 @@ void BM_CPUEasyRW(benchmark::State &state, T &t) {
     constexpr auto repetitions = 1000000;
 
     for (auto _ : state) {
-        for (size_t _; _ < repetitions; ++_) {
+        for (size_t _ = 0; _ < repetitions; ++_) {
             for (int i = 0; i < BM_CPUEasyRW_nelem; ++i) {
                 t[i].MEMBER_ACCESS(x0) += 2;
                 t[i].MEMBER_ACCESS(x1) += 2;
@@ -39,7 +39,7 @@ void BM_CPUEasyCompute(benchmark::State &state, T &t) {
     constexpr auto repetitions = 1000000;
 
     for (auto _ : state) {
-        for (size_t _; _ < repetitions; ++_) {
+        for (size_t _ = 0; _ < repetitions; ++_) {
             for (int i = 0; i < BM_CPUEasyCompute_nelem; ++i) {
                 t[i].MEMBER_ACCESS(x0) = 1 + t[i].MEMBER_ACCESS(x0) * t[i].MEMBER_ACCESS(x0) * t[i].MEMBER_ACCESS(x0) * 
                                          t[i].MEMBER_ACCESS(x0) * t[i].MEMBER_ACCESS(x0) + 
@@ -75,7 +75,7 @@ void BM_CPUHardRW(benchmark::State &state, T &t) {
     Vector3D v(2, 2, 2);
 
     for (auto _ : state) {
-        for (size_t _; _ < repetitions; ++_) {
+        for (size_t _ = 0; _ < repetitions; ++_) {
             for (int i = 0; i < BM_CPUHardRW_nelem; ++i) {
                 t[i].MEMBER_ACCESS(x0)  += 2.f;
                 t[i].MEMBER_ACCESS(x1)  += 2.f;
@@ -158,7 +158,7 @@ void BM_CPURealRW(benchmark::State &state, T &t) {
     Vector3D v(2, 2, 2);
 
     for (auto _ : state) {
-        for (size_t _; _ < repetitions; ++_) {
+        for (size_t _ = 0; _ < repetitions; ++_) {
             for (int i = 0; i < n_elements; ++i) {
                 t[i].MEMBER_ACCESS(x0) += 2.f;
                 t[i].MEMBER_ACCESS(x1) += 2.f;
