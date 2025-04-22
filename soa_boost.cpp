@@ -1,4 +1,4 @@
-#define SOA_BOOST 
+#define SOA_BOOST
 
 #include <memory>
 
@@ -12,6 +12,21 @@ GENERATE_SOA_LAYOUT(SoALayout,
 
 using SoA = SoALayout<>;
 using SoAView = SoA::View;
+
+GENERATE_SOA_LAYOUT(MediumSoALayout,
+    SOA_COLUMN(float, x0),
+    SOA_COLUMN(float, x1),
+    SOA_COLUMN(double, x2),
+    SOA_COLUMN(double, x3),
+    SOA_COLUMN(int, x4),
+    SOA_COLUMN(int, x5),
+    SOA_EIGEN_COLUMN(Eigen::Vector3d, x6),
+    SOA_EIGEN_COLUMN(Eigen::Vector3d, x7),
+    SOA_EIGEN_COLUMN(Eigen::Matrix3d, x8),
+    SOA_EIGEN_COLUMN(Eigen::Matrix3d, x9))
+
+using MediumSoA = MediumSoALayout<>;
+using MediumSoAView = MediumSoA::View;
 
 GENERATE_SOA_LAYOUT(BigSoALayout,
     SOA_COLUMN(float, x0),
@@ -43,7 +58,7 @@ GENERATE_SOA_LAYOUT(BigSoALayout,
     SOA_COLUMN(int, x26),
     SOA_COLUMN(int, x27),
     SOA_COLUMN(int, x28),
-    SOA_COLUMN(int, x29),  
+    SOA_COLUMN(int, x29),
     SOA_COLUMN(int, x30),
     SOA_COLUMN(int, x31),
     SOA_COLUMN(int, x32),
@@ -73,7 +88,7 @@ GENERATE_SOA_LAYOUT(BigSoALayout,
     SOA_EIGEN_COLUMN(Eigen::Matrix3d, x56),
     SOA_EIGEN_COLUMN(Eigen::Matrix3d, x57),
     SOA_EIGEN_COLUMN(Eigen::Matrix3d, x58),
-    SOA_EIGEN_COLUMN(Eigen::Matrix3d, x59),  
+    SOA_EIGEN_COLUMN(Eigen::Matrix3d, x59),
     SOA_EIGEN_COLUMN(Eigen::Matrix3d, x60),
     SOA_EIGEN_COLUMN(Eigen::Matrix3d, x61),
     SOA_EIGEN_COLUMN(Eigen::Matrix3d, x62),
@@ -81,21 +96,6 @@ GENERATE_SOA_LAYOUT(BigSoALayout,
 
 using BigSoA = BigSoALayout<>;
 using BigSoAView = BigSoA::View;
-
-GENERATE_SOA_LAYOUT(MediumSoALayout,
-    SOA_COLUMN(float, x0),
-    SOA_COLUMN(float, x1),
-    SOA_COLUMN(double, x2),
-    SOA_COLUMN(double, x3),
-    SOA_COLUMN(int, x4),
-    SOA_COLUMN(int, x5),
-    SOA_EIGEN_COLUMN(Eigen::Vector3d, x6),
-    SOA_EIGEN_COLUMN(Eigen::Vector3d, x7),
-    SOA_EIGEN_COLUMN(Eigen::Matrix3d, x8),
-    SOA_EIGEN_COLUMN(Eigen::Matrix3d, x9))
-
-using MediumSoA = MediumSoALayout<>;
-using MediumSoAView = MediumSoA::View;
 
 
 int main(int argc, char** argv) {
@@ -105,23 +105,23 @@ int main(int argc, char** argv) {
             reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(n))), std::free};
         SoA soa(buffer.get(), n);
         SoAView soaView{soa};
-        benchmark::RegisterBenchmark(std::format("BM_CPUEasyRW/{}", n), BM_CPUEasyRW<SoAView>, soaView)->Arg(n)->Unit(benchmark::kMillisecond);
+        benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<SoAView>, soaView)->Arg(n)->Unit(benchmark::kMillisecond);
     }
-        
+
     for (auto n : N) {
         std::unique_ptr<std::byte, decltype(std::free) *> fullbuffer{
             reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(n))), std::free};
         SoA fullsoa(fullbuffer.get(), n);
         SoAView fullsoaView{fullsoa};
-        benchmark::RegisterBenchmark(std::format("BM_CPUEasyCompute/{}", n), BM_CPUEasyCompute<SoAView>, fullsoaView)->Arg(n)->Unit(benchmark::kMillisecond);
+        benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<SoAView>, fullsoaView)->Arg(n)->Unit(benchmark::kMillisecond);
     }
-        
+
     for (auto n : N) {
         std::unique_ptr<std::byte, decltype(std::free) *> medbuffer{
             reinterpret_cast<std::byte *>(aligned_alloc(MediumSoA::alignment, MediumSoA::computeDataSize(n))), std::free};
         MediumSoA mediumsoa(medbuffer.get(), n);
         MediumSoAView mediumsoaView{mediumsoa};
-        benchmark::RegisterBenchmark(std::format("BM_CPURealRW/{}", n), BM_CPURealRW<MediumSoAView>, mediumsoaView)->Arg(n)->Unit(benchmark::kMillisecond);
+        benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<MediumSoAView>, mediumsoaView)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
     for (auto n : N) {
@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
             reinterpret_cast<std::byte *>(aligned_alloc(BigSoA::alignment, BigSoA::computeDataSize(n))), std::free};
         BigSoA bigSoa(bigbuffer.get(), n);
         BigSoAView bigSoaView{bigSoa};
-        benchmark::RegisterBenchmark(std::format("BM_CPUHardRW/{}", n), BM_CPUHardRW<BigSoAView>, bigSoaView)->Arg(n)->Unit(benchmark::kMillisecond);
+        benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<BigSoAView>, bigSoaView)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
     benchmark::Initialize(&argc, argv);

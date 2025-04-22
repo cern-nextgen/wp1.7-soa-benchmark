@@ -1,5 +1,4 @@
 #include <vector>
-#include <format>
 
 #include "benchmark.h"
 #include "wrapper/factory.h"
@@ -37,22 +36,22 @@ int main(int argc, char** argv) {
     // Seperate loops to sort the output by benchmark.
     for (auto n : N) {
         auto t2a = factory::default_wrapper<my_vector, S2, wrapper::layout::soa>(n);
-        benchmark::RegisterBenchmark(std::format("BM_CPUEasyRW/{}", n), BM_CPUEasyRW<decltype(t2a)>, t2a)->Arg(n)->Unit(benchmark::kMillisecond);
+        benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<decltype(t2a)>, t2a)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
     for (auto n : N) {
         auto t2b = factory::default_wrapper<my_vector, S2, wrapper::layout::soa>(n);
-        benchmark::RegisterBenchmark(std::format("BM_CPUEasyCompute/{}", n), BM_CPUEasyCompute<decltype(t2b)>, t2b)->Arg(n)->Unit(benchmark::kMillisecond);
+        benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<decltype(t2b)>, t2b)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
     for (auto n : N) {
         auto t10 = factory::default_wrapper<my_vector, S10, wrapper::layout::soa>(n);
-        benchmark::RegisterBenchmark(std::format("BM_CPURealRW/{}", n), BM_CPURealRW<decltype(t10)>, t10)->Arg(n)->Unit(benchmark::kMillisecond);
+        benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<decltype(t10)>, t10)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
     for (auto n : N) {
         auto t64 = factory::default_wrapper<my_vector, S64, wrapper::layout::soa>(n);
-        benchmark::RegisterBenchmark(std::format("BM_CPUHardRW/{}", n), BM_CPUHardRW<decltype(t64)>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
+        benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<decltype(t64)>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
     benchmark::Initialize(&argc, argv);
