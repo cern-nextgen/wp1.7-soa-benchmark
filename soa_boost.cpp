@@ -97,42 +97,47 @@ GENERATE_SOA_LAYOUT(BigSoALayout,
 using BigSoA = BigSoALayout<>;
 using BigSoAView = BigSoA::View;
 
-
 int main(int argc, char** argv) {
+    std::vector<void *> free_list;
+
     // Seperate loops to sort the output by benchmark.
-    for (auto n : N) {
-        std::unique_ptr<std::byte, decltype(std::free) *> buffer{
-            reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(n))), std::free};
-        SoA soa(buffer.get(), n);
+    for (size_t n : N) {
+        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(n)));
+        SoA soa(buffer, n);
         SoAView soaView{soa};
         benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<SoAView>, soaView)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer);
     }
 
     for (auto n : N) {
-        std::unique_ptr<std::byte, decltype(std::free) *> fullbuffer{
-            reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(n))), std::free};
-        SoA fullsoa(fullbuffer.get(), n);
+        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(n)));
+        SoA fullsoa(buffer, n);
         SoAView fullsoaView{fullsoa};
         benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<SoAView>, fullsoaView)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer);
     }
 
     for (auto n : N) {
-        std::unique_ptr<std::byte, decltype(std::free) *> medbuffer{
-            reinterpret_cast<std::byte *>(aligned_alloc(MediumSoA::alignment, MediumSoA::computeDataSize(n))), std::free};
-        MediumSoA mediumsoa(medbuffer.get(), n);
+        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(MediumSoA::alignment, MediumSoA::computeDataSize(n)));
+        MediumSoA mediumsoa(buffer, n);
         MediumSoAView mediumsoaView{mediumsoa};
         benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<MediumSoAView>, mediumsoaView)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer);
     }
 
     for (auto n : N) {
-        std::unique_ptr<std::byte, decltype(std::free) *> bigbuffer{
-            reinterpret_cast<std::byte *>(aligned_alloc(BigSoA::alignment, BigSoA::computeDataSize(n))), std::free};
-        BigSoA bigSoa(bigbuffer.get(), n);
+        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(BigSoA::alignment, BigSoA::computeDataSize(n)));
+        BigSoA bigSoa(buffer, n);
         BigSoAView bigSoaView{bigSoa};
         benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<BigSoAView>, bigSoaView)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer);
     }
 
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();
     benchmark::Shutdown();
+
+    for (auto buffer : free_list) {
+        std::free(buffer);
+    }
 }
