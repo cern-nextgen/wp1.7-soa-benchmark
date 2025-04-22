@@ -12,7 +12,6 @@ GENERATE_SOA_LAYOUT(SoALayout,
 
 using SoA = SoALayout<>;
 using SoAView = SoA::View;
-using SoAConstView = SoA::ConstView;
 
 GENERATE_SOA_LAYOUT(BigSoALayout,
     SOA_COLUMN(float, x0),
@@ -82,7 +81,6 @@ GENERATE_SOA_LAYOUT(BigSoALayout,
 
 using BigSoA = BigSoALayout<>;
 using BigSoAView = BigSoA::View;
-using BigSoAConstView = BigSoA::ConstView;  
 
 GENERATE_SOA_LAYOUT(MediumSoALayout,
     SOA_COLUMN(float, x0),
@@ -98,38 +96,43 @@ GENERATE_SOA_LAYOUT(MediumSoALayout,
 
 using MediumSoA = MediumSoALayout<>;
 using MediumSoAView = MediumSoA::View;
-using MediumSoAConstView = MediumSoA::ConstView;    
 
-std::unique_ptr<std::byte, decltype(std::free) *> buffer{
-    reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(BM_CPUEasyRW_nelem))), std::free};
-SoA soa(buffer.get(), BM_CPUEasyRW_nelem);
-SoAView soaView{soa};
-SoAConstView soaConstView{soa};
 
-std::unique_ptr<std::byte, decltype(std::free) *> fullbuffer{
-    reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(BM_CPUEasyCompute_nelem))), std::free};
-SoA fullsoa(fullbuffer.get(), BM_CPUEasyCompute_nelem);
-SoAView fullsoaView{fullsoa};
-SoAConstView fullsoaConstView{fullsoa};
+int main(int argc, char** argv) {
+    // Seperate loops to sort the output by benchmark.
+    for (auto n : N) {
+        std::unique_ptr<std::byte, decltype(std::free) *> buffer{
+            reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(n))), std::free};
+        SoA soa(buffer.get(), n);
+        SoAView soaView{soa};
+        benchmark::RegisterBenchmark(std::format("BM_CPUEasyRW/{}", n), BM_CPUEasyRW<SoAView>, soaView)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
+        
+    for (auto n : N) {
+        std::unique_ptr<std::byte, decltype(std::free) *> fullbuffer{
+            reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(n))), std::free};
+        SoA fullsoa(fullbuffer.get(), n);
+        SoAView fullsoaView{fullsoa};
+        benchmark::RegisterBenchmark(std::format("BM_CPUEasyCompute/{}", n), BM_CPUEasyCompute<SoAView>, fullsoaView)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
+        
+    for (auto n : N) {
+        std::unique_ptr<std::byte, decltype(std::free) *> medbuffer{
+            reinterpret_cast<std::byte *>(aligned_alloc(MediumSoA::alignment, MediumSoA::computeDataSize(n))), std::free};
+        MediumSoA mediumsoa(medbuffer.get(), n);
+        MediumSoAView mediumsoaView{mediumsoa};
+        benchmark::RegisterBenchmark(std::format("BM_CPURealRW/{}", n), BM_CPURealRW<MediumSoAView>, mediumsoaView)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
 
-std::unique_ptr<std::byte, decltype(std::free) *> medbuffer{
-    reinterpret_cast<std::byte *>(aligned_alloc(MediumSoA::alignment, MediumSoA::computeDataSize(100000))), std::free};
-MediumSoA mediumsoa(medbuffer.get(), 100000);
-MediumSoAView mediumsoaView{mediumsoa};
-MediumSoAConstView mediumsoaConstView{mediumsoa};
+    for (auto n : N) {
+        std::unique_ptr<std::byte, decltype(std::free) *> bigbuffer{
+            reinterpret_cast<std::byte *>(aligned_alloc(BigSoA::alignment, BigSoA::computeDataSize(n))), std::free};
+        BigSoA bigSoa(bigbuffer.get(), n);
+        BigSoAView bigSoaView{bigSoa};
+        benchmark::RegisterBenchmark(std::format("BM_CPUHardRW/{}", n), BM_CPUHardRW<BigSoAView>, bigSoaView)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
 
-std::unique_ptr<std::byte, decltype(std::free) *> bigbuffer{
-    reinterpret_cast<std::byte *>(aligned_alloc(BigSoA::alignment, BigSoA::computeDataSize(BM_CPUHardRW_nelem))), std::free};
-BigSoA bigSoa(bigbuffer.get(), BM_CPUHardRW_nelem);
-BigSoAView bigSoaView{bigSoa};
-BigSoAConstView bigSoaConstView{bigSoa};
-
-BENCHMARK_CAPTURE(BM_CPUEasyRW, cms_soa, soaView);
-
-BENCHMARK_CAPTURE(BM_CPUEasyCompute, cms_full_soa, fullsoaView);
-
-BENCHMARK_CAPTURE(BM_CPURealRW, cms_medium_soa, mediumsoaView);
-
-BENCHMARK_CAPTURE(BM_CPUHardRW, cms_big_soa, bigSoaView);
-
-BENCHMARK_MAIN();
+    benchmark::Initialize(&argc, argv);
+    benchmark::RunSpecifiedBenchmarks();
+    benchmark::Shutdown();
+}

@@ -14,33 +14,34 @@
 using Vector3D = Eigen::Vector3d;
 using Matrix3D = Eigen::Matrix3d;
 
-constexpr auto BM_CPUEasyRW_nelem = 10;
+constexpr std::array<size_t, 4> N{10, 1000, 100000, 10000000};
 
 // 2 data members, integers, 64 alignment, 10 elements
 template <typename T>
-void BM_CPUEasyRW(benchmark::State &state, T &t) {
-    constexpr auto repetitions = 1000000;
+void BM_CPUEasyRW(benchmark::State &state, T t) {
+    constexpr auto repetitions = 10;
 
     for (auto _ : state) {
         for (size_t _ = 0; _ < repetitions; ++_) {
-            for (int i = 0; i < BM_CPUEasyRW_nelem; ++i) {
+            for (int i = 0; i < state.range(0); ++i) {
                 t[i].MEMBER_ACCESS(x0) += 2;
                 t[i].MEMBER_ACCESS(x1) += 2;
             } 
         }
     }
-}
 
-constexpr auto BM_CPUEasyCompute_nelem = 10;
+    state.counters["n_elem"] = state.range(0);
+    state.counters["reps"] = repetitions;
+}
 
 // 2 data members, integers, 64 alignment, 10 elements
 template <typename T>
-void BM_CPUEasyCompute(benchmark::State &state, T &t) {
-    constexpr auto repetitions = 1000000;
+void BM_CPUEasyCompute(benchmark::State &state, T t) {
+    constexpr auto repetitions = 10;
 
     for (auto _ : state) {
         for (size_t _ = 0; _ < repetitions; ++_) {
-            for (int i = 0; i < BM_CPUEasyCompute_nelem; ++i) {
+            for (int i = 0; i < state.range(0); ++i) {
                 t[i].MEMBER_ACCESS(x0) = 1 + t[i].MEMBER_ACCESS(x0) * t[i].MEMBER_ACCESS(x0) * t[i].MEMBER_ACCESS(x0) * 
                                          t[i].MEMBER_ACCESS(x0) * t[i].MEMBER_ACCESS(x0) + 
                                          7 * t[i].MEMBER_ACCESS(x1) * t[i].MEMBER_ACCESS(x1) * 
@@ -60,14 +61,16 @@ void BM_CPUEasyCompute(benchmark::State &state, T &t) {
             } 
         }
     }
+
+    state.counters["n_elem"] = state.range(0);
+    state.counters["reps"] = repetitions;
 }
 
-constexpr auto BM_CPUHardRW_nelem = 10e4;
 
-// 100 data members (20 floats, 20 doubles, 20 integers, 20 Eigen vector, 20 Eigen matrices), 
-// 64 alignment, 10e4 elements
+// “Realistic case”: 
+//      10 data members (3 doubles, 3 float, 2 integer, 1 Vector3D, 1 Matrix), 64 alignment, 100000
 template <typename T>
-void BM_CPUHardRW(benchmark::State &state, T &t) {
+void BM_CPURealRW(benchmark::State &state, T t) {
     constexpr auto repetitions = 1;
 
     Matrix3D m; 
@@ -76,7 +79,39 @@ void BM_CPUHardRW(benchmark::State &state, T &t) {
 
     for (auto _ : state) {
         for (size_t _ = 0; _ < repetitions; ++_) {
-            for (int i = 0; i < BM_CPUHardRW_nelem; ++i) {
+            for (int i = 0; i < state.range(0); ++i) {
+                t[i].MEMBER_ACCESS(x0) += 2.f;
+                t[i].MEMBER_ACCESS(x1) += 2.f;
+                t[i].MEMBER_ACCESS(x2) += 2.;
+                t[i].MEMBER_ACCESS(x3) += 2.;
+                t[i].MEMBER_ACCESS(x4) += 2;
+                t[i].MEMBER_ACCESS(x5) += 2;
+                t[i].MEMBER_ACCESS(x6) += v;
+                t[i].MEMBER_ACCESS(x7) += v;
+                t[i].MEMBER_ACCESS(x8) += m;
+                t[i].MEMBER_ACCESS(x9) += m;
+            } 
+        }
+    }
+
+    state.counters["n_elem"] = state.range(0);
+    state.counters["reps"] = repetitions;
+}
+
+
+// 100 data members (20 floats, 20 doubles, 20 integers, 20 Eigen vector, 20 Eigen matrices), 
+// 64 alignment, 10e4 elements
+template <typename T>
+void BM_CPUHardRW(benchmark::State &state, T t) {
+    constexpr auto repetitions = 1;
+
+    Matrix3D m; 
+    m << 2, 2, 2, 2, 2, 2, 2, 2, 2;
+    Vector3D v(2, 2, 2);
+
+    for (auto _ : state) {
+        for (size_t _ = 0; _ < repetitions; ++_) {
+            for (int i = 0; i < state.range(0); ++i) {
                 t[i].MEMBER_ACCESS(x0)  += 2.f;
                 t[i].MEMBER_ACCESS(x1)  += 2.f;
                 t[i].MEMBER_ACCESS(x2)  += 2.f;
@@ -144,35 +179,9 @@ void BM_CPUHardRW(benchmark::State &state, T &t) {
             } 
         }
     }
-}
 
-// “Realistic case”: 
-//      10 data members (3 doubles, 3 float, 2 integer, 1 Vector3D, 1 Matrix), 64 alignment, 100000
-template <typename T>
-void BM_CPURealRW(benchmark::State &state, T &t) {
-    constexpr auto n_elements = 100000;
-    constexpr auto repetitions = 1;
-
-    Matrix3D m; 
-    m << 2, 2, 2, 2, 2, 2, 2, 2, 2;
-    Vector3D v(2, 2, 2);
-
-    for (auto _ : state) {
-        for (size_t _ = 0; _ < repetitions; ++_) {
-            for (int i = 0; i < n_elements; ++i) {
-                t[i].MEMBER_ACCESS(x0) += 2.f;
-                t[i].MEMBER_ACCESS(x1) += 2.f;
-                t[i].MEMBER_ACCESS(x2) += 2.;
-                t[i].MEMBER_ACCESS(x3) += 2.;
-                t[i].MEMBER_ACCESS(x4) += 2;
-                t[i].MEMBER_ACCESS(x5) += 2;
-                t[i].MEMBER_ACCESS(x6) += v;
-                t[i].MEMBER_ACCESS(x7) += v;
-                t[i].MEMBER_ACCESS(x8) += m;
-                t[i].MEMBER_ACCESS(x9) += m;
-            } 
-        }
-    }
+    state.counters["n_elem"] = state.range(0);
+    state.counters["reps"] = repetitions;
 }
 
 #endif  // BENCHMARK_H

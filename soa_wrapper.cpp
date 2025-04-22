@@ -1,4 +1,5 @@
 #include <vector>
+#include <format>
 
 #include "benchmark.h"
 #include "wrapper/factory.h"
@@ -32,20 +33,29 @@ struct S64 {
 template <class T>
 using my_vector = std::vector<T>;
 
-constexpr std::size_t N0 = 10;
-auto t0 = factory::default_wrapper<my_vector, S2, wrapper::layout::soa>(N0);
-BENCHMARK_CAPTURE(BM_CPUEasyRW, wrapper, t0);
+int main(int argc, char** argv) {
+    // Seperate loops to sort the output by benchmark.
+    for (auto n : N) {
+        auto t2a = factory::default_wrapper<my_vector, S2, wrapper::layout::soa>(n);
+        benchmark::RegisterBenchmark(std::format("BM_CPUEasyRW/{}", n), BM_CPUEasyRW<decltype(t2a)>, t2a)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
 
-constexpr std::size_t N1 = 10;
-auto t1 = factory::default_wrapper<my_vector, S2, wrapper::layout::soa>(N1);
-BENCHMARK_CAPTURE(BM_CPUEasyCompute, wrapper, t1);
+    for (auto n : N) {
+        auto t2b = factory::default_wrapper<my_vector, S2, wrapper::layout::soa>(n);
+        benchmark::RegisterBenchmark(std::format("BM_CPUEasyCompute/{}", n), BM_CPUEasyCompute<decltype(t2b)>, t2b)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
 
-constexpr std::size_t N2 = 10e4;
-auto t2 = factory::default_wrapper<my_vector, S64, wrapper::layout::soa>(N2);
-BENCHMARK_CAPTURE(BM_CPUHardRW, wrapper, t2);
+    for (auto n : N) {
+        auto t10 = factory::default_wrapper<my_vector, S10, wrapper::layout::soa>(n);
+        benchmark::RegisterBenchmark(std::format("BM_CPURealRW/{}", n), BM_CPURealRW<decltype(t10)>, t10)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
 
-constexpr std::size_t N3 = 10e5;
-auto t3 = factory::default_wrapper<my_vector, S10, wrapper::layout::soa>(N3);
-BENCHMARK_CAPTURE(BM_CPURealRW, wrapper, t3);
+    for (auto n : N) {
+        auto t64 = factory::default_wrapper<my_vector, S64, wrapper::layout::soa>(n);
+        benchmark::RegisterBenchmark(std::format("BM_CPUHardRW/{}", n), BM_CPUHardRW<decltype(t64)>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
 
-BENCHMARK_MAIN();
+    benchmark::Initialize(&argc, argv);
+    benchmark::RunSpecifiedBenchmarks();
+    benchmark::Shutdown();
+}
