@@ -13,9 +13,15 @@ jobs:
         run: |
           cmake -B ${{github.workspace}}/build
           cmake --build ${{github.workspace}}/build
-      - name: run soa_wrapper
-        run: |
-          ${{github.workspace}}/build/soa_wrapper
-      - name: run soa_boost
-        run: |
-          ${{github.workspace}}/build/soa_boost
+      - name: run benchmarks
+        run: python3 ${{github.workspace}}/build/plot.py
+      - name: upload results
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{github.workspace}}/build/*.png
+      # - name: run soa_wrapper
+      #   run: |
+      #     ${{github.workspace}}/build/soa_wrapper
+      # - name: run soa_boost
+      #   run: |
+      #     ${{github.workspace}}/build/soa_boost
