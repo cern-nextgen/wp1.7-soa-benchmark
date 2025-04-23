@@ -35,8 +35,8 @@ def plot_results(df, title, out_dir):
     # Set the title and labels
     ax.set_title(title)
     ax.set_xlabel('Number of Elements')
-    ax.set_xscale('log')
-    ax.set_xticks(df['n_elem'].unique(), labels=["{:g}".format(x) for x in df['n_elem'].unique()], minor=True)
+    ax.set_xscale('symlog')
+    ax.set_xticks(df_mean['n_elem'].unique(), labels=["{:g}".format(x) for x in df_mean['n_elem'].unique()], minor=False)
 
     ax.set_ylabel(f'Real Time ({df["time_unit"].iloc[0]})')
     ax.set_yscale('log')
