@@ -19,10 +19,16 @@ jobs:
       - name: run benchmarks
         run: |
           python3 plot.py ${{github.workspace}}/build
-      - name: upload results
+      - name: upload images
         uses: actions/upload-artifact@v4
         with:
+          name: soa-benchmark-results
           path: ${{github.workspace}}/*.png
+      - name: upload raw results
+        uses: actions/upload-artifact@v4
+        with:
+          name: soa-benchmark-raw-results
+          path:  ${{github.workspace}}/build/*.json
       # - name: run soa_wrapper
       #   run: |
       #     ${{github.workspace}}/build/soa_wrapper

@@ -59,4 +59,3 @@ if __name__ == "__main__":
                         "--benchmark_counters_tabular=true", "--benchmark_repetitions=3"])
         df = read_data(f"{filename}.json")
         plot_results(df, t)
-        os.remove(f"{filename}.json")
