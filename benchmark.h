@@ -19,7 +19,7 @@ constexpr size_t N[] = {10, 1000, 100000, 10000000};
 // 2 data members, integers, 64 alignment, 10 elements
 template <typename T>
 void BM_CPUEasyRW(benchmark::State &state, T t) {
-    constexpr auto repetitions = 10;
+    constexpr auto repetitions = 1;
 
     for (auto _ : state) {
         for (size_t _ = 0; _ < repetitions; ++_) {
@@ -37,7 +37,7 @@ void BM_CPUEasyRW(benchmark::State &state, T t) {
 // 2 data members, integers, 64 alignment, 10 elements
 template <typename T>
 void BM_CPUEasyCompute(benchmark::State &state, T t) {
-    constexpr auto repetitions = 10;
+    constexpr auto repetitions = 1;
 
     for (auto _ : state) {
         for (size_t _ = 0; _ < repetitions; ++_) {
