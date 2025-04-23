@@ -24,8 +24,10 @@ jobs:
       - name: collect artifacts
         run: |
           mkdir ${{github.workspace}}/soa-benchmark-results
-          cp ${{github.workspace}}/*.png ${{github.workspace}}/soa-benchmark-results
-          cp ${{github.workspace}}/*.json ${{github.workspace}}/soa-benchmark-results
+          mv ${{github.workspace}}/*.png  ${{github.workspace}}/soa-benchmark-results/
+          mv ${{github.workspace}}/*.json ${{github.workspace}}/soa-benchmark-results/
+          echo "Files in Results Directory:"
+          ls -l ${{github.workspace}}/soa-benchmark-results
       - name: upload results
         uses: actions/upload-artifact@v4
         with:
