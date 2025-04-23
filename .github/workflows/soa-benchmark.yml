@@ -19,8 +19,6 @@ jobs:
       - name: run benchmarks
         run: |
           python3 plot.py ${{github.workspace}}
-          echo "Files in Build Directory:"
-          ls -l ${{github.workspace}}/build
           echo "Files in Workspace Directory:"
       - name: collect artifacts
         run: |
