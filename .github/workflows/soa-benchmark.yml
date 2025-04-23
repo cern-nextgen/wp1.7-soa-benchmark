@@ -15,7 +15,6 @@ jobs:
           cmake --build ${{github.workspace}}/build
       - name: run benchmarks
         run: |
-          ls build
           python3 plot.py ${{github.workspace}}/build
       - name: upload results
         uses: actions/upload-artifact@v4
