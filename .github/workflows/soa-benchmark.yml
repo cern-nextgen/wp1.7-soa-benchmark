@@ -31,7 +31,7 @@ jobs:
       - name: upload results
         uses: actions/upload-artifact@v4
         with:
-          path: soa-benchmark-results
+          path: $GITHUB_WORKSPACE/soa-benchmark-results
       # - name: run soa_wrapper
       #   run: |
       #     ${{github.workspace}}/build/soa_wrapper
