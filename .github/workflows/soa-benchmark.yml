@@ -14,20 +14,19 @@ jobs:
       - uses: actions/checkout@v4
       - name: build and compile
         run: |
-          cmake -B ${{github.workspace}}/build
-          cmake --build ${{github.workspace}}/build
+          cmake -B ${{github.workspace}}
+          cmake --build ${{github.workspace}}
       - name: run benchmarks
         run: |
-          python3 plot.py ${{github.workspace}}/build
+          python3 plot.py ${{github.workspace}}
           echo "Files in Build Directory:"
           ls -l ${{github.workspace}}/build
           echo "Files in Workspace Directory:"
-          ls -l ${{github.workspace}}
       - name: collect artifacts
         run: |
           mkdir ${{github.workspace}}/soa-benchmark-results
           cp ${{github.workspace}}/*.png ${{github.workspace}}/soa-benchmark-results
-          cp ${{github.workspace}}/build/*.json ${{github.workspace}}/soa-benchmark-results
+          cp ${{github.workspace}}/*.json ${{github.workspace}}/soa-benchmark-results
       - name: upload results
         uses: actions/upload-artifact@v4
         with:

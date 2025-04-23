@@ -16,7 +16,7 @@ def read_data(filename):
         df["benchmark"] = df["name"].apply(lambda x: x.split('/')[0])
     return df
 
-def plot_results(df, title):
+def plot_results(df, title, out_dir):
     """
     Plots the results from the DataFrame.
     """
@@ -46,7 +46,7 @@ def plot_results(df, title):
     plt.legend()
 
     # Show the plot
-    plt.savefig(f'{"_".join(title.split())}.png')
+    plt.savefig(f'{out_dir}/{"_".join(title.split())}.png')
 
 if __name__ == "__main__":
     print("Running the benchmarks...")
@@ -58,4 +58,4 @@ if __name__ == "__main__":
         subprocess.run([f"{filename}", "--benchmark_out_format=json", f"--benchmark_out={filename}.json",
                         "--benchmark_counters_tabular=true", "--benchmark_repetitions=3"])
         df = read_data(f"{filename}.json")
-        plot_results(df, t)
+        plot_results(df, t, dirname)
