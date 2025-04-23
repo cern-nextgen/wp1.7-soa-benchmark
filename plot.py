@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import pandas as pd
 import subprocess
+import sys
 import os
 import json
 
@@ -50,9 +51,12 @@ def plot_results(df, title):
 if __name__ == "__main__":
     print("Running the benchmarks...")
 
+    dirname = sys.argv[1]
+
     for f, t in zip(['soa_boost', 'soa_wrapper'], ['Preprocessor Macros SoA', 'Template Metaprogramming SoA']):
-        subprocess.run([f"./{f}", "--benchmark_out_format=json", f"--benchmark_out={f}.json",
+        filename = f"{dirname}/{f}"
+        subprocess.run([f"./{filename}", "--benchmark_out_format=json", f"--benchmark_out={filename}.json",
                         "--benchmark_counters_tabular=true", "--benchmark_repetitions=3"])
-        df = read_data(f"{f}.json")
+        df = read_data(f"{filename}.json")
         plot_results(df, t)
-        os.remove(f"{f}.json")
+        os.remove(f"{filename}.json")
