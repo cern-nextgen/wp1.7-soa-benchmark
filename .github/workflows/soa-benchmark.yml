@@ -19,6 +19,7 @@ jobs:
       - name: run benchmarks
         run: |
           python3 plot.py ${{github.workspace}}/build
+          ls ${{github.workspace}}/build
       - name: upload images
         uses: actions/upload-artifact@v4
         with:
