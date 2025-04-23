@@ -1,0 +1,58 @@
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+import pandas as pd
+import subprocess
+import os
+import json
+
+def read_data(filename):
+    """
+    Reads the Google Benchmark data from a CSV string and returns a DataFrame.
+    """
+    with open(filename, "r") as read_file:
+        data = json.load(read_file)
+        df = pd.DataFrame.from_dict(data["benchmarks"]).astype({"real_time": float})
+        df["benchmark"] = df["name"].apply(lambda x: x.split('/')[0])
+    return df
+
+def plot_results(df, title):
+    """
+    Plots the results from the DataFrame.
+    """
+    # Set the figure size
+    plt.figure(figsize=(10, 6))
+    ax = plt.subplot(111)
+
+    # Plot the data
+    for bm in df["benchmark"].unique():
+        # Filter the DataFrame for the current benchmark
+        df_mean = df[(df["benchmark"] == bm) & (df["aggregate_name"] == "mean")]
+        df_std = df[(df["benchmark"] == bm) & (df["aggregate_name"] == "stddev")]
+        ax.errorbar(df_mean['n_elem'].astype(int), df_mean['real_time'], yerr=df_std["real_time"],
+                    ls="-", marker="o", label=bm)
+
+    # Set the title and labels
+    ax.set_title(title)
+    ax.set_xlabel('Number of Elements')
+    ax.set_xscale('log')
+    ax.set_xticks(df['n_elem'].unique(), labels=["{:g}".format(x) for x in df['n_elem'].unique()], minor=True)
+
+    ax.set_ylabel(f'Real Time ({df["time_unit"].iloc[0]})')
+    ax.set_yscale('log')
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda y, _: '{:g}'.format(y)))
+
+    # Add a legend
+    plt.legend()
+
+    # Show the plot
+    plt.savefig(f'{"_".join(title.split())}.png')
+
+if __name__ == "__main__":
+    print("Running the benchmarks...")
+
+    for f, t in zip(['soa_boost', 'soa_wrapper'], ['Preprocessor Macros SoA', 'Template Metaprogramming SoA']):
+        subprocess.run([f"./{f}", "--benchmark_out_format=json", f"--benchmark_out={f}.json",
+                        "--benchmark_counters_tabular=true", "--benchmark_repetitions=3"])
+        df = read_data(f"{f}.json")
+        plot_results(df, t)
+        os.remove(f"{f}.json")
