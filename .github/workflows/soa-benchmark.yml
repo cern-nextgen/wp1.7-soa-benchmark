@@ -19,11 +19,15 @@ jobs:
       - name: run benchmarks
         run: |
           python3 plot.py ${{github.workspace}}/build
+          echo "Files in Build Directory:"
+          ls -l ${{github.workspace}}/build
+          echo "Files in Workspace Directory:"
+          ls -l ${{github.workspace}}
       - name: collect artifacts
         run: |
           mkdir ${{github.workspace}}/soa-benchmark-results
           cp ${{github.workspace}}/*.png ${{github.workspace}}/soa-benchmark-results
-          cp ${{github.workspace}}/*.json ${{github.workspace}}/soa-benchmark-results
+          cp ${{github.workspace}}/build/*.json ${{github.workspace}}/soa-benchmark-results
       - name: upload results
         uses: actions/upload-artifact@v4
         with:
