@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     for f, t in zip(['soa_boost', 'soa_wrapper'], ['Preprocessor Macros SoA', 'Template Metaprogramming SoA']):
         filename = f"{dirname}/{f}"
-        subprocess.run([f"./{filename}", "--benchmark_out_format=json", f"--benchmark_out={filename}.json",
+        subprocess.run([f"{filename}", "--benchmark_out_format=json", f"--benchmark_out={filename}.json",
                         "--benchmark_counters_tabular=true", "--benchmark_repetitions=3"])
         df = read_data(f"{filename}.json")
         plot_results(df, t)
