@@ -23,15 +23,15 @@ jobs:
           ls -l ${{github.workspace}}
       - name: collect artifacts
         run: |
-          mkdir ${{github.workspace}}/soa-benchmark-results
-          mv ${{github.workspace}}/*.png  ${{github.workspace}}/soa-benchmark-results/
-          mv ${{github.workspace}}/*.json ${{github.workspace}}/soa-benchmark-results/
+          mkdir soa-benchmark-results
+          mv ${{github.workspace}}/*.png  soa-benchmark-results/
+          mv ${{github.workspace}}/*.json soa-benchmark-results/
           echo "Files in Results Directory:"
-          ls -l ${{github.workspace}}/soa-benchmark-results
+          ls -l soa-benchmark-results
       - name: upload results
         uses: actions/upload-artifact@v4
         with:
-          path: $GITHUB_WORKSPACE/soa-benchmark-results
+          path: soa-benchmark-results
       # - name: run soa_wrapper
       #   run: |
       #     ${{github.workspace}}/build/soa_wrapper
