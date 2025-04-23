@@ -14,7 +14,7 @@
 using Vector3D = Eigen::Vector3d;
 using Matrix3D = Eigen::Matrix3d;
 
-constexpr size_t N[] = {10, 1000, 100000, 10000000};
+constexpr size_t N[] = {10, 100, 1000, 10000, 100000};
 
 // 2 data members, integers, 64 alignment, 10 elements
 template <typename T>

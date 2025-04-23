@@ -2,6 +2,9 @@ name: run benchmark
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - 'main'
 
 jobs:
   soa-benchmark:
@@ -11,16 +14,25 @@ jobs:
       - uses: actions/checkout@v4
       - name: build and compile
         run: |
-          cmake -B ${{github.workspace}}/build
-          cmake --build ${{github.workspace}}/build
+          cmake -B ${{github.workspace}}
+          cmake --build ${{github.workspace}}
       - name: run benchmarks
         run: |
-          cd ${{github.workspace}}/build
-          python3 ../plot.py
+          python3 plot.py ${{github.workspace}}
+          echo "Files in Workspace Directory:"
+          ls -l ${{github.workspace}}
+      - name: collect artifacts
+        run: |
+          mkdir soa-benchmark-results
+          mv ${{github.workspace}}/*.png  soa-benchmark-results/
+          mv ${{github.workspace}}/*.json soa-benchmark-results/
+          echo "Files in Results Directory:"
+          ls -l soa-benchmark-results
       - name: upload results
         uses: actions/upload-artifact@v4
         with:
-          path: ${{github.workspace}}/build/*.png
+          name: soa-benchmark-results
+          path: soa-benchmark-results
       # - name: run soa_wrapper
       #   run: |
       #     ${{github.workspace}}/build/soa_wrapper
