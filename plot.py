@@ -41,6 +41,7 @@ def plot_results(df, title, out_dir):
     ax.set_ylabel(f'Real Time ({df["time_unit"].iloc[0]})')
     ax.set_yscale('log')
     ax.yaxis.set_major_formatter(FuncFormatter(lambda y, _: '{:g}'.format(y)))
+    plt.ylim(.0001, 100000)
 
     # Add a legend
     plt.legend()
