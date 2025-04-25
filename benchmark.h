@@ -6,9 +6,11 @@
 #include <Eigen/Core>
 
 #ifdef SOA_BOOST
-    #define MEMBER_ACCESS(NAME) NAME()
+    #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ[INDEX].MEMBER()
+#elif defined(SOA_MANUAL)
+    #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ.MEMBER[INDEX]
 #else
-    #define MEMBER_ACCESS(NAME) NAME
+    #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ[INDEX].MEMBER
 #endif
 
 using Vector3D = Eigen::Vector3d;
@@ -24,8 +26,8 @@ void BM_CPUEasyRW(benchmark::State &state, T t) {
     for (auto _ : state) {
         for (size_t _ = 0; _ < repetitions; ++_) {
             for (int i = 0; i < state.range(0); ++i) {
-                t[i].MEMBER_ACCESS(x0) += 2;
-                t[i].MEMBER_ACCESS(x1) += 2;
+                MEMBER_ACCESS(t, x0, i) += 2;
+                MEMBER_ACCESS(t, x1, i) += 2;
             }
         }
     }
@@ -42,22 +44,22 @@ void BM_CPUEasyCompute(benchmark::State &state, T t) {
     for (auto _ : state) {
         for (size_t _ = 0; _ < repetitions; ++_) {
             for (int i = 0; i < state.range(0); ++i) {
-                t[i].MEMBER_ACCESS(x0) = 1 + t[i].MEMBER_ACCESS(x0) * t[i].MEMBER_ACCESS(x0) * t[i].MEMBER_ACCESS(x0) *
-                                         t[i].MEMBER_ACCESS(x0) * t[i].MEMBER_ACCESS(x0) +
-                                         7 * t[i].MEMBER_ACCESS(x1) * t[i].MEMBER_ACCESS(x1) *
-                                         t[i].MEMBER_ACCESS(x1) -
-                                         6 * t[i].MEMBER_ACCESS(x0) * t[i].MEMBER_ACCESS(x1) *
-                                         t[i].MEMBER_ACCESS(x1) +
-                                         3 * t[i].MEMBER_ACCESS(x0) * t[i].MEMBER_ACCESS(x0) *
-                                         t[i].MEMBER_ACCESS(x1);
-                t[i].MEMBER_ACCESS(x1) = 1 + t[i].MEMBER_ACCESS(x1) * t[i].MEMBER_ACCESS(x1) * t[i].MEMBER_ACCESS(x1) *
-                                         t[i].MEMBER_ACCESS(x1) -
-                                         5 * t[i].MEMBER_ACCESS(x0) * t[i].MEMBER_ACCESS(x0) *
-                                         t[i].MEMBER_ACCESS(x0) +
-                                         4 * t[i].MEMBER_ACCESS(x0) * t[i].MEMBER_ACCESS(x1) *
-                                         t[i].MEMBER_ACCESS(x1) -
-                                         2 * t[i].MEMBER_ACCESS(x1) * t[i].MEMBER_ACCESS(x0) *
-                                         t[i].MEMBER_ACCESS(x0);
+                MEMBER_ACCESS(t, x0, i) = 1 + MEMBER_ACCESS(t, x0, i) * MEMBER_ACCESS(t, x0, i) * MEMBER_ACCESS(t, x0, i) *
+                                         MEMBER_ACCESS(t, x0, i) * MEMBER_ACCESS(t, x0, i) +
+                                         7 * MEMBER_ACCESS(t, x1, i) * MEMBER_ACCESS(t, x1, i) *
+                                         MEMBER_ACCESS(t, x1, i) -
+                                         6 * MEMBER_ACCESS(t, x0, i) * MEMBER_ACCESS(t, x1, i) *
+                                         MEMBER_ACCESS(t, x1, i) +
+                                         3 * MEMBER_ACCESS(t, x0, i) * MEMBER_ACCESS(t, x0, i) *
+                                         MEMBER_ACCESS(t, x1, i);
+                MEMBER_ACCESS(t, x1, i) = 1 + MEMBER_ACCESS(t, x1, i) * MEMBER_ACCESS(t, x1, i) * MEMBER_ACCESS(t, x1, i) *
+                                         MEMBER_ACCESS(t, x1, i) -
+                                         5 * MEMBER_ACCESS(t, x0, i) * MEMBER_ACCESS(t, x0, i) *
+                                         MEMBER_ACCESS(t, x0, i) +
+                                         4 * MEMBER_ACCESS(t, x0, i) * MEMBER_ACCESS(t, x1, i) *
+                                         MEMBER_ACCESS(t, x1, i) -
+                                         2 * MEMBER_ACCESS(t, x1, i) * MEMBER_ACCESS(t, x0, i) *
+                                         MEMBER_ACCESS(t, x0, i);
             }
         }
     }
@@ -80,16 +82,16 @@ void BM_CPURealRW(benchmark::State &state, T t) {
     for (auto _ : state) {
         for (size_t _ = 0; _ < repetitions; ++_) {
             for (int i = 0; i < state.range(0); ++i) {
-                t[i].MEMBER_ACCESS(x0) += 2.f;
-                t[i].MEMBER_ACCESS(x1) += 2.f;
-                t[i].MEMBER_ACCESS(x2) += 2.;
-                t[i].MEMBER_ACCESS(x3) += 2.;
-                t[i].MEMBER_ACCESS(x4) += 2;
-                t[i].MEMBER_ACCESS(x5) += 2;
-                t[i].MEMBER_ACCESS(x6) += v;
-                t[i].MEMBER_ACCESS(x7) += v;
-                t[i].MEMBER_ACCESS(x8) += m;
-                t[i].MEMBER_ACCESS(x9) += m;
+                MEMBER_ACCESS(t, x0, i) += 2.f;
+                MEMBER_ACCESS(t, x1, i) += 2.f;
+                MEMBER_ACCESS(t, x2, i) += 2.;
+                MEMBER_ACCESS(t, x3, i) += 2.;
+                MEMBER_ACCESS(t, x4, i) += 2;
+                MEMBER_ACCESS(t, x5, i) += 2;
+                MEMBER_ACCESS(t, x6, i) += v;
+                MEMBER_ACCESS(t, x7, i) += v;
+                MEMBER_ACCESS(t, x8, i) += m;
+                MEMBER_ACCESS(t, x9, i) += m;
             }
         }
     }
@@ -112,70 +114,70 @@ void BM_CPUHardRW(benchmark::State &state, T t) {
     for (auto _ : state) {
         for (size_t _ = 0; _ < repetitions; ++_) {
             for (int i = 0; i < state.range(0); ++i) {
-                t[i].MEMBER_ACCESS(x0)  += 2.f;
-                t[i].MEMBER_ACCESS(x1)  += 2.f;
-                t[i].MEMBER_ACCESS(x2)  += 2.f;
-                t[i].MEMBER_ACCESS(x3)  += 2.f;
-                t[i].MEMBER_ACCESS(x4)  += 2.f;
-                t[i].MEMBER_ACCESS(x5)  += 2.f;
-                t[i].MEMBER_ACCESS(x6)  += 2.f;
-                t[i].MEMBER_ACCESS(x7)  += 2.f;
-                t[i].MEMBER_ACCESS(x8)  += 2.f;
-                t[i].MEMBER_ACCESS(x9)  += 2.f;
-                t[i].MEMBER_ACCESS(x10) += 2.f;
-                t[i].MEMBER_ACCESS(x11) += 2.f;
-                t[i].MEMBER_ACCESS(x12) += 2.f;
-                t[i].MEMBER_ACCESS(x13) += 2.;
-                t[i].MEMBER_ACCESS(x14) += 2.;
-                t[i].MEMBER_ACCESS(x15) += 2.;
-                t[i].MEMBER_ACCESS(x16) += 2.;
-                t[i].MEMBER_ACCESS(x17) += 2.;
-                t[i].MEMBER_ACCESS(x18) += 2.;
-                t[i].MEMBER_ACCESS(x19) += 2.;
-                t[i].MEMBER_ACCESS(x20) += 2.;
-                t[i].MEMBER_ACCESS(x21) += 2.;
-                t[i].MEMBER_ACCESS(x22) += 2.;
-                t[i].MEMBER_ACCESS(x23) += 2.;
-                t[i].MEMBER_ACCESS(x24) += 2.;
-                t[i].MEMBER_ACCESS(x25) += 2.;
-                t[i].MEMBER_ACCESS(x26) += 2;
-                t[i].MEMBER_ACCESS(x27) += 2;
-                t[i].MEMBER_ACCESS(x28) += 2;
-                t[i].MEMBER_ACCESS(x29) += 2;
-                t[i].MEMBER_ACCESS(x30) += 2;
-                t[i].MEMBER_ACCESS(x31) += 2;
-                t[i].MEMBER_ACCESS(x32) += 2;
-                t[i].MEMBER_ACCESS(x33) += 2;
-                t[i].MEMBER_ACCESS(x34) += 2;
-                t[i].MEMBER_ACCESS(x35) += 2;
-                t[i].MEMBER_ACCESS(x36) += 2;
-                t[i].MEMBER_ACCESS(x37) += 2;
-                t[i].MEMBER_ACCESS(x38) += 2;
-                t[i].MEMBER_ACCESS(x39) += v;
-                t[i].MEMBER_ACCESS(x40) += v;
-                t[i].MEMBER_ACCESS(x41) += v;
-                t[i].MEMBER_ACCESS(x42) += v;
-                t[i].MEMBER_ACCESS(x43) += v;
-                t[i].MEMBER_ACCESS(x44) += v;
-                t[i].MEMBER_ACCESS(x45) += v;
-                t[i].MEMBER_ACCESS(x46) += v;
-                t[i].MEMBER_ACCESS(x47) += v;
-                t[i].MEMBER_ACCESS(x48) += v;
-                t[i].MEMBER_ACCESS(x49) += v;
-                t[i].MEMBER_ACCESS(x50) += v;
-                t[i].MEMBER_ACCESS(x51) += m;
-                t[i].MEMBER_ACCESS(x52) += m;
-                t[i].MEMBER_ACCESS(x53) += m;
-                t[i].MEMBER_ACCESS(x54) += m;
-                t[i].MEMBER_ACCESS(x55) += m;
-                t[i].MEMBER_ACCESS(x56) += m;
-                t[i].MEMBER_ACCESS(x57) += m;
-                t[i].MEMBER_ACCESS(x58) += m;
-                t[i].MEMBER_ACCESS(x59) += m;
-                t[i].MEMBER_ACCESS(x60) += m;
-                t[i].MEMBER_ACCESS(x61) += m;
-                t[i].MEMBER_ACCESS(x62) += m;
-                t[i].MEMBER_ACCESS(x63) += m;
+                MEMBER_ACCESS(t, x0, i)  += 2.f;
+                MEMBER_ACCESS(t, x1, i)  += 2.f;
+                MEMBER_ACCESS(t, x2, i)  += 2.f;
+                MEMBER_ACCESS(t, x3, i)  += 2.f;
+                MEMBER_ACCESS(t, x4, i)  += 2.f;
+                MEMBER_ACCESS(t, x5, i)  += 2.f;
+                MEMBER_ACCESS(t, x6, i)  += 2.f;
+                MEMBER_ACCESS(t, x7, i)  += 2.f;
+                MEMBER_ACCESS(t, x8, i)  += 2.f;
+                MEMBER_ACCESS(t, x9, i)  += 2.f;
+                MEMBER_ACCESS(t, x10, i) += 2.f;
+                MEMBER_ACCESS(t, x11, i) += 2.f;
+                MEMBER_ACCESS(t, x12, i) += 2.f;
+                MEMBER_ACCESS(t, x13, i) += 2.;
+                MEMBER_ACCESS(t, x14, i) += 2.;
+                MEMBER_ACCESS(t, x15, i) += 2.;
+                MEMBER_ACCESS(t, x16, i) += 2.;
+                MEMBER_ACCESS(t, x17, i) += 2.;
+                MEMBER_ACCESS(t, x18, i) += 2.;
+                MEMBER_ACCESS(t, x19, i) += 2.;
+                MEMBER_ACCESS(t, x20, i) += 2.;
+                MEMBER_ACCESS(t, x21, i) += 2.;
+                MEMBER_ACCESS(t, x22, i) += 2.;
+                MEMBER_ACCESS(t, x23, i) += 2.;
+                MEMBER_ACCESS(t, x24, i) += 2.;
+                MEMBER_ACCESS(t, x25, i) += 2.;
+                MEMBER_ACCESS(t, x26, i) += 2;
+                MEMBER_ACCESS(t, x27, i) += 2;
+                MEMBER_ACCESS(t, x28, i) += 2;
+                MEMBER_ACCESS(t, x29, i) += 2;
+                MEMBER_ACCESS(t, x30, i) += 2;
+                MEMBER_ACCESS(t, x31, i) += 2;
+                MEMBER_ACCESS(t, x32, i) += 2;
+                MEMBER_ACCESS(t, x33, i) += 2;
+                MEMBER_ACCESS(t, x34, i) += 2;
+                MEMBER_ACCESS(t, x35, i) += 2;
+                MEMBER_ACCESS(t, x36, i) += 2;
+                MEMBER_ACCESS(t, x37, i) += 2;
+                MEMBER_ACCESS(t, x38, i) += 2;
+                MEMBER_ACCESS(t, x39, i) += v;
+                MEMBER_ACCESS(t, x40, i) += v;
+                MEMBER_ACCESS(t, x41, i) += v;
+                MEMBER_ACCESS(t, x42, i) += v;
+                MEMBER_ACCESS(t, x43, i) += v;
+                MEMBER_ACCESS(t, x44, i) += v;
+                MEMBER_ACCESS(t, x45, i) += v;
+                MEMBER_ACCESS(t, x46, i) += v;
+                MEMBER_ACCESS(t, x47, i) += v;
+                MEMBER_ACCESS(t, x48, i) += v;
+                MEMBER_ACCESS(t, x49, i) += v;
+                MEMBER_ACCESS(t, x50, i) += v;
+                MEMBER_ACCESS(t, x51, i) += m;
+                MEMBER_ACCESS(t, x52, i) += m;
+                MEMBER_ACCESS(t, x53, i) += m;
+                MEMBER_ACCESS(t, x54, i) += m;
+                MEMBER_ACCESS(t, x55, i) += m;
+                MEMBER_ACCESS(t, x56, i) += m;
+                MEMBER_ACCESS(t, x57, i) += m;
+                MEMBER_ACCESS(t, x58, i) += m;
+                MEMBER_ACCESS(t, x59, i) += m;
+                MEMBER_ACCESS(t, x60, i) += m;
+                MEMBER_ACCESS(t, x61, i) += m;
+                MEMBER_ACCESS(t, x62, i) += m;
+                MEMBER_ACCESS(t, x63, i) += m;
             }
         }
     }

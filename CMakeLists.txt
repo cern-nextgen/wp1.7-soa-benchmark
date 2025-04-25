@@ -18,5 +18,6 @@ add_executable(soa_boost soa_boost.cpp)
 target_include_directories(soa_boost PUBLIC boost)
 target_link_libraries(soa_boost Boost::boost)
 
- 
+add_executable(soa_manual soa_manual.cpp)
+
 # add_executable(soa_refl soa_refl.cpp)

@@ -53,9 +53,13 @@ if __name__ == "__main__":
 
     dirname = sys.argv[1]
 
-    for f, t in zip(['soa_boost', 'soa_wrapper'], ['Preprocessor Macros SoA', 'Template Metaprogramming SoA']):
+    for f, t in zip(['soa_boost', 'soa_wrapper', 'soa_manual'],
+                    ['Preprocessor Macros SoA', 'Template Metaprogramming SoA', 'Manual SoA']):
         filename = f"{dirname}/{f}"
+
+        # Comment this to plot the results from locally saved json files, without running the benchmarks.
         subprocess.run([f"{filename}", "--benchmark_out_format=json", f"--benchmark_out={filename}.json",
                         "--benchmark_counters_tabular=true", "--benchmark_repetitions=3"])
+
         df = read_data(f"{filename}.json")
         plot_results(df, t, dirname)
