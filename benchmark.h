@@ -5,7 +5,16 @@
 #include <Eigen/Dense>
 #include <benchmark/benchmark.h>
 
-#include <format>
+#ifdef USE_FMTLIB_POLYFILL
+  // std::format polyfill using fmtlib
+  #include <fmt/core.h>
+  namespace std {
+  using fmt::format;
+  }
+#else
+  #include <format>
+#endif
+
 #include <iostream>
 
 #ifdef SOA_BOOST
