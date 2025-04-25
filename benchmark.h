@@ -71,8 +71,8 @@ void BM_CPUEasyRW(benchmark::State &state, T t)
 
     // Check the result
     for (int i = 0; i < n; ++i) {
-        CheckResult(state, MEMBER_ACCESS(t, x0, i), MEMBER_ACCESS(t, x0, i), "x0");
-        CheckResult(state, MEMBER_ACCESS(t, x1, i), MEMBER_ACCESS(t, x1, i), "x1");
+        CheckResult(state, 2 * state.iterations(), MEMBER_ACCESS(t, x0, i), "x0");
+        CheckResult(state, 2 * state.iterations(), MEMBER_ACCESS(t, x1, i), "x1");
     }
 
     state.counters["n_elem"] = n;
