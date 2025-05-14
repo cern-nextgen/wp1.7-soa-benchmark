@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
         # Comment this to plot the results from locally saved json files, without running the benchmarks.
         subprocess.run([f"{filename}", "--benchmark_out_format=json", f"--benchmark_out={filename}.json",
-                        "--benchmark_counters_tabular=true", "--benchmark_repetitions=3"])
+                        "--benchmark_counters_tabular=true", "--benchmark_repetitions=3", "--benchmark_min_warmup_time=2"])
 
         results[f] = (read_data(f"{filename}.json"), t)
 
