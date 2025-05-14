@@ -5,6 +5,7 @@ import subprocess
 import sys
 import os
 import json
+import math
 
 def read_data(filename):
     """
@@ -16,7 +17,7 @@ def read_data(filename):
         df["benchmark"] = df["name"].apply(lambda x: x.split('/')[0])
     return df
 
-def plot_results(df, title, out_dir):
+def plot_results(df, title, out_dir, min_y=-0.000001, max_y=1000):
     """
     Plots the results from the DataFrame.
     """
@@ -41,7 +42,7 @@ def plot_results(df, title, out_dir):
     ax.set_ylabel(f'Real Time ({df["time_unit"].iloc[0]})')
     ax.set_yscale('log')
     ax.yaxis.set_major_formatter(FuncFormatter(lambda y, _: '{:g}'.format(y)))
-    plt.ylim(.0001, 100000)
+    plt.ylim(min_y, max_y)
 
     # Add a legend
     plt.legend()
@@ -54,6 +55,7 @@ if __name__ == "__main__":
 
     dirname = sys.argv[1]
 
+    results = {}
     for f, t in zip(['soa_boost', 'soa_wrapper', 'soa_manual'],
                     ['Preprocessor Macros SoA', 'Template Metaprogramming SoA', 'Manual SoA']):
         filename = f"{dirname}/{f}"
@@ -62,5 +64,10 @@ if __name__ == "__main__":
         subprocess.run([f"{filename}", "--benchmark_out_format=json", f"--benchmark_out={filename}.json",
                         "--benchmark_counters_tabular=true", "--benchmark_repetitions=3"])
 
-        df = read_data(f"{filename}.json")
-        plot_results(df, t, dirname)
+        results[f] = (read_data(f"{filename}.json"), t)
+
+    # Round the y-axis up/down to the nearest power of 10
+    max_y = 10 ** math.ceil(math.log10(max([df[df["aggregate_name"] == "mean"]["real_time"].max() for (df, _) in results.values()])))
+    min_y = 10 ** math.floor(math.log10(min([df[df["aggregate_name"] == "mean"]["real_time"].min() for (df, _) in results.values()])))
+    for (results, t) in results.values():
+        plot_results(results, t, dirname, min_y, max_y)
