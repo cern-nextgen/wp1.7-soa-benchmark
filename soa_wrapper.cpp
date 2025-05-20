@@ -1,4 +1,4 @@
-#include <vector>
+#include <array>
 
 #include "benchmark.h"
 #include "wrapper/factory.h"
@@ -29,30 +29,43 @@ struct S64 {
     F<Eigen::Matrix3d> x51, x52, x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63;
 };
 
-template <class T>
-using my_vector = std::vector<T>;
+template <template <class, std::size_t> class F, std::size_t n>
+struct FixSize {
+    template <class T>
+    using type = F<T, n>;
+};
+
+template<template <template <class> class> class S, std::size_t Begin, std::size_t End, class F>
+constexpr void constexpr_for(F&& f) {
+  if constexpr (Begin < End) {
+    constexpr int n = N[Begin];
+    wrapper::wrapper<FixSize<std::array, n>::template type, S, wrapper::layout::soa> t;
+    f(t, n);
+    constexpr_for<S, Begin + 1, End>(std::forward<F>(f));
+  }
+}
 
 int main(int argc, char** argv) {
-    // Seperate loops to sort the output by benchmark.
-    for (auto n : N) {
-        auto t2a = factory::default_wrapper<my_vector, S2, wrapper::layout::soa>(n);
-        benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<decltype(t2a)>, t2a)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
 
-    for (auto n : N) {
-        auto t2b = factory::default_wrapper<my_vector, S2, wrapper::layout::soa>(n);
-        benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<decltype(t2b)>, t2b)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
+    auto f_BM_CPUEasyRW = [] (auto t, std::size_t n) {
+        benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<decltype(t)>, t)->Arg(n)->Unit(benchmark::kMillisecond);
+    };
+    constexpr_for<S2, 0, 5>(f_BM_CPUEasyRW);
 
-    for (auto n : N) {
-        auto t10 = factory::default_wrapper<my_vector, S10, wrapper::layout::soa>(n);
-        benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<decltype(t10)>, t10)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
+    auto f_BM_CPUEasyCompute = [] (auto t, std::size_t n) {
+        benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<decltype(t)>, t)->Arg(n)->Unit(benchmark::kMillisecond);
+    };
+    constexpr_for<S2, 0, 5>(f_BM_CPUEasyCompute);
 
-    for (auto n : N) {
-        auto t64 = factory::default_wrapper<my_vector, S64, wrapper::layout::soa>(n);
-        benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<decltype(t64)>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
+    auto f_BM_CPURealRW = [] (auto t, std::size_t n) {
+        benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<decltype(t)>, t)->Arg(n)->Unit(benchmark::kMillisecond);
+    };
+    constexpr_for<S10, 0, 5>(f_BM_CPURealRW);
+
+    auto f_BM_CPUHardRW = [] (auto t, std::size_t n) {
+        benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<decltype(t)>, t)->Arg(n)->Unit(benchmark::kMillisecond);
+    };
+    constexpr_for<S64, 0, 5>(f_BM_CPUHardRW);
 
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();
