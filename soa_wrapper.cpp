@@ -1,5 +1,3 @@
-#include <vector>
-
 #include "benchmark.h"
 #include "wrapper/factory.h"
 #include "wrapper/wrapper.h"
@@ -29,9 +27,6 @@ struct S64 {
     F<Eigen::Matrix3d> x51, x52, x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63;
 };
 
-template <class T>
-using my_vector = std::vector<T>;
-
 int main(int argc, char** argv) {
 
     for (auto n : N) {
@@ -43,18 +38,27 @@ int main(int argc, char** argv) {
     }
 
     for (auto n : N) {
-        auto t2b = factory::default_wrapper<my_vector, S2, wrapper::layout::soa>(n);
+        std::size_t bytes = n * 2 * sizeof(int);
+        char * buffer = new char[bytes];
+        auto t2b = factory::buffer_wrapper<S2, wrapper::layout::soa>(buffer, bytes);
         benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<decltype(t2b)>, t2b)->Arg(n)->Unit(benchmark::kMillisecond);
+        delete[] buffer;
     }
 
     for (auto n : N) {
-        auto t10 = factory::default_wrapper<my_vector, S10, wrapper::layout::soa>(n);
+        std::size_t bytes = n * 2 * (sizeof(float) + sizeof(double) + sizeof(int) + sizeof(Eigen::Vector3d) + sizeof(Eigen::Matrix3d));
+        char * buffer = new char[bytes];
+        auto t10 = factory::buffer_wrapper<S10, wrapper::layout::soa>(buffer, bytes);
         benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<decltype(t10)>, t10)->Arg(n)->Unit(benchmark::kMillisecond);
+        delete[] buffer;
     }
 
     for (auto n : N) {
-        auto t64 = factory::default_wrapper<my_vector, S64, wrapper::layout::soa>(n);
+        std::size_t bytes = n * (13 * (sizeof(float) + sizeof(double) + sizeof(int) + sizeof(Eigen::Matrix3d)) + 12 * sizeof(Eigen::Vector3d));
+        char * buffer = new char[bytes];
+        auto t64 = factory::buffer_wrapper<S64, wrapper::layout::soa>(buffer, bytes);
         benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<decltype(t64)>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
+        delete[] buffer;
     }
 
     benchmark::Initialize(&argc, argv);
