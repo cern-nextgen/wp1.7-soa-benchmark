@@ -1,3 +1,5 @@
+#include <span>
+
 #include "benchmark.h"
 #include "wrapper/factory.h"
 #include "wrapper/wrapper.h"
@@ -29,39 +31,50 @@ struct S64 {
 
 int main(int argc, char** argv) {
 
+    std::vector<std::byte *> free_list;
+
     for (auto n : N) {
         std::size_t bytes = n * 2 * sizeof(int);
-        char * buffer = new char[bytes];
+        std::byte* buffer = new std::byte[bytes];
         auto t2b = factory::buffer_wrapper<S2, wrapper::layout::soa>(buffer, bytes);
-        benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<decltype(t2b)>, t2b)->Arg(n)->Unit(benchmark::kMillisecond);
-        delete[] buffer;
+        using wrapper_type = wrapper::wrapper<std::span, S2, wrapper::layout::soa>;
+        wrapper_type t_span(t2b);
+        benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer);
     }
 
     for (auto n : N) {
         std::size_t bytes = n * 2 * sizeof(int);
-        char * buffer = new char[bytes];
+        std::byte* buffer = new std::byte[bytes];
         auto t2b = factory::buffer_wrapper<S2, wrapper::layout::soa>(buffer, bytes);
-        benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<decltype(t2b)>, t2b)->Arg(n)->Unit(benchmark::kMillisecond);
-        delete[] buffer;
+        using wrapper_type = wrapper::wrapper<std::span, S2, wrapper::layout::soa>;
+        wrapper_type t_span(t2b);
+        benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
     for (auto n : N) {
         std::size_t bytes = n * 2 * (sizeof(float) + sizeof(double) + sizeof(int) + sizeof(Eigen::Vector3d) + sizeof(Eigen::Matrix3d));
-        char * buffer = new char[bytes];
+        std::byte* buffer = new std::byte[bytes];
         auto t10 = factory::buffer_wrapper<S10, wrapper::layout::soa>(buffer, bytes);
-        benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<decltype(t10)>, t10)->Arg(n)->Unit(benchmark::kMillisecond);
-        delete[] buffer;
+        using wrapper_type = wrapper::wrapper<std::span, S10, wrapper::layout::soa>;
+        wrapper_type t_span(t10);
+        benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer);
     }
 
     for (auto n : N) {
         std::size_t bytes = n * (13 * (sizeof(float) + sizeof(double) + sizeof(int) + sizeof(Eigen::Matrix3d)) + 12 * sizeof(Eigen::Vector3d));
-        char * buffer = new char[bytes];
+        std::byte* buffer = new std::byte[bytes];
         auto t64 = factory::buffer_wrapper<S64, wrapper::layout::soa>(buffer, bytes);
-        benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<decltype(t64)>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
-        delete[] buffer;
+        using wrapper_type = wrapper::wrapper<std::span, S64, wrapper::layout::soa>;
+        wrapper_type t_span(t64);
+        benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer);
     }
 
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();
     benchmark::Shutdown();
+
+    for (auto buffer : free_list)  std::free(buffer);
 }

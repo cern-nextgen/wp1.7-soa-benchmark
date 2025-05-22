@@ -3,7 +3,7 @@
 
 #include <array>
 #include <numeric>
-#include <memory_resource>
+#include <vector>
 #include <type_traits>
 
 #include "allocator.h"
@@ -15,47 +15,43 @@ namespace factory {
 namespace pmr {
 
 template <class T>
-class vector {
-    using data_type = std::pmr::vector<T>;
-    std::shared_ptr<std::pmr::memory_resource> resource_m;
-    std::pmr::vector<T> data_m;
-public:
-    vector(std::size_t size, std::unique_ptr<std::pmr::memory_resource> resource)
-            : resource_m(std::move(resource)), data_m(size, resource_m.get()) {}
-    data_type::reference operator[](std::size_t i) { return data_m[i]; }
-    data_type::const_reference operator[](std::size_t i) const { return data_m[i]; }
-};
+using vector = std::vector<T, allocator::BufferAllocator<T>>;
 
 }
 
 template <template <template <class> class> class S>
-wrapper::wrapper<pmr::vector, S, wrapper::layout::aos> buffer_wrapper_aos(char* buffer, std::size_t bytes) {
-    std::size_t size = bytes / sizeof(S<wrapper::value>);
-    auto resource_ptr = std::make_unique<allocator::BufferResource>(buffer, bytes);
-    pmr::vector<S<wrapper::value>> data(size, std::move(resource_ptr));
+wrapper::wrapper<pmr::vector, S, wrapper::layout::aos> buffer_wrapper_aos(std::byte* buffer, std::size_t bytes) {
+    using value_type = S<wrapper::value>;
+    std::size_t size = bytes / sizeof(value_type);
+    allocator::BufferAllocator<value_type> alloc(buffer, bytes);
+    pmr::vector<value_type> data(size, alloc);
     return wrapper::wrapper<pmr::vector, S, wrapper::layout::aos>(std::move(data));
 }
 
 template <template <template <class> class> class S>
-wrapper::wrapper<pmr::vector, S, wrapper::layout::soa> buffer_wrapper_soa(char* buffer, std::size_t bytes) {
-    constexpr std::size_t M = helper::CountMembers<S<wrapper::value>>();
+wrapper::wrapper<pmr::vector, S, wrapper::layout::soa> buffer_wrapper_soa(std::byte* buffer, std::size_t bytes) {
+    using value_type = S<wrapper::value>;
+    constexpr std::size_t M = helper::CountMembers<value_type>();
     auto size_of = [](auto& member, std::size_t) -> std::size_t { return sizeof(member); };
-    std::array<std::size_t, M> member_bytes = helper::apply_to_members<M, S<wrapper::value>, std::array<std::size_t, M>>(S<wrapper::value>(), size_of);
+    std::array<std::size_t, M> member_bytes = helper::apply_to_members<M, value_type, std::array<std::size_t, M>>(value_type(), size_of);
     std::size_t N = bytes / std::reduce(member_bytes.cbegin(), member_bytes.cend());
 
     std::array<std::size_t, M + 1> buffer_bytes = {0};
-    for (int i = 1; i < M + 1; ++i) buffer_bytes[i] = member_bytes[i - 1] * N + buffer_bytes[i - 1];
+    for (int i = 1; i < M + 1; ++i) {
+        buffer_bytes[i] = member_bytes[i - 1] * N + buffer_bytes[i - 1];
+    }
 
-    auto test = [N, buffer, buffer_bytes](auto& member, std::size_t m) -> decltype(auto) {
-        auto resource_ptr = std::make_unique<allocator::BufferResource>(buffer + buffer_bytes[m], buffer_bytes[m + 1] - buffer_bytes[m]);
-        return pmr::vector<typename std::remove_reference<decltype(member)>::type>(N, std::move(resource_ptr));
+    auto get_member_vector = [N, buffer, buffer_bytes](auto& member, std::size_t m) -> decltype(auto) {
+        using member_type = typename std::remove_reference<decltype(member)>::type;
+        allocator::BufferAllocator<member_type> alloc(buffer + buffer_bytes[m], buffer_bytes[m + 1] - buffer_bytes[m]);
+        return pmr::vector<member_type>(N, alloc);
     };
 
-    return helper::apply_to_members<M, S<wrapper::value>, wrapper::wrapper<pmr::vector, S, wrapper::layout::soa>>(S<wrapper::value>(), test);
+    return helper::apply_to_members<M, value_type, wrapper::wrapper<pmr::vector, S, wrapper::layout::soa>>(value_type(), get_member_vector);
 }
 
 template <template <template <class> class> class S, wrapper::layout L>
-wrapper::wrapper<pmr::vector, S, L> buffer_wrapper(char* buffer, std::size_t bytes) {
+wrapper::wrapper<pmr::vector, S, L> buffer_wrapper(std::byte* buffer, std::size_t bytes) {
     if constexpr (L == wrapper::layout::aos) return buffer_wrapper_aos<S>(buffer, bytes);
     else if constexpr (L == wrapper::layout::soa) return buffer_wrapper_soa<S>(buffer, bytes);
 }
