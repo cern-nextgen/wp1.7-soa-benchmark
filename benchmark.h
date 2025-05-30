@@ -28,7 +28,7 @@
 using Vector3D = Eigen::Vector3d;
 using Matrix3D = Eigen::Matrix3d;
 
-constexpr size_t N[] = {10, 100, 1000, 10000, 100000};
+constexpr std::size_t N[] = {10, 100, 1000, 10000, 100000};
 
 template <typename T>
 static std::string ToString(const T &obj)
@@ -125,9 +125,8 @@ void BM_CPURealRW(benchmark::State &state, T t)
 {
     auto n = state.range(0);
 
-    Matrix3D m;
-    m << 2, 2, 2, 2, 2, 2, 2, 2, 2;
-    Vector3D v(2, 2, 2);
+    Matrix3D m = Matrix3D::Constant(2);
+    Vector3D v = Vector3D::Constant(2);
 
     // Initialize the data members to zero
     for (int i = 0; i < n; ++i) {
@@ -182,9 +181,8 @@ void BM_CPUHardRW(benchmark::State &state, T t)
 {
     auto n = state.range(0);
 
-    Matrix3D m;
-    m << 2, 2, 2, 2, 2, 2, 2, 2, 2;
-    Vector3D v(2, 2, 2);
+    Matrix3D m = Matrix3D::Constant(2);
+    Vector3D v = Vector3D::Constant(2);
 
     // clang-format off
     // Initialize the data members to zero
