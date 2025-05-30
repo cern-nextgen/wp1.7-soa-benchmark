@@ -7,8 +7,9 @@ git clone https://github.com/cern-nextgen/wp1.7-soa-benchmark.git
 cd wp1.7-soa-benchmark
 cmake -B build
 cmake --build build
-./build/soa_wrapper
 ./build/soa_boost
+./build/soa_wrapper
+./build/soa_manual
 ```
 
 ## Docker Container
@@ -20,3 +21,6 @@ docker run -it --rm wp1.7-soa-benchmark:latest bash
 ```
 The corresponding Dockerfile can be found here: [wp1.7-soa-benchmark-image](https://github.com/cern-nextgen/wp1.7-soa-benchmark-image)
 
+## TODOs
+- Fix performance issue with gcc of soa_wrapper
+- Use exclusive node for ci-pipeline for reliable bechmarks
