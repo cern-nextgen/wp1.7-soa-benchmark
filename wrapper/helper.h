@@ -37,7 +37,7 @@ constexpr std::size_t CountMembers() {
 }
 
 template <std::size_t M, class T, class S, class Functor>
-constexpr S apply_to_members(T t, Functor&& f) {
+[[gnu::always_inline]] constexpr S apply_to_members(T t, Functor&& f) {
     if constexpr (M == 2) {
         auto& [m00, m01] = t;
         return {f(m00, 0), f(m01, 1)};
