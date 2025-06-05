@@ -20,7 +20,3 @@ docker pull registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark:latest
 docker run -it --rm registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark:latest bash
 ```
 The corresponding Dockerfile can be found here: [wp1.7-soa-benchmark-image](https://github.com/cern-nextgen/wp1.7-soa-benchmark-image)
-
-## TODOs
-- Fix performance issue with gcc of soa_wrapper
-- Use exclusive node for ci-pipeline for reliable bechmarks
