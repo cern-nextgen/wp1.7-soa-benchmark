@@ -36,8 +36,8 @@ constexpr std::size_t CountMembers() {
     else return 100;  // Silence warnings about missing return value
 }
 
-template <std::size_t M, class T, class S, class Functor>
-[[gnu::always_inline]] constexpr S apply_to_members(T t, Functor&& f) {
+template <std::size_t M, class input_type, class output_type, class Functor>
+[[gnu::always_inline]] constexpr output_type apply_to_members(input_type t, Functor&& f) {
     if constexpr (M == 2) {
         auto& [m00, m01] = t;
         return {f(m00, 0), f(m01, 1)};
@@ -60,6 +60,19 @@ template <std::size_t M, class T, class S, class Functor>
                 f(m50, 50), f(m51, 51), f(m52, 52), f(m53, 53), f(m54, 54), f(m55, 55), f(m56, 56), f(m57, 57), f(m58, 58), f(m59, 59),
                 f(m60, 60), f(m61, 61), f(m62, 62), f(m63, 63)};
     } else return {};
+}
+
+
+template <std::size_t M, class input_type, class output_type>
+[[gnu::always_inline]] constexpr output_type cast_type(input_type data) {
+    auto do_nothing = [](auto& member, std::size_t) -> decltype(auto) { return member; };
+    return apply_to_members<M, input_type, output_type>(data, do_nothing);
+}
+
+template <std::size_t M, class input_type, class output_type>
+[[gnu::always_inline]] constexpr output_type evaluate_members_at(input_type data, std::size_t i) {
+    auto evaluate_at = [i](auto& member, std::size_t) -> decltype(auto) { return member[i]; };
+    return apply_to_members<M, input_type, output_type>(data, evaluate_at);
 }
 
 }  // namespace helper

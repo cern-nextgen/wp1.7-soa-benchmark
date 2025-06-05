@@ -23,8 +23,7 @@ struct proxy_type : S<F_in> {
     constexpr static std::size_t M = helper::CountMembers<S<value>>();
     template<template <class> class F_out>
     [[gnu::always_inline]] operator S<F_out>() const {
-        auto id = [](auto& member, std::size_t) -> decltype(auto) { return member; };
-        return helper::apply_to_members<M, S<F_in>, S<F_out>>(*this, id);
+        return helper::cast_type<M, S<F_in>, S<F_out>>(*this);
     }
 };
 
@@ -42,21 +41,21 @@ struct wrapper<F, S, layout::aos> {
 
     constexpr static std::size_t M = helper::CountMembers<value_type>();
 
+    array_type data;
+
     template <template <class> class F_out>
     operator wrapper<F_out, S, layout::aos>() { return {data}; };
-
-    array_type data;
 
     value_type& get_reference(std::size_t i) { return data[i]; }
     const value_type& get_reference(std::size_t i) const { return data[i]; }
 
     [[gnu::always_inline]] proxy_type<reference, S> operator[](std::size_t i) {
-        auto id = [](auto& member, std::size_t) -> decltype(auto) { return member; };
-        return helper::apply_to_members<M, value_type&, proxy_type<reference, S>>(data[i], id);
+        using output_type = proxy_type<reference, S>;
+        return helper::cast_type<M, array_type&, output_type>(data[i]);
     }
     [[gnu::always_inline]] proxy_type<const_reference, S> operator[](std::size_t i) const {
-        auto id = [](const auto& member, std::size_t) -> decltype(auto) { return member; };
-        return helper::apply_to_members<M, const value_type&, proxy_type<const_reference, S>>(data[i], id);
+        using output_type = proxy_type<const_reference, S>;
+        return helper::cast_type<M, const array_type&, output_type>(data[i]);
     }
 };
 
@@ -67,21 +66,21 @@ struct wrapper<F, S, layout::soa> {
 
     constexpr static std::size_t M = helper::CountMembers<value_type>();
 
-    template <template <class> class F_out>
-    operator wrapper<F_out, S, layout::soa>() {
-        auto id = [](auto& member, std::size_t) -> decltype(auto) { return member; };
-        return helper::apply_to_members<M, array_type&, wrapper<F_out, S, layout::soa>>(data, id);
-    };
-
     array_type data;
 
+    template <template <class> class F_out>
+    [[gnu::always_inline]] operator wrapper<F_out, S, layout::soa>() {
+        using output_type = wrapper<F_out, S, layout::soa>;
+        return helper::cast_type<M, array_type&, output_type>(data);
+    };
+
     [[gnu::always_inline]] proxy_type<reference, S> operator[](std::size_t i) {
-        auto evaluate_at = [i](auto& member, std::size_t) -> decltype(auto) { return member[i]; };
-        return helper::apply_to_members<M, array_type&, proxy_type<reference, S>>(data, evaluate_at);
+        using output_type = proxy_type<reference, S>;
+        return helper::evaluate_members_at<M, array_type&, output_type>(data, i);
     }
     [[gnu::always_inline]] proxy_type<const_reference, S> operator[](std::size_t i) const {
-        auto evaluate_at = [i](const auto& member, std::size_t) -> decltype(auto) { return member[i]; };
-        return helper::apply_to_members<M, const array_type&, proxy_type<const_reference, S>>(data, evaluate_at);
+        using output_type = proxy_type<const_reference, S>;
+        return helper::evaluate_members_at<M, const array_type&, output_type>(data, i);
     }
 };
 
