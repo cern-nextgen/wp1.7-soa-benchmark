@@ -7,8 +7,7 @@
 namespace allocator {
 
 template <class T>
-class BufferAllocator {
-public:
+struct BufferAllocator {
     using value_type = T;
 
     BufferAllocator(std::byte* buffer, std::size_t size)
@@ -31,7 +30,6 @@ public:
     template <typename U>
     struct rebind { using other = BufferAllocator<U>; };
 
-private:
     std::byte* buffer_;
     std::size_t size_;
     std::size_t offset_;

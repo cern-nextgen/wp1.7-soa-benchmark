@@ -26,13 +26,12 @@
 #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ[INDEX].MEMBER
 #endif
 
-/* SoA-like access (except for Oliver version) */
 // #ifdef SOA_BOOST
 // #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ.MEMBER(INDEX)
 // #elif defined(SOA_MANUAL)
 // #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ.MEMBER[INDEX]
 // #else
-// #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ[INDEX].MEMBER
+// #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ.MEMBER[INDEX]
 // #endif
 
 using Vector3D = Eigen::Vector3d;

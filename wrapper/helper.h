@@ -36,8 +36,18 @@ constexpr std::size_t CountMembers() {
     else return 100;  // Silence warnings about missing return value
 }
 
-template <std::size_t M, class input_type, class output_type, class Functor>
-[[gnu::always_inline]] constexpr output_type apply_to_members(input_type t, Functor&& f) {
+template <class T> using value_type = T;
+
+template <
+    template <template <class> class> class S,
+    template <class> class F_in,
+    template <class> class F_out,
+    class Functor
+>
+[[gnu::always_inline]] constexpr S<F_out> apply_to_members(S<F_in> & t, Functor&& f) {
+
+    constexpr std::size_t M = helper::CountMembers<S<value_type>>();
+
     if constexpr (M == 2) {
         auto& [m00, m01] = t;
         return {f(m00, 0), f(m01, 1)};
@@ -62,17 +72,24 @@ template <std::size_t M, class input_type, class output_type, class Functor>
     } else return {};
 }
 
-
-template <std::size_t M, class input_type, class output_type>
-[[gnu::always_inline]] constexpr output_type cast_type(input_type data) {
+template <
+    template <template <class> class> class S,
+    template <class> class F_in,
+    template <class> class F_out
+>
+[[gnu::always_inline]] constexpr S<F_out> cast_type(S<F_in> & data) {
     auto do_nothing = [](auto& member, std::size_t) -> decltype(auto) { return member; };
-    return apply_to_members<M, input_type, output_type>(data, do_nothing);
+    return apply_to_members<S, F_in, F_out>(data, do_nothing);
 }
 
-template <std::size_t M, class input_type, class output_type>
-[[gnu::always_inline]] constexpr output_type evaluate_members_at(input_type data, std::size_t i) {
+template <
+    template <template <class> class> class S,
+    template <class> class F_in,
+    template <class> class F_out
+>
+[[gnu::always_inline]] constexpr S<F_out> evaluate_members_at(S<F_in> & data, std::size_t i) {
     auto evaluate_at = [i](auto& member, std::size_t) -> decltype(auto) { return member[i]; };
-    return apply_to_members<M, input_type, output_type>(data, evaluate_at);
+    return apply_to_members<S, F_in, F_out>(data, evaluate_at);
 }
 
 }  // namespace helper
