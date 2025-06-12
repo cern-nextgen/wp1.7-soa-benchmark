@@ -1,5 +1,4 @@
 #include <span>
-#include <iostream>
 
 #include "benchmark.h"
 #include "wrapper/factory.h"
