@@ -28,6 +28,22 @@ struct buffer {
     std::size_t size;
 };
 
+template <template <template <class> class> class S, wrapper::layout L>
+constexpr std::size_t get_size_in_bytes() {
+    if constexpr (L == wrapper::layout::aos) {
+        return sizeof(S<wrapper::value>);
+    } else if constexpr (L == wrapper::layout::soa) {
+        std::size_t total_size = 0;
+        auto sum_sizes = [&total_size](auto member, std::size_t m) -> decltype(auto) {
+            total_size += sizeof(typename decltype(member)::type);
+            return member;
+        };
+        S<buffer> S_buffer;
+        helper::apply_to_members<S, buffer, buffer>(S_buffer, sum_sizes);
+        return total_size;
+    }
+}
+
 template <template <template <class> class> class S>
 wrapper::wrapper<pmr::vector, S, wrapper::layout::soa> buffer_wrapper_soa(S<buffer> buffers) {
     return {S<allocator::BufferAllocator>(buffers)};

@@ -1,4 +1,5 @@
 #include <span>
+#include <iostream>
 
 #include "benchmark.h"
 #include "wrapper/factory.h"
@@ -47,7 +48,8 @@ int main(int argc, char** argv) {
     std::vector<std::byte *> buffer_pointers;
 
     for (std::size_t n : N) {
-        std::size_t bytes = n * 2 * sizeof(int);
+        // n * 2 * sizeof(int);
+        std::size_t bytes = n * factory::get_size_in_bytes<S2, L>();
         buffer_pointers.emplace_back(new std::byte[bytes]);
         auto t2b = factory::buffer_wrapper<S2, L>(buffer_pointers.back(), bytes);
         using wrapper_type = wrapper::wrapper<std::span, S2, L>;
@@ -56,7 +58,8 @@ int main(int argc, char** argv) {
     }
 
     for (std::size_t n : N) {
-        std::size_t bytes = n * 2 * sizeof(int);
+        // n * 2 * sizeof(int);
+        std::size_t bytes = n * factory::get_size_in_bytes<S2, L>();
         buffer_pointers.emplace_back(new std::byte[bytes]);
         auto t2b = factory::buffer_wrapper<S2, L>(buffer_pointers.back(), bytes);
         using wrapper_type = wrapper::wrapper<std::span, S2, L>;
@@ -65,7 +68,8 @@ int main(int argc, char** argv) {
     }
 
     for (std::size_t n : N) {
-        std::size_t bytes = n * 2 * (sizeof(float) + sizeof(double) + sizeof(int) + sizeof(Eigen::Vector3d) + sizeof(Eigen::Matrix3d));
+        // n * 2 * (sizeof(float) + sizeof(double) + sizeof(int) + sizeof(Eigen::Vector3d) + sizeof(Eigen::Matrix3d));
+        std::size_t bytes = n * factory::get_size_in_bytes<S10, L>();
         buffer_pointers.emplace_back(new std::byte[bytes]);
         auto t10 = factory::buffer_wrapper<S10, L>(buffer_pointers.back(), bytes);
         using wrapper_type = wrapper::wrapper<std::span, S10, L>;
@@ -74,7 +78,8 @@ int main(int argc, char** argv) {
     }
 
     for (std::size_t n : N) {
-        std::size_t bytes = n * (13 * (sizeof(float) + sizeof(double) + sizeof(int) + sizeof(Eigen::Matrix3d)) + 12 * sizeof(Eigen::Vector3d));
+        // n * (13 * (sizeof(float) + sizeof(double) + sizeof(int) + sizeof(Eigen::Matrix3d)) + 12 * sizeof(Eigen::Vector3d));
+        std::size_t bytes = n * factory::get_size_in_bytes<S64, L>();
         buffer_pointers.emplace_back(new std::byte[bytes]);
         auto t64 = factory::buffer_wrapper<S64, L>(buffer_pointers.back(), bytes);
         using wrapper_type = wrapper::wrapper<std::span, S64, L>;
