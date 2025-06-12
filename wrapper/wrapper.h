@@ -13,10 +13,10 @@ template <class T>
 using value = T;
 
 template <class T>
-using reference = T&;  // std::vector<T>::reference;
+using reference = T&;
 
 template <class T>
-using const_reference = const T&;  // std::vector<T>::const_reference;
+using const_reference = const T&;
 
 template<
     template <class> class F,
@@ -27,12 +27,7 @@ struct wrapper;
 
 template <template <class> class F, template <template <class> class> class S>
 struct wrapper<F, S, layout::aos> {
-    using value_type = S<value>;
-    using array_type = F<value_type>;
-
-    constexpr static std::size_t M = helper::CountMembers<value_type>();
-
-    array_type data;
+    F<S<value>> data;
 
     template <template <class> class F_out>
     operator wrapper<F_out, S, layout::aos>() { return {data}; };
@@ -43,9 +38,6 @@ struct wrapper<F, S, layout::aos> {
 
 template <template <class> class F, template <template <class> class> class S>
 struct wrapper<F, S, layout::soa> : S<F> {
-    using value_type = S<value>;
-    using array_type = S<F>;
-
     template <template <class> class F_out>
     operator wrapper<F_out, S, layout::soa>() { return {*this}; };
 

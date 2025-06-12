@@ -42,14 +42,15 @@ struct S64 {
 };
 
 int main(int argc, char** argv) {
+    constexpr wrapper::layout L = wrapper::layout::soa;
 
     std::vector<std::byte *> buffer_pointers;
 
     for (std::size_t n : N) {
         std::size_t bytes = n * 2 * sizeof(int);
         buffer_pointers.emplace_back(new std::byte[bytes]);
-        auto t2b = factory::buffer_wrapper<S2, wrapper::layout::soa>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<std::span, S2, wrapper::layout::soa>;
+        auto t2b = factory::buffer_wrapper<S2, L>(buffer_pointers.back(), bytes);
+        using wrapper_type = wrapper::wrapper<std::span, S2, L>;
         wrapper_type t_span(t2b);
         benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
     }
@@ -57,8 +58,8 @@ int main(int argc, char** argv) {
     for (std::size_t n : N) {
         std::size_t bytes = n * 2 * sizeof(int);
         buffer_pointers.emplace_back(new std::byte[bytes]);
-        auto t2b = factory::buffer_wrapper<S2, wrapper::layout::soa>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<std::span, S2, wrapper::layout::soa>;
+        auto t2b = factory::buffer_wrapper<S2, L>(buffer_pointers.back(), bytes);
+        using wrapper_type = wrapper::wrapper<std::span, S2, L>;
         wrapper_type t_span(t2b);
         benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
     }
@@ -66,8 +67,8 @@ int main(int argc, char** argv) {
     for (std::size_t n : N) {
         std::size_t bytes = n * 2 * (sizeof(float) + sizeof(double) + sizeof(int) + sizeof(Eigen::Vector3d) + sizeof(Eigen::Matrix3d));
         buffer_pointers.emplace_back(new std::byte[bytes]);
-        auto t10 = factory::buffer_wrapper<S10, wrapper::layout::soa>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<std::span, S10, wrapper::layout::soa>;
+        auto t10 = factory::buffer_wrapper<S10, L>(buffer_pointers.back(), bytes);
+        using wrapper_type = wrapper::wrapper<std::span, S10, L>;
         wrapper_type t_span(t10);
         benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
     }
@@ -75,8 +76,8 @@ int main(int argc, char** argv) {
     for (std::size_t n : N) {
         std::size_t bytes = n * (13 * (sizeof(float) + sizeof(double) + sizeof(int) + sizeof(Eigen::Matrix3d)) + 12 * sizeof(Eigen::Vector3d));
         buffer_pointers.emplace_back(new std::byte[bytes]);
-        auto t64 = factory::buffer_wrapper<S64, wrapper::layout::soa>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<std::span, S64, wrapper::layout::soa>;
+        auto t64 = factory::buffer_wrapper<S64, L>(buffer_pointers.back(), bytes);
+        using wrapper_type = wrapper::wrapper<std::span, S64, L>;
         wrapper_type t_span(t64);
         benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
     }
