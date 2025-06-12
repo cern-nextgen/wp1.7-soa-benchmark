@@ -45,17 +45,17 @@ constexpr std::size_t get_size_in_bytes() {
 }
 
 template <template <template <class> class> class S>
-wrapper::wrapper<pmr::vector, S, wrapper::layout::soa> buffer_wrapper_soa(S<buffer> buffers) {
+wrapper::wrapper<S, pmr::vector, wrapper::layout::soa> buffer_wrapper_soa(S<buffer> buffers) {
     return {S<allocator::BufferAllocator>(buffers)};
 }
 
 template <template <template <class> class> class S>
-wrapper::wrapper<pmr::vector, S, wrapper::layout::aos> buffer_wrapper_aos(buffer<S<wrapper::value>> buffer) {
+wrapper::wrapper<S, pmr::vector, wrapper::layout::aos> buffer_wrapper_aos(buffer<S<wrapper::value>> buffer) {
     return {allocator::BufferAllocator<S<wrapper::value>>(buffer)};
 }
 
 template <template <template <class> class> class S, wrapper::layout L>
-wrapper::wrapper<pmr::vector, S, L> buffer_wrapper(std::byte* buffer_ptr, std::size_t bytes) {
+wrapper::wrapper<S, pmr::vector, L> buffer_wrapper(std::byte* buffer_ptr, std::size_t bytes) {
     if constexpr (L == wrapper::layout::aos) {
         return buffer_wrapper_aos<S>({buffer_ptr, bytes});
     } else if constexpr (L == wrapper::layout::soa) {

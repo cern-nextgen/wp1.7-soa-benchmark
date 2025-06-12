@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
         std::size_t bytes = n * factory::get_size_in_bytes<S2, L>();
         buffer_pointers.emplace_back(new std::byte[bytes]);
         auto t2b = factory::buffer_wrapper<S2, L>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<std::span, S2, L>;
+        using wrapper_type = wrapper::wrapper<S2, std::span, L>;
         wrapper_type t_span(t2b);
         benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
     }
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
         std::size_t bytes = n * factory::get_size_in_bytes<S2, L>();
         buffer_pointers.emplace_back(new std::byte[bytes]);
         auto t2b = factory::buffer_wrapper<S2, L>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<std::span, S2, L>;
+        using wrapper_type = wrapper::wrapper<S2, std::span, L>;
         wrapper_type t_span(t2b);
         benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
     }
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
         std::size_t bytes = n * factory::get_size_in_bytes<S10, L>();
         buffer_pointers.emplace_back(new std::byte[bytes]);
         auto t10 = factory::buffer_wrapper<S10, L>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<std::span, S10, L>;
+        using wrapper_type = wrapper::wrapper<S10, std::span, L>;
         wrapper_type t_span(t10);
         benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
     }
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
         std::size_t bytes = n * factory::get_size_in_bytes<S64, L>();
         buffer_pointers.emplace_back(new std::byte[bytes]);
         auto t64 = factory::buffer_wrapper<S64, L>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<std::span, S64, L>;
+        using wrapper_type = wrapper::wrapper<S64, std::span, L>;
         wrapper_type t_span(t64);
         benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
     }
