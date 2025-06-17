@@ -75,4 +75,4 @@ if __name__ == "__main__":
         df = read_data(f"{filename}.json")
         all_results.append((df, label))
 
-    plot_per_benchmark(all_results, soa_versions, dirname, min_y, max_y)
+    plot_per_benchmark(all_results, soa_versions, dirname)
