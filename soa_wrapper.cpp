@@ -8,15 +8,15 @@
 
 template <template <class> class F>
 struct S2 {
-    template<template <class> class F_out>
-    operator S2<F_out>() { return {x0, x1}; }
+    template<class R>
+    operator R() { return {x0, x1}; }
     F<int> x0, x1;
 };
 
 template <template <class> class F>
 struct S10 {
-    template<template <class> class F_out>
-    operator S10<F_out>() { return {x0, x1, x2, x3, x4, x5, x6, x7, x8, x9}; }
+    template <class R>
+    operator R() { return {x0, x1, x2, x3, x4, x5, x6, x7, x8, x9}; }
     F<float> x0, x1;
     F<double> x2, x3;
     F<int> x4, x5;
@@ -26,8 +26,8 @@ struct S10 {
 
 template <template <class> class F>
 struct S64 {
-    template<template <class> class F_out>
-    operator S64<F_out>() { return {
+    template <class R>
+    operator R() { return {
         x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12,
         x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25,
         x26, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38,
