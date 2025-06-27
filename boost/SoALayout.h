@@ -628,7 +628,7 @@
     using ConstViewTemplate = ConstViewTemplateFreeParams<ALIGNMENT, ALIGNMENT_ENFORCEMENT, RESTRICT_QUALIFY,          \
       RANGE_CHECKING>;                                                                                                 \
                                                                                                                        \
-    using ConstView = ConstViewTemplate<false, false>;         \
+    using ConstView = ConstViewTemplate<true, false>;         \
                                                                                                                        \
     /* Generate the mutable View template */                                                                           \
     _GENERATE_SOA_TRIVIAL_VIEW(CLASS,                                                                                  \
@@ -641,7 +641,7 @@
     template <bool RESTRICT_QUALIFY, bool RANGE_CHECKING>                                                              \
     using ViewTemplate = ViewTemplateFreeParams<ALIGNMENT, ALIGNMENT_ENFORCEMENT, RESTRICT_QUALIFY, RANGE_CHECKING>;   \
                                                                                                                        \
-    using View = ViewTemplate<false, false>;                   \
+    using View = ViewTemplate<true, false>;                   \
                                                                                                                        \
     /* Trivial constuctor */                                                                                           \
     CLASS()                                                                                                            \
