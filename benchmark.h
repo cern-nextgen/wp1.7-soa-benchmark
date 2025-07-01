@@ -170,15 +170,19 @@ void BM_CPURealRW(benchmark::State &state, T t)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x5, i) += 2;
         }
+        #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x6, i) += v;
         }
+        #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x7, i) += v;
         }
+        #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x8, i) += m;
         }
+        #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x9, i) += m;
         }
@@ -278,22 +282,27 @@ void BM_CPUHardRW(benchmark::State &state, T t)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x36, i) += 2;   MEMBER_ACCESS(t, x37, i) += 2;   MEMBER_ACCESS(t, x38, i) += 2;
         }
+        #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x39, i) += v;   MEMBER_ACCESS(t, x40, i) += v;   MEMBER_ACCESS(t, x41, i) += v;
             MEMBER_ACCESS(t, x42, i) += v;   MEMBER_ACCESS(t, x43, i) += v; 
         }
+        #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x44, i) += v;   MEMBER_ACCESS(t, x45, i) += v;   MEMBER_ACCESS(t, x46, i) += v;
             MEMBER_ACCESS(t, x47, i) += v;   MEMBER_ACCESS(t, x48, i) += v; 
         }
+        #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x49, i) += v;   MEMBER_ACCESS(t, x50, i) += v;   MEMBER_ACCESS(t, x51, i) += m;
             MEMBER_ACCESS(t, x52, i) += m;   MEMBER_ACCESS(t, x53, i) += m; 
         }
+        #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x54, i) += m;   MEMBER_ACCESS(t, x55, i) += m;   MEMBER_ACCESS(t, x56, i) += m;
             MEMBER_ACCESS(t, x57, i) += m;   MEMBER_ACCESS(t, x58, i) += m; 
         }
+        #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x59, i) += m;   MEMBER_ACCESS(t, x60, i) += m;   MEMBER_ACCESS(t, x61, i) += m;
             MEMBER_ACCESS(t, x62, i) += m;   MEMBER_ACCESS(t, x63, i) += m;

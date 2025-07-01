@@ -8,19 +8,19 @@
 
 #include <iostream>
 
-constexpr size_t Alignment = 64;
+constexpr size_t Alignment = 128;
 constexpr inline size_t align_size(size_t size) { return ((size + Alignment - 1) / Alignment) * Alignment; }
 
 #define ADDR_FMT
 struct S2 {
-    std::span<int> x0, x1;
+    int* __restrict__ x0, *__restrict__ x1;
 
     S2(std::byte* buf, size_t n) {
         size_t offset = 0;
 
-        x0 = std::span(reinterpret_cast<int*>(std::launder(new (buf) int[n])), n);
-        offset += align_size(x0.size_bytes());
-        x1 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
+        x0 = reinterpret_cast<int* __restrict__>(buf);
+        offset += align_size(n * sizeof(int));
+        x1 = reinterpret_cast<int* __restrict__>(std::launder(buf + offset));
     }
 
     static size_t size_bytes(size_t n) {
@@ -29,33 +29,33 @@ struct S2 {
 };
 
 struct S10 {
-    std::span<float> x0, x1;
-    std::span<double> x2, x3;
-    std::span<int> x4, x5;
-    std::span<Eigen::Vector3d> x6, x7;
-    std::span<Eigen::Matrix3d> x8, x9;
+    float* __restrict__ x0, *__restrict__ x1;
+    double* __restrict__ x2, *__restrict__ x3;
+    int* __restrict__ x4, *__restrict__ x5;
+    Eigen::Vector3d* __restrict__ x6, *__restrict__ x7;
+    Eigen::Matrix3d* __restrict__ x8, *__restrict__ x9;
 
     S10(std::byte* buf, size_t n)  {
         size_t offset = 0;
-        x0 = std::span(reinterpret_cast<float*>(std::launder(new (buf) float[n])), n);
-        offset += align_size(x0.size_bytes());
-        x1 = std::span(reinterpret_cast<float*>(std::launder(new (buf + offset) float[n])), n);
-        offset += align_size(x1.size_bytes());
-        x2 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x2.size_bytes());
-        x3 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x3.size_bytes());
-        x4 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x4.size_bytes());
-        x5 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x5.size_bytes());
-        x6 = std::span(reinterpret_cast<Eigen::Vector3d*>(std::launder(new (buf + offset) Eigen::Vector3d[n])), n);
-        offset += align_size(x6.size_bytes());
-        x7 = std::span(reinterpret_cast<Eigen::Vector3d*>(std::launder(new (buf + offset) Eigen::Vector3d[n])), n);
-        offset += align_size(x7.size_bytes());
-        x8 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
-        offset += align_size(x8.size_bytes());
-        x9 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
+        x0 = reinterpret_cast<float* __restrict__>(buf);
+        offset += align_size(n * sizeof(float));
+        x1 = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x2 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x3 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x4 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x5 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x6 = reinterpret_cast<Eigen::Vector3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Vector3d));
+        x7 = reinterpret_cast<Eigen::Vector3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Vector3d));
+        x8 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Matrix3d));
+        x9 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
     }
 
     static size_t size_bytes(size_t n) {
@@ -69,143 +69,154 @@ struct S10 {
 
 struct S64 {
     std::vector<std::byte> storage;
-    std::span<float> x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12;
-    std::span<double> x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25;
-    std::span<int> x26, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38;
-    std::span<Eigen::Vector3d> x39, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50;
-    std::span<Eigen::Matrix3d> x51, x52, x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63;
+    float *__restrict__ x0, *__restrict__ x1, *__restrict__ x2, *__restrict__ x3,
+       *__restrict__ x4, *__restrict__ x5, *__restrict__ x6, *__restrict__ x7,
+       *__restrict__ x8, *__restrict__ x9, *__restrict__ x10, *__restrict__ x11, *__restrict__ x12;
+    double* __restrict__ x13, *__restrict__ x14, *__restrict__ x15, *__restrict__ x16,
+           *__restrict__ x17, *__restrict__ x18, *__restrict__ x19, *__restrict__ x20,
+           *__restrict__ x21, *__restrict__ x22, *__restrict__ x23, *__restrict__ x24, *__restrict__ x25;
+    int* __restrict__ x26, *__restrict__ x27, *__restrict__ x28, *__restrict__ x29,
+        *__restrict__ x30, *__restrict__ x31, *__restrict__ x32, *__restrict__ x33,
+        *__restrict__ x34, *__restrict__ x35, *__restrict__ x36, *__restrict__ x37,
+        *__restrict__ x38;
+    Eigen::Vector3d* __restrict__ x39, *__restrict__ x40, *__restrict__ x41, *__restrict__ x42,
+        *__restrict__ x43, *__restrict__ x44, *__restrict__ x45, *__restrict__ x46,
+        *__restrict__ x47, *__restrict__ x48, *__restrict__ x49, *__restrict__ x50;
+    Eigen::Matrix3d* __restrict__ x51, *__restrict__ x52, *__restrict__ x53, *__restrict__ x54,
+        *__restrict__ x55, *__restrict__ x56, *__restrict__ x57, *__restrict__ x58,
+        *__restrict__ x59, *__restrict__ x60, *__restrict__ x61, *__restrict__ x62, *__restrict__ x63;
 
     S64(std::byte* buf, size_t n) {
         size_t offset = 0;
         storage.resize(align_size(sizeof(float[n]) * 13 + sizeof(double[n]) * 13 + sizeof(int[n]) * 13 +
                                   sizeof(Eigen::Vector3d[n]) * 13 + sizeof(Eigen::Matrix3d[n]) * 13));
-        x0 = std::span(reinterpret_cast<float*>(std::launder(new (buf) float[n])), n);
-        offset += align_size(x0.size_bytes());
-        x1 = std::span(reinterpret_cast<float*>(std::launder(new (buf + offset) float[n])), n);
-        offset += align_size(x1.size_bytes());
-        x2 = std::span(reinterpret_cast<float*>(std::launder(new (buf + offset) float[n])), n);
-        offset += align_size(x2.size_bytes());
-        x3 = std::span(reinterpret_cast<float*>(std::launder(new (buf + offset) float[n])), n);
-        offset += align_size(x3.size_bytes());
-        x4 = std::span(reinterpret_cast<float*>(std::launder(new (buf + offset) float[n])), n);
-        offset += align_size(x4.size_bytes());
-        x5 = std::span(reinterpret_cast<float*>(std::launder(new (buf + offset) float[n])), n);
-        offset += align_size(x5.size_bytes());
-        x6 = std::span(reinterpret_cast<float*>(std::launder(new (buf + offset) float[n])), n);
-        offset += align_size(x6.size_bytes());
-        x7 = std::span(reinterpret_cast<float*>(std::launder(new (buf + offset) float[n])), n);
-        offset += align_size(x7.size_bytes());
-        x8 = std::span(reinterpret_cast<float*>(std::launder(new (buf + offset) float[n])), n);
-        offset += align_size(x8.size_bytes());
-        x9 = std::span(reinterpret_cast<float*>(std::launder(new (buf + offset) float[n])), n);
-        offset += align_size(x9.size_bytes());
-        x10 = std::span(reinterpret_cast<float*>(std::launder(new (buf + offset) float[n])), n);
-        offset += align_size(x10.size_bytes());
-        x11 = std::span(reinterpret_cast<float*>(std::launder(new (buf + offset) float[n])), n);
-        offset += align_size(x11.size_bytes());
-        x12 = std::span(reinterpret_cast<float*>(std::launder(new (buf + offset) float[n])), n);
-        offset += align_size(x12.size_bytes());
-        x13 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x13.size_bytes());
-        x14 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x14.size_bytes());
-        x15 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x15.size_bytes());
-        x16 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x16.size_bytes());
-        x17 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x17.size_bytes());
-        x18 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x18.size_bytes());
-        x19 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x19.size_bytes());
-        x20 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x20.size_bytes());
-        x21 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x21.size_bytes());
-        x22 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x22.size_bytes());
-        x23 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x23.size_bytes());
-        x24 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x24.size_bytes());
-        x25 = std::span(reinterpret_cast<double*>(std::launder(new (buf + offset) double[n])), n);
-        offset += align_size(x25.size_bytes());
-        x26 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x26.size_bytes());
-        x27 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x27.size_bytes());
-        x28 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x28.size_bytes());
-        x29 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x29.size_bytes());
-        x30 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x30.size_bytes());
-        x31 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x31.size_bytes());
-        x32 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x32.size_bytes());
-        x33 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x33.size_bytes());
-        x34 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x34.size_bytes());
-        x35 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x35.size_bytes());
-        x36 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x36.size_bytes());
-        x37 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x37.size_bytes());
-        x38 = std::span(reinterpret_cast<int*>(std::launder(new (buf + offset) int[n])), n);
-        offset += align_size(x38.size_bytes());
-        x39 = std::span(reinterpret_cast<Eigen::Vector3d*>(std::launder(new (buf + offset) Eigen::Vector3d[n])), n);
-        offset += align_size(x39.size_bytes());
-        x40 = std::span(reinterpret_cast<Eigen::Vector3d*>(std::launder(new (buf + offset) Eigen::Vector3d[n])), n);
-        offset += align_size(x40.size_bytes());
-        x41 = std::span(reinterpret_cast<Eigen::Vector3d*>(std::launder(new (buf + offset) Eigen::Vector3d[n])), n);
-        offset += align_size(x41.size_bytes());
-        x42 = std::span(reinterpret_cast<Eigen::Vector3d*>(std::launder(new (buf + offset) Eigen::Vector3d[n])), n);
-        offset += align_size(x42.size_bytes());
-        x43 = std::span(reinterpret_cast<Eigen::Vector3d*>(std::launder(new (buf + offset) Eigen::Vector3d[n])), n);
-        offset += align_size(x43.size_bytes());
-        x44 = std::span(reinterpret_cast<Eigen::Vector3d*>(std::launder(new (buf + offset) Eigen::Vector3d[n])), n);
-        offset += align_size(x44.size_bytes());
-        x45 = std::span(reinterpret_cast<Eigen::Vector3d*>(std::launder(new (buf + offset) Eigen::Vector3d[n])), n);
-        offset += align_size(x45.size_bytes());
-        x46 = std::span(reinterpret_cast<Eigen::Vector3d*>(std::launder(new (buf + offset) Eigen::Vector3d[n])), n);
-        offset += align_size(x46.size_bytes());
-        x47 = std::span(reinterpret_cast<Eigen::Vector3d*>(std::launder(new (buf + offset) Eigen::Vector3d[n])), n);
-        offset += align_size(x47.size_bytes());
-        x48 = std::span(reinterpret_cast<Eigen::Vector3d*>(std::launder(new (buf + offset) Eigen::Vector3d[n])), n);
-        offset += align_size(x48.size_bytes());
-        x49 = std::span(reinterpret_cast<Eigen::Vector3d*>(std::launder(new (buf + offset) Eigen::Vector3d[n])), n);
-        offset += align_size(x49.size_bytes());
-        x50 = std::span(reinterpret_cast<Eigen::Vector3d*>(std::launder(new (buf + offset) Eigen::Vector3d[n])), n);
-        offset += align_size(x50.size_bytes());
-        x51 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
-        offset += align_size(x51.size_bytes());
-        x52 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
-        offset += align_size(x52.size_bytes());
-        x53 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
-        offset += align_size(x53.size_bytes());
-        x54 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
-        offset += align_size(x54.size_bytes());
-        x55 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
-        offset += align_size(x55.size_bytes());
-        x56 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
-        offset += align_size(x56.size_bytes());
-        x57 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
-        offset += align_size(x57.size_bytes());
-        x58 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
-        offset += align_size(x58.size_bytes());
-        x59 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
-        offset += align_size(x59.size_bytes());
-        x60 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
-        offset += align_size(x60.size_bytes());
-        x61 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
-        offset += align_size(x61.size_bytes());
-        x62 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
-        offset += align_size(x62.size_bytes());
-        x63 = std::span(reinterpret_cast<Eigen::Matrix3d*>(std::launder(new (buf + offset) Eigen::Matrix3d[n])), n);
+        x0 = reinterpret_cast<float* __restrict__>(buf);
+        offset += align_size(n * sizeof(float));
+        x1 = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x2 = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x3 = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x4 = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x5 = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x6 = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x7 = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x8 = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x9 = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x10 = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x11 = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x12 = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x13 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x14 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x15 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x16 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x17 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x18 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x19 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x20 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x21 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x22 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x23 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x24 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x25 = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        x26 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x27 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x28 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x29 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x30 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x31 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x32 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x33 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x34 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x35 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x36 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x37 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x38 = reinterpret_cast<int* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(int));
+        x39 = reinterpret_cast<Eigen::Vector3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Vector3d));
+        x40 = reinterpret_cast<Eigen::Vector3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Vector3d));
+        x41 = reinterpret_cast<Eigen::Vector3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Vector3d));
+        x42 = reinterpret_cast<Eigen::Vector3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Vector3d));
+        x43 = reinterpret_cast<Eigen::Vector3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Vector3d));
+        x44 = reinterpret_cast<Eigen::Vector3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Vector3d));
+        x45 = reinterpret_cast<Eigen::Vector3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Vector3d));
+        x46 = reinterpret_cast<Eigen::Vector3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Vector3d));
+        x47 = reinterpret_cast<Eigen::Vector3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Vector3d));
+        x48 = reinterpret_cast<Eigen::Vector3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Vector3d));
+        x49 = reinterpret_cast<Eigen::Vector3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Vector3d));
+        x50 = reinterpret_cast<Eigen::Vector3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Vector3d));
+        x51 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Matrix3d));
+        x52 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Matrix3d));
+        x53 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Matrix3d));
+        x54 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Matrix3d));
+        x55 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Matrix3d));
+        x56 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Matrix3d));
+        x57 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Matrix3d));
+        x58 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Matrix3d));
+        x59 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Matrix3d));
+        x60 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Matrix3d));
+        x61 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Matrix3d));
+        x62 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(Eigen::Matrix3d));
+        x63 = reinterpret_cast<Eigen::Matrix3d* __restrict__>(buf + offset);
     }
 
     static size_t size_bytes(size_t n) {
@@ -221,27 +232,27 @@ int main(int argc, char** argv) {
 
     // Seperate loops to sort the output by benchmark.
     for (auto n : N) {
-        auto buffer = reinterpret_cast<std::byte *>(std::aligned_alloc(Alignment, S2::size_bytes(n)));
+        auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, S2::size_bytes(n)));
         benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<S2>, S2(buffer,n))->Arg(n)->Unit(benchmark::kMillisecond);
         free_list.push_back(buffer);
     }
 
     for (auto n : N) {
-        auto buffer = reinterpret_cast<std::byte *>(std::aligned_alloc(Alignment, S2::size_bytes(n)));
+        auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, S2::size_bytes(n)));
         S2 t2b(buffer, n);
         benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<S2>, t2b)->Arg(n)->Unit(benchmark::kMillisecond);
         free_list.push_back(buffer);
     }
 
     for (auto n : N) {
-        auto buffer = reinterpret_cast<std::byte *>(std::aligned_alloc(Alignment, S10::size_bytes(n)));
+        auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, S10::size_bytes(n)));
         S10 t10(buffer, n);
         benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<S10>, t10)->Arg(n)->Unit(benchmark::kMillisecond);
         free_list.push_back(buffer);
     }
 
     for (auto n : N) {
-        auto buffer = reinterpret_cast<std::byte *>(std::aligned_alloc(Alignment, S64::size_bytes(n)));
+        auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, S64::size_bytes(n)));
         S64 t64(buffer, n);
         benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<S64>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
         free_list.push_back(buffer);
