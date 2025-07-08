@@ -23,7 +23,7 @@ struct vector : std::vector<T, allocator::BufferAllocator<T>> {
 
 struct Buffer {
     template <class T>
-    operator allocator::BufferAllocator<T>() { return {begin, size}; };
+    operator allocator::BufferAllocator<T>() { return {begin, size}; }
     std::byte * begin;
     std::size_t size;
 };
@@ -31,27 +31,27 @@ struct Buffer {
 template <class T>
 using AllBuffer = Buffer;
 
-template <class T>
-using AllBufferPtr = Buffer *;
-
-struct get_sizeof {
-    template <class T>
-    std::size_t operator()(T&) const { return sizeof(T); }
+struct get_sizes {
+    template <class... Args>
+    std::array<std::size_t, sizeof...(Args)> operator()(Args&... args) const { return {sizeof(args)...}; }
 };
 
-template <class T>
-using Allsize_t = std::size_t;
-
-template <class T>
-using value = T;
+template <
+    template <template <class> class> class S,
+    template <class> class F
+>
+struct from_aggregate {
+    template <class... Args>
+    S<F> operator()(Args... args) const { return {args...}; }
+};
 
 template <template <template <class> class> class S, wrapper::layout L>
 constexpr std::size_t get_size_in_bytes() {
     if constexpr (L == wrapper::layout::aos) {
         return sizeof(S<wrapper::value>);
     } else if constexpr (L == wrapper::layout::soa) {
-        constexpr static std::size_t M = helper::CountMembers<S>();
-        std::array<std::size_t, M> sizes = helper::apply_to_members<Allsize_t, value>(S<value>(), get_sizeof());
+        S<wrapper::value> S_value;
+        auto sizes = helper::invoke(S_value, get_sizes{});
         return std::reduce(sizes.cbegin(), sizes.cend());
     }
 }
@@ -61,23 +61,23 @@ wrapper::wrapper<S, pmr::vector, L> buffer_wrapper(std::byte* buffer_ptr, std::s
     if constexpr (L == wrapper::layout::aos) {
         return {allocator::BufferAllocator<S<wrapper::value>>(buffer_ptr, bytes)};
     } else if constexpr (L == wrapper::layout::soa) {
-        constexpr static std::size_t M = helper::CountMembers<S>();
+        constexpr static std::size_t M = helper::CountMembers<S<wrapper::value>>();
 
-        std::array<std::size_t, M> sizes = helper::apply_to_members<Allsize_t, value>(S<value>(), get_sizeof());
+        S<wrapper::value> S_value;
+        std::array<std::size_t, M> sizes = helper::invoke(S_value, get_sizes{});
+        std::array<Buffer, M> buffers;
         std::size_t N = bytes / std::reduce(sizes.cbegin(), sizes.cend());
-
-        S<AllBuffer> S_buffer;
-        auto get_pointer = [] (Buffer& buffer) -> Buffer* { return &buffer; };
-        std::array<Buffer*, M> buffer_ref_array = helper::apply_to_members<AllBufferPtr, AllBuffer>(S_buffer, get_pointer);
 
         std::size_t offset = 0;
         for (int m = 0; m < M; ++m) {
             std::size_t step = sizes[m] * N;
-            *buffer_ref_array[m] = {buffer_ptr + offset, sizes[m]};
+            buffers[m] = {buffer_ptr + offset, sizes[m]};
             offset += step;
         }
 
-        return S<allocator::BufferAllocator>(S_buffer);
+        S<AllBuffer> S_buffer = helper::invoke(buffers, from_aggregate<S, AllBuffer>{});
+
+        return {S<allocator::BufferAllocator>(S_buffer)};
     }
 }
 
