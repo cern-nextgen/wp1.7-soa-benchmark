@@ -45,7 +45,7 @@ struct wrapper<S, F, layout::soa> : S<F> {
         return helper::invoke_on_members<reference, F>(*this, evaluate_at{i});
     }
     [[gnu::always_inline]] S<const_reference> operator[](std::size_t i) const {
-        return helper::invoke_on_members<reference, F>(*this, evaluate_at{i});
+        return helper::invoke_on_members<const_reference, F>(*this, evaluate_at{i});
     }
 
     private:
