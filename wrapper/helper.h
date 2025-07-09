@@ -2,8 +2,6 @@
 #define HELPER_H
 
 #include <cstddef>
-#include <type_traits>
-#include <utility>
 
 namespace helper {
 
@@ -71,26 +69,26 @@ template <
 }
 
 template <
+    template <class> class F_out,
     template <class> class F_in,
     template <template <class> class> class S,
     class  FunctionObject
 >
 struct memberwise {
-    template <class T>
-    using F_out = typename std::invoke_result<FunctionObject, typename std::add_lvalue_reference<F_in<T>>::type>::type;
-
     FunctionObject f;
+
     template <class... Args>
     [[gnu::always_inline]] constexpr S<F_out> operator()(Args&... args) const { return {f(args)...}; }
 };
 
 template <
+    template <class> class F_out,
     template <class> class F_in,
     template <template <class> class> class S,
     class  FunctionObject
 >
-[[gnu::always_inline]] constexpr S<memberwise<F_in, S, FunctionObject>::template F_out> invoke_on_members(S<F_in> & s, FunctionObject&& f) {
-    return invoke(s, memberwise<F_in, S, FunctionObject>{std::forward<FunctionObject>(f)});
+[[gnu::always_inline]] constexpr S<F_out> invoke_on_members(S<F_in> & s, FunctionObject&& f) {
+    return invoke(s, memberwise<F_out, F_in, S, FunctionObject>{f});
 }
 
 }  // namespace helper

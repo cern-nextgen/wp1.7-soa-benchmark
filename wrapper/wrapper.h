@@ -42,10 +42,10 @@ struct wrapper<S, F, layout::soa> : S<F> {
     operator wrapper<S, F_out, layout::soa>() { return {*this}; };
 
     [[gnu::always_inline]] S<reference> operator[](std::size_t i) {
-        return helper::invoke_on_members<F>(*this, evaluate_at{i});
+        return helper::invoke_on_members<reference, F>(*this, evaluate_at{i});
     }
     [[gnu::always_inline]] S<const_reference> operator[](std::size_t i) const {
-        return helper::invoke_on_members<F>(*this, evaluate_at{i});
+        return helper::invoke_on_members<reference, F>(*this, evaluate_at{i});
     }
 
     private:
