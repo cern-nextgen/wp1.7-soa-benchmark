@@ -56,8 +56,8 @@ if __name__ == "__main__":
     dirname = sys.argv[1]
 
     results = {}
-    for f, t in zip(['soa_boost', 'soa_wrapper', 'soa_manual'],
-                    ['Preprocessor Macros SoA', 'Template Metaprogramming SoA', 'Manual SoA']):
+    for f, t in zip(['soa_wrapper', 'soa_manual'],
+                    ['Template Metaprogramming SoA', 'Manual SoA']):
         filename = f"{dirname}/{f}"
 
         # Comment this to plot the results from locally saved json files, without running the benchmarks.

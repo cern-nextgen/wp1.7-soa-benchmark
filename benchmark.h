@@ -1,37 +1,17 @@
 #ifndef BENCHMARK_H
 #define BENCHMARK_H
 
+#include <format>
+
 #include <Eigen/Core>
-#include <Eigen/Dense>
 #include <benchmark/benchmark.h>
 
-#ifdef USE_FMTLIB_POLYFILL
-  // std::format polyfill using fmtlib
-  #include <fmt/core.h>
-  namespace std {
-  using fmt::format;
-  }
-#else
-  #include <format>
-#endif
-
-/* AoS-like access (except for the baseline) */
-#ifdef SOA_BOOST
-#define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ[INDEX].MEMBER()
-#elif defined(SOA_MANUAL)
+// No AoS access for manual version
+#ifdef SOA_MANUAL
 #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ.MEMBER[INDEX]
 #else
 #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ[INDEX].MEMBER
 #endif
-
-/* SoA-like access */
-// #ifdef SOA_BOOST
-// #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ.MEMBER(INDEX)
-// #elif defined(SOA_MANUAL)
-// #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ.MEMBER[INDEX]
-// #else
-// #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ.MEMBER[INDEX]
-// #endif
 
 using Vector3D = Eigen::Vector3d;
 using Matrix3D = Eigen::Matrix3d;

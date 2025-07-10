@@ -61,7 +61,6 @@ if __name__ == "__main__":
 
     dirname = sys.argv[1]
     soa_versions = {
-        'soa_boost': 'Preprocessor Macros SoA',
         'soa_wrapper': 'Template Metaprogramming SoA',
         'soa_manual': 'Manual SoA'
     }
