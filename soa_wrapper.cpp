@@ -47,6 +47,10 @@ int main(int argc, char** argv) {
     std::vector<std::byte *> buffer_pointers;
 
     for (std::size_t n : N) {
+        benchmark::RegisterBenchmark("BM_GPUTest", BM_GPUTest)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
+    }
+
+    for (std::size_t n : N) {
         // n * 2 * sizeof(int);
         std::size_t bytes = n * factory::get_size_in_bytes<S2, L>();
         buffer_pointers.emplace_back(new std::byte[bytes]);
