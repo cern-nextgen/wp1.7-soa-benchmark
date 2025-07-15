@@ -168,6 +168,22 @@ void BM_CPURealRW(benchmark::State &state, T t)
         }
     }
 
+    // Check the result
+    for (int i = 0; i < n; ++i) {
+        CheckResult(state, 2.f * state.iterations(), MEMBER_ACCESS(t, x0, i), "x0");
+        CheckResult(state, 2.f * state.iterations(), MEMBER_ACCESS(t, x1, i), "x1");
+        CheckResult(state, 2. * state.iterations(), MEMBER_ACCESS(t, x2, i), "x2");
+        CheckResult(state, 2. * state.iterations(), MEMBER_ACCESS(t, x3, i), "x3");
+        CheckResult(state, 2 * state.iterations(), MEMBER_ACCESS(t, x4, i), "x4");
+        CheckResult(state, 2 * state.iterations(), MEMBER_ACCESS(t, x5, i), "x5");
+        CheckResult(state, v * state.iterations(), MEMBER_ACCESS(t, x6, i), "x6");
+        CheckResult(state, v * state.iterations(), MEMBER_ACCESS(t, x7, i), "x7");
+        CheckResult(state, m * state.iterations(), MEMBER_ACCESS(t, x8, i), "x8");
+        CheckResult(state, m * state.iterations(), MEMBER_ACCESS(t, x9, i), "x9");
+    }
+
+    state.counters["n_elem"] = n;
+}
 
 //-----------------Added a function here-----------------//
 
@@ -194,7 +210,7 @@ void ARIT_CPUEasy(benchmark::State &state, T t)
             }
             else {
                 // Multiply the smaller half of the numbers in x0 with another random number between 0 to 10
-                MEMBER_ACCESS(t, x0, i) = std::rand % 10 * MEMBER_ACCESS(t, x0, i)
+                MEMBER_ACCESS(t, x0, i) = std::rand() % 10 * MEMBER_ACCESS(t, x0, i);
             }
 
             // Multiply x0 and x1 and save in x1
@@ -202,33 +218,10 @@ void ARIT_CPUEasy(benchmark::State &state, T t)
         }
     }
 
-    // Check the result
-    for (int i = 0; i < n; ++i) {
-        CheckResult(state, 2 * state.iterations(), MEMBER_ACCESS(t, x0, i), "x0");
-        CheckResult(state, 2 * state.iterations(), MEMBER_ACCESS(t, x1, i), "x1");
-    }
-
     state.counters["n_elem"] = n;
 }
 
 //-----------------------------------------------------//
-
-    // Check the result
-    for (int i = 0; i < n; ++i) {
-        CheckResult(state, 2.f * state.iterations(), MEMBER_ACCESS(t, x0, i), "x0");
-        CheckResult(state, 2.f * state.iterations(), MEMBER_ACCESS(t, x1, i), "x1");
-        CheckResult(state, 2. * state.iterations(), MEMBER_ACCESS(t, x2, i), "x2");
-        CheckResult(state, 2. * state.iterations(), MEMBER_ACCESS(t, x3, i), "x3");
-        CheckResult(state, 2 * state.iterations(), MEMBER_ACCESS(t, x4, i), "x4");
-        CheckResult(state, 2 * state.iterations(), MEMBER_ACCESS(t, x5, i), "x5");
-        CheckResult(state, v * state.iterations(), MEMBER_ACCESS(t, x6, i), "x6");
-        CheckResult(state, v * state.iterations(), MEMBER_ACCESS(t, x7, i), "x7");
-        CheckResult(state, m * state.iterations(), MEMBER_ACCESS(t, x8, i), "x8");
-        CheckResult(state, m * state.iterations(), MEMBER_ACCESS(t, x9, i), "x9");
-    }
-
-    state.counters["n_elem"] = n;
-}
 
 // 100 data members (20 floats, 20 doubles, 20 integers, 20 Eigen vector, 20 Eigen matrices)
 template <typename T>
