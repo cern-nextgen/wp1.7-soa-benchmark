@@ -1,6 +1,7 @@
 #ifndef WRAPPER_H
 #define WRAPPER_H
 
+#include "decorator.h"
 #include "helper.h"
 
 #include <cstddef>
@@ -32,8 +33,8 @@ struct wrapper<S, F, layout::aos> {
     template <template <class> class F_out>
     operator wrapper<S, F_out, layout::aos>() { return {data}; };
 
-    [[gnu::always_inline]] S<reference> operator[](std::size_t i) { return data[i]; }
-    [[gnu::always_inline]] S<const_reference> operator[](std::size_t i) const { return data[i]; }
+    DECORATOR() S<reference> operator[](std::size_t i) { return data[i]; }
+    DECORATOR() S<const_reference> operator[](std::size_t i) const { return data[i]; }
 };
 
 template <template <template <class> class> class S, template <class> class F>
@@ -41,11 +42,11 @@ struct wrapper<S, F, layout::soa> : S<F> {
     template <template <class> class F_out>
     operator wrapper<S, F_out, layout::soa>() { return {*this}; };
 
-    [[gnu::always_inline]] S<reference> operator[](std::size_t i) {
-        return helper::invoke_on_members<reference, F>(*this, evaluate_at{i});
+    DECORATOR() S<reference> operator[](std::size_t i) {
+        return { this->x0[i], this->x1[i] }; // helper::invoke_on_members<reference, F>(*this, evaluate_at{i});
     }
-    [[gnu::always_inline]] S<const_reference> operator[](std::size_t i) const {
-        return helper::invoke_on_members<const_reference, F>(*this, evaluate_at{i});
+    DECORATOR() S<const_reference> operator[](std::size_t i) const {
+        return { this->x0[i], this->x1[i] }; // helper::invoke_on_members<const_reference, F>(*this, evaluate_at{i});
     }
 
     private:
@@ -54,10 +55,10 @@ struct wrapper<S, F, layout::soa> : S<F> {
         std::size_t i;
 
         template <template <class> class F_in, class T>
-        reference<T> operator()(F_in<T> & t) const { return t[i]; }
+        DECORATOR() reference<T> operator()(F_in<T> & t) const { return t[i]; }
         
         template <template <class> class F_in, class T>
-        const_reference<T> operator()(const F_in<T> & t) const { return t[i]; }
+        DECORATOR() const_reference<T> operator()(const F_in<T> & t) const { return t[i]; }
     };
 };
 

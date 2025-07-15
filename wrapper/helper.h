@@ -3,6 +3,8 @@
 
 #include <cstddef>
 
+#include "decorator.h"
+
 namespace helper {
 
 namespace detail {
@@ -42,7 +44,7 @@ template <
     class Argument,
     class FunctionObject
 >
-[[gnu::always_inline]] constexpr auto invoke(Argument & arg, FunctionObject&& f) {
+DECORATOR() constexpr auto invoke(Argument & arg, FunctionObject&& f) {
     constexpr std::size_t M = helper::CountMembers<Argument>();
     if constexpr (M == 2) {
         auto& [m00, m01] = arg;
@@ -78,7 +80,7 @@ struct memberwise {
     FunctionObject f;
 
     template <class... Args>
-    [[gnu::always_inline]] constexpr S<F_out> operator()(Args&... args) const { return {f(args)...}; }
+    DECORATOR() constexpr S<F_out> operator()(Args&... args) const { return {f(args)...}; }
 };
 
 template <
@@ -87,7 +89,7 @@ template <
     template <template <class> class> class S,
     class  FunctionObject
 >
-[[gnu::always_inline]] constexpr S<F_out> invoke_on_members(S<F_in> & s, FunctionObject&& f) {
+DECORATOR() constexpr S<F_out> invoke_on_members(S<F_in> & s, FunctionObject&& f) {
     return invoke(s, memberwise<F_out, F_in, S, FunctionObject>{f});
 }
 

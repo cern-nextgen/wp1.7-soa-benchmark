@@ -20,9 +20,9 @@ find_package(benchmark REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
 link_libraries(benchmark::benchmark Eigen3::Eigen)
 
-add_executable(soa_wrapper_cpu soa_wrapper_cpu.cpp)
-target_include_directories(soa_wrapper_cpu PUBLIC wrapper)
-set_target_properties(soa_wrapper_cpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON CUDA_ARCHITECTURES native)
+# add_executable(soa_wrapper_cpu soa_wrapper_cpu.cpp)
+# target_include_directories(soa_wrapper_cpu PUBLIC wrapper)
+# set_target_properties(soa_wrapper_cpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON CUDA_ARCHITECTURES native)
 
 add_executable(soa_wrapper_gpu soa_wrapper_gpu.cu)
 target_include_directories(soa_wrapper_gpu PUBLIC wrapper)
