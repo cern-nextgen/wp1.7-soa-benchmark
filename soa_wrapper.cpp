@@ -86,6 +86,16 @@ int main(int argc, char** argv) {
         benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
+    for (std::size_t n : N) {
+        // n * (13 * (sizeof(float) + sizeof(double) + sizeof(int) + sizeof(Eigen::Matrix3d)) + 12 * sizeof(Eigen::Vector3d));
+        std::size_t bytes = n * factory::get_size_in_bytes<S64, L>();
+        buffer_pointers.emplace_back(new std::byte[bytes]);
+        auto t64 = factory::buffer_wrapper<S64, L>(buffer_pointers.back(), bytes);
+        using wrapper_type = wrapper::wrapper<S64, std::span, L>;
+        wrapper_type t_span(t64);
+        benchmark::RegisterBenchmark("ARIT_CPUEasy", ARIT_CPUEasy<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
+
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();
     benchmark::Shutdown();

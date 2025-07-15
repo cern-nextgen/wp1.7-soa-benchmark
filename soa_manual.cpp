@@ -258,6 +258,14 @@ int main(int argc, char** argv) {
         free_list.push_back(buffer);
     }
 
+
+    for (auto n : N) {
+        auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, S64::size_bytes(n)));
+        S64 t64(buffer, n);
+        benchmark::RegisterBenchmark("ARIT_CPUEasy", ARIT_CPUEasy<S64>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer);
+    }
+
     benchmark::RunSpecifiedBenchmarks();
     benchmark::Shutdown();
 

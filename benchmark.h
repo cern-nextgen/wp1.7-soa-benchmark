@@ -168,6 +168,51 @@ void BM_CPURealRW(benchmark::State &state, T t)
         }
     }
 
+
+//-----------------Added a function here-----------------//
+
+#include <ctime>
+
+template <typename T>
+void ARIT_CPUEasy(benchmark::State &state, T t)
+{
+    auto n = state.range(0);
+    std::srand(std::time(0));
+
+    // Initialize the data members to a random number
+    for (auto i = 0; i < n; ++i) {
+        MEMBER_ACCESS(t, x0, i) = std::rand() % 100;
+        MEMBER_ACCESS(t, x1, i) = std::rand() % 100;
+    }
+
+    // Perform read and write operations using weird aritmetics
+    for (auto _ : state) {
+        for (auto i = 0; i < n; ++i) {
+            // Set the larger half of the numbers in x0 to -1
+            if ( MEMBER_ACCESS(t, x0, i) > 50) {
+                MEMBER_ACCESS(t, x0, i) = -1;
+            }
+            else {
+                // Multiply the smaller half of the numbers in x0 with another random number between 0 to 10
+                MEMBER_ACCESS(t, x0, i) = std::rand % 10 * MEMBER_ACCESS(t, x0, i)
+            }
+
+            // Multiply x0 and x1 and save in x1
+            MEMBER_ACCESS(t, x1, i) = MEMBER_ACCESS(t, x0, i) * MEMBER_ACCESS(t, x1, i);
+        }
+    }
+
+    // Check the result
+    for (int i = 0; i < n; ++i) {
+        CheckResult(state, 2 * state.iterations(), MEMBER_ACCESS(t, x0, i), "x0");
+        CheckResult(state, 2 * state.iterations(), MEMBER_ACCESS(t, x1, i), "x1");
+    }
+
+    state.counters["n_elem"] = n;
+}
+
+//-----------------------------------------------------//
+
     // Check the result
     for (int i = 0; i < n; ++i) {
         CheckResult(state, 2.f * state.iterations(), MEMBER_ACCESS(t, x0, i), "x0");
