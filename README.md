@@ -1,15 +1,13 @@
 # wp1.7-soa-benchmark
 Repository for benchmarking different SoA libraries.
 
-## Build and Run
+## Build and Run GPU Benchmarks
 ```
 git clone https://github.com/cern-nextgen/wp1.7-soa-benchmark.git
 cd wp1.7-soa-benchmark
-cmake -B build
+cmake -B build -DCMAKE_CUDA_HOST_COMPILER=clang++  # or g++
 cmake --build build
-./build/soa_boost
-./build/soa_wrapper
-./build/soa_manual
+./build/soa_wrapper_gpu
 ```
 
 ## Docker Container

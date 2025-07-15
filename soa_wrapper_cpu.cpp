@@ -1,6 +1,6 @@
 #include <span>
 
-#include "benchmark.h"
+#include "benchmark_cpu.h"
 #include "wrapper/factory.h"
 #include "wrapper/wrapper.h"
 
@@ -45,10 +45,6 @@ int main(int argc, char** argv) {
     constexpr wrapper::layout L = wrapper::layout::soa;
 
     std::vector<std::byte *> buffer_pointers;
-
-    for (std::size_t n : N) {
-        benchmark::RegisterBenchmark("BM_GPUTest", BM_GPUTest)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
-    }
 
     for (std::size_t n : N) {
         // n * 2 * sizeof(int);

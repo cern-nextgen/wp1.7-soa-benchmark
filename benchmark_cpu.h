@@ -6,8 +6,6 @@
 #include <Eigen/Core>
 #include <benchmark/benchmark.h>
 
-#include "cuda/kernel.h"
-
 // No AoS access for manual version
 #ifdef SOA_MANUAL
 #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ.MEMBER[INDEX]
@@ -40,29 +38,10 @@ void CheckResult(benchmark::State &state, const Expected &expected, const Actual
 }
 
 // 2 data members, integers, 10 elements
-void BM_GPUTest(benchmark::State &state)
-{
-    auto n = state.range(0);
-
-    int * data;
-    kernel::cuda_malloc((void**)&data, n * sizeof(int));
-
-    for (auto _ : state) {
-        float milliseconds = kernel::apply(data, n);
-        state.SetIterationTime(milliseconds / 1000.0);
-    }
-
-    state.counters["n_elem"] = n;
-}
-
-// 2 data members, integers, 10 elements
 template <typename T>
 void BM_CPUEasyRW(benchmark::State &state, T t)
 {
     auto n = state.range(0);
-
-    int * data;
-    kernel::cuda_malloc((void**)&data, n * sizeof(int));
 
     // Initialize the data members to zero
     for (int i = 0; i < n; ++i) {
@@ -83,9 +62,6 @@ void BM_CPUEasyRW(benchmark::State &state, T t)
         CheckResult(state, 2 * state.iterations(), MEMBER_ACCESS(t, x0, i), "x0");
         CheckResult(state, 2 * state.iterations(), MEMBER_ACCESS(t, x1, i), "x1");
     }
-
-
-    kernel::cuda_free(data);
 
     state.counters["n_elem"] = n;
 }
