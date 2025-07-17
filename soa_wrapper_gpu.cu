@@ -9,6 +9,10 @@ int main(int argc, char** argv) {
         benchmark::RegisterBenchmark("BM_GPUTest", BM_GPUTest)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
     }
 
+    for (int n : N) {
+        benchmark::RegisterBenchmark("ARIT_GPUTest", ARIT_GPUTest)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
+    }
+
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();
     benchmark::Shutdown();
