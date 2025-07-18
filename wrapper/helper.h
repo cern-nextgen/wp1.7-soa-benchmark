@@ -49,6 +49,9 @@ DECORATOR() constexpr auto invoke(Argument & arg, FunctionObject&& f) {
     if constexpr (M == 2) {
         auto& [m00, m01] = arg;
         return f(m00, m01);
+    } else if constexpr (M == 3) {
+        auto& [m00, m01, m02] = arg;
+        return f(m00, m01, m02);
     } else if constexpr (M == 10) {
         auto& [m00, m01, m02, m03, m04, m05, m06, m07, m08, m09] = arg;
         return f(m00, m01, m02, m03, m04, m05, m06, m07, m08, m09);

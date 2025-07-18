@@ -111,7 +111,7 @@ __global__ void arg_max(wrapper::wrapper<S3, std::span, wrapper::layout::soa> da
     int local_idx = -1; 
 
     for (int i = blockIdx.x * blockDim.x + tid; i < N; i += gridDim.x * blockDim.x) { 
-        float val = data[tid].x0; //[i]; 
+        float val = data.x0[i];
         if (val > local_max) { 
             local_max = val; 
             local_idx = i; 
@@ -133,8 +133,8 @@ __global__ void arg_max(wrapper::wrapper<S3, std::span, wrapper::layout::soa> da
         warp_reduce_max(val, idx); 
 
         if (lane_id == 0) { 
-            data[tid].x1= val; 
-            data[tid].x2 = idx; 
+            data.x1[tid] = val; 
+            data.x2[tid] = idx; 
         } 
     } 
 } 
