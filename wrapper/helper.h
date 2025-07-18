@@ -79,8 +79,8 @@ template <
 struct memberwise {
     FunctionObject f;
 
-    template <class... Args>
-    DECORATOR() constexpr S<F_out> operator()(Args&... args) const { return {f(args)...}; }
+    template <class... Args>  // HACK: NVCC cannot deduce template parameters of f.operator() like so: { f(args)... }
+    DECORATOR() constexpr S<F_out> operator()(Args&... args) const { return {f.template operator()<F_in>(args)...}; }
 };
 
 template <
