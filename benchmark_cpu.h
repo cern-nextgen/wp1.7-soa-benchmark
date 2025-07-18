@@ -1,7 +1,7 @@
 #ifndef BENCHMARK_H
 #define BENCHMARK_H
 
-#include <format>
+#include <string>
 
 #include <Eigen/Core>
 #include <benchmark/benchmark.h>
@@ -18,22 +18,17 @@ using Matrix3D = Eigen::Matrix3d;
 
 constexpr std::size_t N[] = {10, 100, 1000, 10000, 100000};
 
-template <typename T>
-static std::string ToString(const T &obj)
-{
-    std::stringstream ss;
-    ss << obj;
-    return ss.str();
-}
-
 // Helper function to check the result
 template <typename Expected, typename Actual>
 void CheckResult(benchmark::State &state, const Expected &expected, const Actual &actual,
                  const std::string &member_name)
 {
     if (expected != actual) {
-        state.SkipWithError(
-            std::format("Wrong result in {}: expected {}, got {}", member_name, ToString(expected), ToString(actual)));
+        std::stringstream ss;
+        ss << "Wrong result in " << member_name
+           << ": expected " << expected
+           << ", got " << actual;
+        state.SkipWithError(ss.str());
     }
 }
 
