@@ -1,5 +1,5 @@
-#ifndef BENCHMARK_GPU_H
-#define BENCHMARK_GPU_H
+#ifndef BENCHMARK_ESTIMATE_PI_GPU_H
+#define BENCHMARK_ESTIMATE_PI_GPU_H
 
 #include <span>
 
@@ -14,9 +14,9 @@
 namespace benchmark { class State; }
 
 template <template <class> class F>
-struct S3 {
+struct S3_2 {
     template<template <class> class F_new>
-    operator S3<F_new>() { return {x_axis, y_axis, pi_estimate}; }
+    operator S3_2<F_new>() { return {x_axis, y_axis, pi_estimate}; }
     F<float> x_axis;
     F<float> y_axis;
     F<float> pi_estimate;
@@ -27,7 +27,7 @@ struct S3 {
 // Define the block size for CUDA kernel execution
 #define BLOCK_SIZE 256
 
-__global__ void estimate_pi(int i = blockIdx.x * blockDim.x + tid; i < N; i += gridDim.x * blockDim.x) {
+__global__ void estimate_pi(float* x_axis, float* y_axis, float* pi_estimate, int num_points) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < num_points) {
         // Check if the point is inside the unit circle by using: x^2 + y^2 = r^2
@@ -40,7 +40,7 @@ __global__ void estimate_pi(int i = blockIdx.x * blockDim.x + tid; i < N; i += g
 
 void PiSimp_GPUTest(benchmark::State &state) {
     int n = state.range();
-    wrapper::wrapper<S3, device_memory_array, wrapper::layout::soa> t = {n, n, n};
+    wrapper::wrapper<S3_2, device_memory_array, wrapper::layout::soa> t = {n, n, n};
 
     // Set up randome input generation
     unsigned int seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
@@ -71,8 +71,8 @@ void PiSimp_GPUTest(benchmark::State &state) {
     }
 
     // Calculate the final estimate of pi
-    h_pi_estimate = (h_pi_estimate / NUM_POINTS) * 4.0f;            
-    std::cout << "Estimated value of Pi: " << h_pi_estimate << std::endl;
+    data[0].pi_estimate = (data[0].pi_estimate / NUM_POINTS) * 4.0f;            
+    // std::cout << "Estimated value of Pi: " << data[0].pi_estimate << std::endl;
 
     state.counters["n_elem"] = n;
 }

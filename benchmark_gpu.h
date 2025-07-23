@@ -79,7 +79,7 @@ __global__ void add(wrapper::wrapper<S2, std::span, wrapper::layout::soa> data, 
 
 __global__ void arit(wrapper::wrapper<S2, std::span, wrapper::layout::soa> data, int N) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < N) {
+    if (idx < N) { 
         if (data[idx].x0 > 5) data[idx].x0 += 1;
         else data[idx].x1 += 1;
     }

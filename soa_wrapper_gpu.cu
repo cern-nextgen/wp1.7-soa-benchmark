@@ -20,6 +20,7 @@ int main(int argc, char** argv) {
     for (int n : N) {
         benchmark::RegisterBenchmark("PiSimp_GPUTest", PiSimp_GPUTest)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
     }
+    
 
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();

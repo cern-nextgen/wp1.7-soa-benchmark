@@ -1,5 +1,5 @@
-#ifndef BENCHMARK_GPU_H
-#define BENCHMARK_GPU_H
+#ifndef BENCHMARK_FIND_MAX_GPU_H
+#define BENCHMARK_FIND_MAX_GPU_H
 
 #include <span>
 
@@ -14,9 +14,9 @@
 namespace benchmark { class State; }
 
 template <template <class> class F>
-struct S3 {
+struct S3_1 {
     template<template <class> class F_new>
-    operator S3<F_new>() { return {x0, x1, x2}; }
+    operator S3_1<F_new>() { return {x0, x1, x2}; }
     F<float> x0;
     F<float> x1;
     F<int> x2;
@@ -36,7 +36,7 @@ __device__ __forceinline__ void warp_reduce_max(float& val, int& idx) {
     } 
 } 
 
-__global__ void arg_max(wrapper::wrapper<S3, std::span, wrapper::layout::soa> data, int N) {
+__global__ void arg_max(wrapper::wrapper<S3_1, std::span, wrapper::layout::soa> data, int N) {
     __shared__ float max_vals[32]; 
     __shared__ int max_idxs[32]; 
 
