@@ -1,19 +1,24 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.13)
+
 project(SoABenchmark)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -Rpass-analysis=loop-vectorize -Rpass=loop-vectorize -Rpass-missed=loop-vectorize -march=native -funroll-loops -ffast-math -funsafe-math-optimizations")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -fopt-info-vec -march=native -funroll-loops -ffast-math -funsafe-math-optimizations")
+endif()
+
 # Detect if build dir contains "vtune"
 get_filename_component(BUILD_DIR_NAME ${CMAKE_BINARY_DIR} NAME)
 string(FIND "${BUILD_DIR_NAME}" "vtune" VTUNE_DIR_POS)
-
 if (VTUNE_DIR_POS GREATER -1)
     message(STATUS "VTune build detected (debug symbols enabled)")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -g -ftree-vectorize -Rpass-analysis=loop-vectorize -Rpass=loop-vectorize -Rpass-missed=loop-vectorize -march=native -funroll-loops -ffast-math -funsafe-math-optimizations")
+    add_compile_options(-g)
 else()
     message(STATUS "Release build (no debug symbols)")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -ftree-vectorize -Rpass-analysis=loop-vectorize -Rpass=loop-vectorize -Rpass-missed=loop-vectorize -march=native -funroll-loops -ffast-math -funsafe-math-optimizations")
 endif()
 
 find_package(benchmark REQUIRED)
@@ -38,3 +43,4 @@ target_link_libraries(soa_boost Boost::boost)
 
 add_executable(soa_manual soa_manual.cpp)
 
+add_subdirectory(refl)
