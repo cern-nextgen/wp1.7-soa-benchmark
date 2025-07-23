@@ -1,0 +1,9 @@
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+cmake_install.cmake
+.vscode
+
+soa_boost
+soa_wrapper
