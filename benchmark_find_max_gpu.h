@@ -78,7 +78,7 @@ __global__ void arg_max(wrapper::wrapper<S3_1, std::span, wrapper::layout::soa> 
 
 void MAX_GPUTest(benchmark::State &state) {
     int n = state.range();
-    wrapper::wrapper<S3, device_memory_array, wrapper::layout::soa> t = {n, n, n};
+    wrapper::wrapper<S3_1, device_memory_array, wrapper::layout::soa> t = {n, n, n};
 
     // Set up randome input generation
     unsigned int seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());

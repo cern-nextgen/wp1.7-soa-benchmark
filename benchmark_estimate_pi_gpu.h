@@ -23,16 +23,17 @@ struct S3_2 {
 };
 
 
-#define NUM_POINTS 1000000 // Number of random points to generate - Make higher for better accuarcy
+#define NUM_POINTS 10000000 // Number of random points to generate - Make higher for better accuarcy
 // Define the block size for CUDA kernel execution
 #define BLOCK_SIZE 256
 
-__global__ void estimate_pi(float* x_axis, float* y_axis, float* pi_estimate, int num_points) {
+
+__global__ void estimate_pi_kernel(wrapper::wrapper<S3_2, std::span, wrapper::layout::soa> data, int num_points) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < num_points) {
         // Check if the point is inside the unit circle by using: x^2 + y^2 = r^2
         if (data[idx].x_axis * data[idx].x_axis + data[idx].y_axis * data[idx].y_axis <= 1.0f) {
-            atomicAdd(pi_estimate, 1.0f);
+            atomicAdd(&data[idx].pi_estimate, 1.0f);
         }
     }
 }
@@ -60,7 +61,7 @@ void PiSimp_GPUTest(benchmark::State &state) {
     for (auto _ : state) {
         cudaEventRecord(start, 0);
 
-        estimate_pi<<<numBlocks, blockSize>>>(t, n);
+        estimate_pi_kernel<<<numBlocks, blockSize>>>(t, n);
 
         cudaEventRecord(stop, 0);
         cudaEventSynchronize(stop);
@@ -71,8 +72,9 @@ void PiSimp_GPUTest(benchmark::State &state) {
     }
 
     // Calculate the final estimate of pi
-    data[0].pi_estimate = (data[0].pi_estimate / NUM_POINTS) * 4.0f;            
-    // std::cout << "Estimated value of Pi: " << data[0].pi_estimate << std::endl;
+    t[0].pi_estimate = (t[0].pi_estimate / NUM_POINTS) * 4.0f;          
+      
+    // printf("Estimated value of Pi: ", t[0].pi_estimate);
 
     state.counters["n_elem"] = n;
 }
