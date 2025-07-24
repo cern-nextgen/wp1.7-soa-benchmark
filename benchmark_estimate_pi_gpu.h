@@ -28,6 +28,7 @@ struct S3_2 {
 #define BLOCK_SIZE 256
 
 
+/*
 __global__ void estimate_pi_kernel(wrapper::wrapper<S3_2, std::span, wrapper::layout::soa> data, int num_points) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < num_points) {
@@ -37,11 +38,55 @@ __global__ void estimate_pi_kernel(wrapper::wrapper<S3_2, std::span, wrapper::la
         }
     }
 }
+*/
+
+__global__ void estimate_pi_kernel_shared(wrapper::wrapper<S3_2, std::span, wrapper::layout::soa> data, int num_points) {
+    extern __shared__ float local_counts[]; // Shared memory for local counts
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int tid = threadIdx.x;
+
+    // count local points in the unit circle
+    int count = 0;
+    if (idx < num_points) {
+        float x = data[idx].x_axis;
+        float y = data[idx].y_axis;
+        if (x * x + y * y <= 1.0f) {
+            count = 1;
+        }
+    }       
+    
+    // Store local count in shared memory
+    local_counts[tid] = count;
+    __syncthreads(); // Ensure all threads have written their counts
+
+    // Block-wide parallel reduction to sum local counts
+    for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
+        if (tid < stride) {
+            local_counts[tid] += local_counts[tid + stride];        
+        }
+        __syncthreads(); // Ensure all threads have completed their addition
+    }  
+    
+    float temp_cnt = local_counts[0];
+
+    // Calculate the total count of points in the unit circle for this block
+    if (tid == 0) {
+    atomicAdd(&data[0].pi_estimate, temp_cnt);
+    }
+       
+    // Ensure all threads have completed before exiting the kernel
+    __syncthreads();   
+
+    // Note: The final pi estimate will be calculated in the host code after kernel execution
+
+}
 
 
 void PiSimp_GPUTest(benchmark::State &state) {
     int n = state.range();
     wrapper::wrapper<S3_2, device_memory_array, wrapper::layout::soa> t = {n, n, n};
+
+    float* h_pi_estimate = 0;
 
     // Set up randome input generation
     unsigned int seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
@@ -57,11 +102,12 @@ void PiSimp_GPUTest(benchmark::State &state) {
 
     int blockSize = 256;
     int numBlocks = (n + blockSize - 1) / blockSize;
+    size_t shared_mem_size = blockSize * sizeof(float);
 
     for (auto _ : state) {
         cudaEventRecord(start, 0);
 
-        estimate_pi_kernel<<<numBlocks, blockSize>>>(t, n);
+        estimate_pi_kernel_shared<<<numBlocks, blockSize, shared_mem_size>>>(t, n);
 
         cudaEventRecord(stop, 0);
         cudaEventSynchronize(stop);
@@ -71,10 +117,12 @@ void PiSimp_GPUTest(benchmark::State &state) {
         state.SetIterationTime(milliseconds / 1000.0f);
     }
 
+    cudaMemcpy(h_pi_estimate, t[0].pi_estimate.ptr, sizeof(float), cudaMemcpyDeviceToHost);
+
     // Calculate the final estimate of pi
-    t[0].pi_estimate = (t[0].pi_estimate / NUM_POINTS) * 4.0f;          
+    h_pi_estimate[0] = (h_pi_estimate[0] / NUM_POINTS) * 4.0f;          
       
-    // printf("Estimated value of Pi: ", t[0].pi_estimate);
+    printf("Estimated value of Pi: ", h_pi_estimate);
 
     state.counters["n_elem"] = n;
 }
