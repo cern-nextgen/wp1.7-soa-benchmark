@@ -1,12 +1,13 @@
 
 #define __cpp_lib_reflection 20250130 // eccp version
+
 #define EIGEN_SAFE_TO_USE_STANDARD_ASSERT_MACRO 0
+// #define RMPP_DEBUG
 
 #include "benchmark.h"
 #include <Eigen/Core>
 #include "rmpp.h"
 #include <vector>
-
 
 struct S2 {
     int &x0, &x1;
@@ -28,29 +29,41 @@ struct S64 {
     Eigen::Matrix3d &x51, &x52, &x53, &x54, &x55, &x56, &x57, &x58, &x59, &x60, &x61, &x62, &x63;
 };
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv)
+{
     // Seperate loops to sort the output by benchmark.
-    for (auto n : {10000}) {
+    for (auto n : N) {
         using SoA = rmpp::AoS2SoA<S2, 64>;
-        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(64, SoA::ComputeSize(n)));
-        SoA t2a(buffer, n, SoA::ComputeSize(n));
-        benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<SoA>, t2a)->Arg(n)->Unit(benchmark::kMillisecond);
+        auto byte_size = SoA::ComputeSize(n);
+        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
+        SoA t(buffer, byte_size, n);
+        benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<SoA>, t)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
-    // for (auto n : N) {
-    //     auto t2b = factory::default_wrapper<my_vector, S2, wrapper::layout::soa>(n);
-    //     benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<decltype(t2b)>, t2b)->Arg(n)->Unit(benchmark::kMillisecond);
-    // }
+    for (auto n : N) {
+        using SoA = rmpp::AoS2SoA<S2, 64>;
+        auto byte_size = SoA::ComputeSize(n);
+        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
+        SoA t(buffer, byte_size, n);
+        benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<SoA>,
+        t)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
 
-    // for (auto n : N) {
-    //     auto t10 = factory::default_wrapper<my_vector, S10, wrapper::layout::soa>(n);
-    //     benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<decltype(t10)>, t10)->Arg(n)->Unit(benchmark::kMillisecond);
-    // }
+    for (auto n : N) {
+        using SoA = rmpp::AoS2SoA<S10, 64>;
+        auto byte_size = SoA::ComputeSize(n);
+        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
+        SoA t(buffer, byte_size, n);
+        benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<SoA>, t)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
 
-    // for (auto n : N) {
-    //     auto t64 = factory::default_wrapper<my_vector, S64, wrapper::layout::soa>(n);
-    //     benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<decltype(t64)>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
-    // }
+    for (auto n : N) {
+        using SoA = rmpp::AoS2SoA<S64, 64>;
+        auto byte_size = SoA::ComputeSize(n);
+        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
+        SoA t(buffer, byte_size, n);
+        benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<SoA>, t)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
 
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();
