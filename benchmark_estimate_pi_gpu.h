@@ -86,7 +86,8 @@ void PiSimp_GPUTest(benchmark::State &state) {
     int n = state.range();
     wrapper::wrapper<S3_2, device_memory_array, wrapper::layout::soa> t = {n, n, n};
 
-    float* h_pi_estimate = 0;
+    float* h_pi_estimate;
+    h_pi_estimate = (float*)malloc(n * sizeof(float));
 
     // Set up randome input generation
     unsigned int seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
@@ -117,12 +118,14 @@ void PiSimp_GPUTest(benchmark::State &state) {
         state.SetIterationTime(milliseconds / 1000.0f);
     }
 
-    cudaMemcpy(h_pi_estimate, t[0].pi_estimate.ptr, sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_pi_estimate, t.pi_estimate.ptr, n * sizeof(float), cudaMemcpyDeviceToHost);
 
     // Calculate the final estimate of pi
-    h_pi_estimate[0] = (h_pi_estimate[0] / NUM_POINTS) * 4.0f;          
+    // h_pi_estimate[0] = (h_pi_estimate[0] / NUM_POINTS) * 4.0f;       
+    
+    float pi_approx = (h_pi_estimate[0] / NUM_POINTS) * 4.0f;
       
-    printf("Estimated value of Pi: ", h_pi_estimate);
+    printf("Estimated value of Pi: %f", pi_approx);
 
     state.counters["n_elem"] = n;
 }
