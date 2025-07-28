@@ -16,16 +16,16 @@ namespace benchmark { class State; }
 template <template <class> class F>
 struct S3_2 {
     template<template <class> class F_new>
-    operator S3_2<F_new>() { return {x_axis, y_axis, pi_estimate}; }
+    operator S3_2<F_new>() { return {x_axis, y_axis, pi_counts}; }
     F<float> x_axis;
     F<float> y_axis;
-    F<float> pi_estimate;
+    F<float> pi_counts;
 };
 
 
-#define NUM_POINTS 10000000 // Number of random points to generate - Make higher for better accuarcy
+// #define NUM_POINTS 100 // Number of random points to generate - Make higher for better accuarcy
 // Define the block size for CUDA kernel execution
-#define BLOCK_SIZE 256
+// #define BLOCK_SIZE 256
 
 
 /*
@@ -40,14 +40,14 @@ __global__ void estimate_pi_kernel(wrapper::wrapper<S3_2, std::span, wrapper::la
 }
 */
 
-__global__ void estimate_pi_kernel_shared(wrapper::wrapper<S3_2, std::span, wrapper::layout::soa> data, int num_points) {
+__global__ void estimate_pi_kernel_shared(wrapper::wrapper<S3_2, std::span, wrapper::layout::soa> data, int n) {
     extern __shared__ float local_counts[]; // Shared memory for local counts
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int tid = threadIdx.x;
 
     // count local points in the unit circle
     int count = 0;
-    if (idx < num_points) {
+    if (idx < n) {
         float x = data[idx].x_axis;
         float y = data[idx].y_axis;
         if (x * x + y * y <= 1.0f) {
@@ -71,7 +71,7 @@ __global__ void estimate_pi_kernel_shared(wrapper::wrapper<S3_2, std::span, wrap
 
     // Calculate the total count of points in the unit circle for this block
     if (tid == 0) {
-    atomicAdd(&data[0].pi_estimate, temp_cnt);
+    atomicAdd(&data[0].pi_counts, temp_cnt);
     }
        
     // Ensure all threads have completed before exiting the kernel
@@ -86,16 +86,36 @@ void PiSimp_GPUTest(benchmark::State &state) {
     int n = state.range();
     wrapper::wrapper<S3_2, device_memory_array, wrapper::layout::soa> t = {n, n, n};
 
-    float* h_pi_estimate;
-    h_pi_estimate = (float*)malloc(n * sizeof(float));
-
     // Set up randome input generation
     unsigned int seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
     std::mt19937 rng(seed);
     std::uniform_real_distribution<float> dist(-1, 1);
 
-    cudaMemset(t.x_axis.ptr, dist(rng), n * sizeof(float));
-    cudaMemset(t.y_axis.ptr, dist(rng), n * sizeof(float));
+    std::vector<float> h_x(n);
+    std::vector<float> h_y(n);
+    std::vector<float> h_pi_counts(n, 0.0f); // host array to receive data
+    float h_pi_estimate = 0.0f;              // final estimate
+
+    // Generate random values on host
+    for (int i = 0; i < n; i++) {
+        h_x[i] = dist(rng);
+        h_y[i] = dist(rng);
+    }
+
+    // Copy to device
+    cudaMemcpy(t.x_axis.ptr, h_x.data(), n * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(t.y_axis.ptr, h_y.data(), n * sizeof(float), cudaMemcpyHostToDevice);
+
+    // Print (from host)
+    /*
+    printf("First %d random x values:\n", n);
+    for (int i = 0; i < n; i++) {
+        printf("%f ", h_x[i]);
+    }
+    printf("\n");
+    */
+    
+ 
 
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
@@ -106,6 +126,9 @@ void PiSimp_GPUTest(benchmark::State &state) {
     size_t shared_mem_size = blockSize * sizeof(float);
 
     for (auto _ : state) {
+        cudaMemset(t.pi_counts.ptr, 0, n * sizeof(float));
+        // cudaMemset(h_pi_estimate.ptr, 0, n * sizeof(float));
+
         cudaEventRecord(start, 0);
 
         estimate_pi_kernel_shared<<<numBlocks, blockSize, shared_mem_size>>>(t, n);
@@ -118,14 +141,15 @@ void PiSimp_GPUTest(benchmark::State &state) {
         state.SetIterationTime(milliseconds / 1000.0f);
     }
 
-    cudaMemcpy(h_pi_estimate, t.pi_estimate.ptr, n * sizeof(float), cudaMemcpyDeviceToHost);
+    // cudaMemcpy(h_pi_counts.ptr, t.pi_counts.ptr, n * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_pi_counts.data(), t.pi_counts.ptr, n * sizeof(float), cudaMemcpyDeviceToHost);
+
 
     // Calculate the final estimate of pi
-    // h_pi_estimate[0] = (h_pi_estimate[0] / NUM_POINTS) * 4.0f;       
-    
-    float pi_approx = (h_pi_estimate[0] / NUM_POINTS) * 4.0f;
+    h_pi_estimate = (h_pi_counts[0] / n) * 4.0f;
       
-    printf("Estimated value of Pi: %f", pi_approx);
+    printf("Estimated value of Pi: %f \n", h_pi_estimate);
+
 
     state.counters["n_elem"] = n;
 }
