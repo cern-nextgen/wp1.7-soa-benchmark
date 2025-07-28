@@ -148,7 +148,7 @@ void PiSimp_GPUTest(benchmark::State &state) {
     // Calculate the final estimate of pi
     h_pi_estimate = (h_pi_counts[0] / n) * 4.0f;
       
-    printf("Estimated value of Pi: %f \n", h_pi_estimate);
+    // printf("Estimated value of Pi: %f \n", h_pi_estimate);
 
 
     state.counters["n_elem"] = n;

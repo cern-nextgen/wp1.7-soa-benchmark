@@ -85,8 +85,17 @@ void MAX_GPUTest(benchmark::State &state) {
     std::mt19937 rng(seed);
     std::uniform_real_distribution<float> dist(0,10);
 
-    cudaMemset(t.x0.ptr, dist(rng), n * sizeof(int));
-    cudaMemset(t.x1.ptr, dist(rng), n * sizeof(int));
+    std::vector<float> h_x0(n);
+    std::vector<float> h_x1(n);
+
+    for (int i = 0; i < n; i++) {
+        h_x0[i] = dist(rng);
+        h_x1[i] = 0.0f; // x1 will store the max value result later
+    }
+
+    // Copy to device
+    cudaMemcpy(t.x0.ptr, h_x0.data(), n * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(t.x1.ptr, h_x1.data(), n * sizeof(float), cudaMemcpyHostToDevice);
 
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
@@ -107,6 +116,15 @@ void MAX_GPUTest(benchmark::State &state) {
         cudaEventElapsedTime(&milliseconds, start, stop);
         state.SetIterationTime(milliseconds / 1000.0f);
     }
+
+    std::vector<float> h_x1_out(n);
+    std::vector<int> h_x2_out(n);
+
+    cudaMemcpy(h_x1_out.data(), t.x1.ptr, n * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_x2_out.data(), t.x2.ptr, n * sizeof(int), cudaMemcpyDeviceToHost);
+
+    // The first warp of block 0 writes the final max to index 0
+    // printf("Max value: %f at index %d\n", h_x1_out[0], h_x2_out[0]);
 
     state.counters["n_elem"] = n;
 }
