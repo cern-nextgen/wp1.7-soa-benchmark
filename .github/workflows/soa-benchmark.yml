@@ -18,7 +18,8 @@ jobs:
           cmake --build ${{github.workspace}}
       - name: run benchmarks
         run: |
-          python3 plot.py ${{github.workspace}}
+          python3 run_benchmarks.py ${{github.workspace}} soa_versions.csv
+          python3 plot_benchmarks.py ${{github.workspace}} soa_versions.csv
           echo "Files in Workspace Directory:"
           ls -l ${{github.workspace}}
       - name: collect artifacts
