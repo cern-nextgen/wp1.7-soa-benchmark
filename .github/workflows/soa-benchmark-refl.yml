@@ -1,0 +1,38 @@
+name: run benchmark with soa_refl
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'reflmempp'
+
+jobs:
+  soa-benchmark:
+    runs-on: cern-nextgen-h100
+    container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark-refl:latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: build and compile
+        run: |
+          cmake -B ${{github.workspace}}
+          cmake --build ${{github.workspace}}
+      - name: run benchmarks
+        run: |
+          python3 run_benchmarks.py ${{github.workspace}} refl/soa_versions_with_refl.csv
+          python3 plot_benchmarks.py ${{github.workspace}} refl/soa_versions_with_refl.csv
+          echo "Files in Workspace Directory:"
+          ls -l ${{github.workspace}}
+      - name: collect artifacts
+        run: |
+          mkdir soa-benchmark-results
+          mv ${{github.workspace}}/*.png  soa-benchmark-results/
+          mv ${{github.workspace}}/*.json soa-benchmark-results/
+          echo "Files in Results Directory:"
+          ls -l soa-benchmark-results
+      - name: upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: soa-benchmark-results
+          path: soa-benchmark-results
