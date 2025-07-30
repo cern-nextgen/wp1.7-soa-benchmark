@@ -45,6 +45,8 @@ unset(CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES)
 
 # Do not add -Wl, rpath flags to the linker command line (edg_prelink does not support them)
 set(CMAKE_SKIP_RPATH TRUE)
+# Do not add -Wl, --dependency-file flag to the linker command line
+set(CMAKE_LINK_DEPENDS_USE_LINKER FALSE)
 
 # Get paths to g++ headers/libraries
 file(READ $ENV{EDG_BASE}/lib/g++_incl_paths sys_incl_dirs)
