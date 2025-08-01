@@ -1,10 +1,6 @@
 #ifndef BENCHMARK_FIND_MAX_GPU_H
 #define BENCHMARK_FIND_MAX_GPU_H
 
-#include <span>
-
-#include <Eigen/Core>
-
 #include "wrapper/wrapper.h"
 
 #include <random>
@@ -22,6 +18,16 @@ struct S3_1 {
     F<int> x2;
 };
 
+template <class KernelInput>
+__global__ void initialize(KernelInput data, float *d_x0, int N) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < N) {
+        data[i].x0 = d_x0[i];
+        data[i].x1 = 0.0f;
+        data[i].x2 = 0;
+    }
+} 
+
 __device__ __forceinline__ void warp_reduce_max(float& val, int& idx) { 
     unsigned mask = 0xffffffff; 
     #pragma unroll 
@@ -34,9 +40,10 @@ __device__ __forceinline__ void warp_reduce_max(float& val, int& idx) {
             idx = other_idx; 
         } 
     } 
-} 
+}
 
-__global__ void arg_max(wrapper::wrapper<S3_1, std::span, wrapper::layout::soa> data, int N) {
+template <class KernelInput>
+__global__ void arg_max(KernelInput data, int N) {
     __shared__ float max_vals[32]; 
     __shared__ int max_idxs[32]; 
 
@@ -76,38 +83,37 @@ __global__ void arg_max(wrapper::wrapper<S3_1, std::span, wrapper::layout::soa> 
     } 
 } 
 
+template <class Create, class KernelInput>
 void MAX_GPUTest(benchmark::State &state) {
     int n = state.range();
-    wrapper::wrapper<S3_1, device_memory_array, wrapper::layout::soa> t = {n, n, n};
+    state.counters["n_elem"] = n;
 
-    // Set up randome input generation
+    // Set up random input generation
     unsigned int seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
     std::mt19937 rng(seed);
-    std::uniform_real_distribution<float> dist(0,10);
-
+    std::uniform_real_distribution<float> dist(0, 10);
     std::vector<float> h_x0(n);
-    std::vector<float> h_x1(n);
+    for (int i = 0; i < n; i++) h_x0[i] = dist(rng);
 
-    for (int i = 0; i < n; i++) {
-        h_x0[i] = dist(rng);
-        h_x1[i] = 0.0f; // x1 will store the max value result later
-    }
+    float * d_x0;
+    cudaMalloc(&d_x0, n * sizeof(float));
+    cudaMemcpy(d_x0, h_x0.data(), n * sizeof(float), cudaMemcpyHostToDevice);
 
-    // Copy to device
-    cudaMemcpy(t.x0.ptr, h_x0.data(), n * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(t.x1.ptr, h_x1.data(), n * sizeof(float), cudaMemcpyHostToDevice);
+    auto t = Create()(n);
+    int blockSize = 256;
+    int numBlocks = (n + blockSize - 1) / blockSize;
+    initialize<KernelInput><<<numBlocks, blockSize>>>(t, d_x0, n);
+
+    cudaFree(d_x0);
 
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
-    int blockSize = 256;
-    int numBlocks = (n + blockSize - 1) / blockSize;
-
     for (auto _ : state) {
         cudaEventRecord(start, 0);
 
-        arg_max<<<numBlocks, blockSize>>>(t, n);
+        arg_max<KernelInput><<<numBlocks, blockSize>>>(t, n);
 
         cudaEventRecord(stop, 0);
         cudaEventSynchronize(stop);
@@ -116,17 +122,6 @@ void MAX_GPUTest(benchmark::State &state) {
         cudaEventElapsedTime(&milliseconds, start, stop);
         state.SetIterationTime(milliseconds / 1000.0f);
     }
-
-    std::vector<float> h_x1_out(n);
-    std::vector<int> h_x2_out(n);
-
-    cudaMemcpy(h_x1_out.data(), t.x1.ptr, n * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(h_x2_out.data(), t.x2.ptr, n * sizeof(int), cudaMemcpyDeviceToHost);
-
-    // The first warp of block 0 writes the final max to index 0
-    // printf("Max value: %f at index %d\n", h_x1_out[0], h_x2_out[0]);
-
-    state.counters["n_elem"] = n;
 }
 
 #endif

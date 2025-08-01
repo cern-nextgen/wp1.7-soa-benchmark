@@ -94,7 +94,7 @@ void PiSimp_GPUTest(benchmark::State &state) {
     std::vector<float> h_x(n);
     std::vector<float> h_y(n);
     std::vector<float> h_pi_counts(n, 0.0f); // host array to receive data
-    float h_pi_estimate = 0.0f;              // final estimate
+    //float h_pi_estimate = 0.0f;              // final estimate
 
     // Generate random values on host
     for (int i = 0; i < n; i++) {
@@ -146,7 +146,7 @@ void PiSimp_GPUTest(benchmark::State &state) {
 
 
     // Calculate the final estimate of pi
-    h_pi_estimate = (h_pi_counts[0] / n) * 4.0f;
+    //h_pi_estimate = (h_pi_counts[0] / n) * 4.0f;
       
     // printf("Estimated value of Pi: %f \n", h_pi_estimate);
 

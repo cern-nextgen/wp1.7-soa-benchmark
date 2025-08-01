@@ -33,8 +33,8 @@ struct wrapper<S, F, layout::aos> {
     template <template <class> class F_out>
     operator wrapper<S, F_out, layout::aos>() { return {data}; };
 
-    DECORATOR() S<reference> operator[](std::size_t i) { return data[i]; }
-    DECORATOR() S<const_reference> operator[](std::size_t i) const { return data[i]; }
+    DECORATOR() constexpr S<reference> operator[](std::size_t i) { return data[i]; }
+    DECORATOR() constexpr S<const_reference> operator[](std::size_t i) const { return data[i]; }
 };
 
 template <template <template <class> class> class S, template <class> class F>
