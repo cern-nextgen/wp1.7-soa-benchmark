@@ -22,28 +22,21 @@ struct S3_2 {
     F<float> pi_counts;
 };
 
-
-// #define NUM_POINTS 100 // Number of random points to generate - Make higher for better accuarcy
-// Define the block size for CUDA kernel execution
-// #define BLOCK_SIZE 256
-
-
-/*
-__global__ void estimate_pi_kernel(wrapper::wrapper<S3_2, std::span, wrapper::layout::soa> data, int num_points) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < num_points) {
-        // Check if the point is inside the unit circle by using: x^2 + y^2 = r^2
-        if (data[idx].x_axis * data[idx].x_axis + data[idx].y_axis * data[idx].y_axis <= 1.0f) {
-            atomicAdd(&data[idx].pi_estimate, 1.0f);
-        }
+template <class KernelInput>
+__global__ void initialize_2(KernelInput data, float *d_x_axis, float *d_y_axis, int N) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < N) {
+        data[i].x_axis = d_x_axis[i];
+        data[i].y_axis = d_y_axis[i];
+        data[i].pi_counts = 0.0f;
     }
-}
-*/
+} 
 
-__global__ void estimate_pi_kernel_shared(wrapper::wrapper<S3_2, std::span, wrapper::layout::soa> data, int n) {
+template <class KernelInput>
+__global__ void estimate_pi_kernel_shared(KernelInput data, int n) {
     extern __shared__ float local_counts[]; // Shared memory for local counts
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    int tid = threadIdx.x;
+    int tid = threadIdx.x; 
 
     // count local points in the unit circle
     int count = 0;
@@ -81,30 +74,41 @@ __global__ void estimate_pi_kernel_shared(wrapper::wrapper<S3_2, std::span, wrap
 
 }
 
-
+template <class Create, class KernelInput>
 void PiSimp_GPUTest(benchmark::State &state) {
     int n = state.range();
-    wrapper::wrapper<S3_2, device_memory_array, wrapper::layout::soa> t = {n, n, n};
+    state.counters["n_elem"] = n;
+    // wrapper::wrapper<S3_2, device_memory_array, wrapper::layout::soa> t = {n, n, n};
 
     // Set up randome input generation
     unsigned int seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
     std::mt19937 rng(seed);
     std::uniform_real_distribution<float> dist(-1, 1);
 
-    std::vector<float> h_x(n);
-    std::vector<float> h_y(n);
-    std::vector<float> h_pi_counts(n, 0.0f); // host array to receive data
-    //float h_pi_estimate = 0.0f;              // final estimate
+    std::vector<float> h_x_axis(n);
+    std::vector<float> h_y_axis(n);
+    // std::vector<float> h_pi_counts(n, 0.0f); // host array to receive data
+    float h_pi_counts = 0.0f;
+    float h_pi_estimate = 0.0f;              // final estimate
 
     // Generate random values on host
     for (int i = 0; i < n; i++) {
-        h_x[i] = dist(rng);
-        h_y[i] = dist(rng);
+        h_x_axis[i] = dist(rng);
+        h_y_axis[i] = dist(rng);
     }
 
+    float *d_x_axis, *d_y_axis; //, *d_pi_counts;
+    cudaMalloc(&d_x_axis, n * sizeof(float));
+    cudaMalloc(&d_y_axis, n * sizeof(float));
+    // cudaMalloc(&d_pi_counts, n * sizeof(float));
+
+    cudaMemcpy(d_x_axis, h_x_axis.data(), n * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_y_axis, h_y_axis.data(), n * sizeof(float), cudaMemcpyHostToDevice);
+    // cudaMemcpy(d_pi_counts, h_pi_counts.data(), n * sizeof(float), cudaMemcpyHostToDevice);
+
     // Copy to device
-    cudaMemcpy(t.x_axis.ptr, h_x.data(), n * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(t.y_axis.ptr, h_y.data(), n * sizeof(float), cudaMemcpyHostToDevice);
+    // cudaMemcpy(t.x_axis.ptr, h_x_axis.data(), n * sizeof(float), cudaMemcpyHostToDevice);
+    // cudaMemcpy(t.y_axis.ptr, h_y_axis.data(), n * sizeof(float), cudaMemcpyHostToDevice);
 
     // Print (from host)
     /*
@@ -115,23 +119,24 @@ void PiSimp_GPUTest(benchmark::State &state) {
     printf("\n");
     */
     
- 
-
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
+    auto t = Create()(n);
     int blockSize = 256;
     int numBlocks = (n + blockSize - 1) / blockSize;
     size_t shared_mem_size = blockSize * sizeof(float);
+    initialize_2<KernelInput><<<numBlocks, blockSize>>>(t, d_x_axis, d_y_axis, n);
 
     for (auto _ : state) {
-        cudaMemset(t.pi_counts.ptr, 0, n * sizeof(float));
-        // cudaMemset(h_pi_estimate.ptr, 0, n * sizeof(float));
+        cudaMemset(&t[0].pi_counts, 0, sizeof(float));
+        // cudaMemset(h_pi_estimate.ptr, 0, sizeof(float));
+        h_pi_estimate = 0.0f;
 
         cudaEventRecord(start, 0);
 
-        estimate_pi_kernel_shared<<<numBlocks, blockSize, shared_mem_size>>>(t, n);
+        estimate_pi_kernel_shared<KernelInput><<<numBlocks, blockSize, shared_mem_size>>>(t, n);
 
         cudaEventRecord(stop, 0);
         cudaEventSynchronize(stop);
@@ -141,17 +146,15 @@ void PiSimp_GPUTest(benchmark::State &state) {
         state.SetIterationTime(milliseconds / 1000.0f);
     }
 
-    // cudaMemcpy(h_pi_counts.ptr, t.pi_counts.ptr, n * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(h_pi_counts.data(), t.pi_counts.ptr, n * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&h_pi_counts, &t[0].pi_counts, sizeof(float), cudaMemcpyDeviceToHost);
 
+    h_pi_estimate = (h_pi_counts / n) * 4.0f;
 
-    // Calculate the final estimate of pi
-    //h_pi_estimate = (h_pi_counts[0] / n) * 4.0f;
-      
-    // printf("Estimated value of Pi: %f \n", h_pi_estimate);
+    printf("Estimated value of Pi: %f \n", h_pi_estimate);
 
+    cudaFree(d_x_axis);
+    cudaFree(d_y_axis);
 
-    state.counters["n_elem"] = n;
 }
 
 #endif
