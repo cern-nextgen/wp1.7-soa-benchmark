@@ -45,7 +45,7 @@ template <
     class Argument,
     class FunctionObject
 >
-DECORATOR() constexpr auto invoke(Argument & arg, FunctionObject&& f) {
+constexpr auto invoke(Argument & arg, FunctionObject&& f) {
     constexpr std::size_t M = helper::CountMembers<Argument>();
     if constexpr (M == 2) {
         auto& [m00, m01] = arg;
@@ -84,7 +84,7 @@ struct memberwise {
     FunctionObject f;
 
     template <class... Args>  // HACK: NVCC cannot deduce template parameters of f.operator() like so: { f(args)... }
-    DECORATOR() constexpr S<F_out> operator()(Args&... args) const { return {f.template operator()<F_in>(args)...}; }
+    constexpr S<F_out> operator()(Args&... args) const { return {f.template operator()<F_in>(args)...}; }
 };
 
 template <
@@ -93,7 +93,7 @@ template <
     template <template <class> class> class S,
     class  FunctionObject
 >
-DECORATOR() constexpr S<F_out> invoke_on_members(S<F_in> & s, FunctionObject&& f) {
+constexpr S<F_out> invoke_on_members(S<F_in> & s, FunctionObject&& f) {
     return invoke(s, memberwise<F_out, F_in, S, FunctionObject>{f});
 }
 

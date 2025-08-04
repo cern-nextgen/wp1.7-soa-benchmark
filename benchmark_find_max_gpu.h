@@ -79,7 +79,7 @@ __global__ void arg_max(KernelInput data, int N) {
         if (lane_id == 0) { 
             data[tid].x1 = val; 
             data[tid].x2 = idx; 
-        } 
+        }
     } 
 } 
 
@@ -89,7 +89,7 @@ void MAX_GPUTest(benchmark::State &state) {
     state.counters["n_elem"] = n;
 
     // Set up random input generation
-    unsigned int seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
+    unsigned int seed = 0; // static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
     std::mt19937 rng(seed);
     std::uniform_real_distribution<float> dist(0, 10);
     std::vector<float> h_x0(n);
@@ -103,7 +103,7 @@ void MAX_GPUTest(benchmark::State &state) {
     int blockSize = 256;
     int numBlocks = (n + blockSize - 1) / blockSize;
     initialize<KernelInput><<<numBlocks, blockSize>>>(t, d_x0, n);
-
+    cudaDeviceSynchronize();
     cudaFree(d_x0);
 
     cudaEvent_t start, stop;

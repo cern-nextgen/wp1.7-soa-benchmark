@@ -33,8 +33,8 @@ struct wrapper<S, F, layout::aos> {
     template <template <class> class F_out>
     operator wrapper<S, F_out, layout::aos>() { return {data}; };
 
-    DECORATOR() constexpr S<reference> operator[](std::size_t i) { return data[i]; }
-    DECORATOR() constexpr S<const_reference> operator[](std::size_t i) const { return data[i]; }
+    constexpr S<reference> operator[](std::size_t i) { return data[i]; }
+    constexpr S<const_reference> operator[](std::size_t i) const { return data[i]; }
 };
 
 template <template <template <class> class> class S, template <class> class F>
@@ -42,10 +42,10 @@ struct wrapper<S, F, layout::soa> : S<F> {
     template <template <class> class F_out>
     operator wrapper<S, F_out, layout::soa>() { return {*this}; };
 
-    DECORATOR() S<reference> operator[](std::size_t i) {
+    constexpr S<reference> operator[](std::size_t i) {
         return helper::invoke_on_members<reference, F>(*this, evaluate_at{i});
     }
-    DECORATOR() S<const_reference> operator[](std::size_t i) const {
+    constexpr S<const_reference> operator[](std::size_t i) const {
         return helper::invoke_on_members<const_reference, F>(*this, evaluate_at{i});
     }
 
@@ -55,10 +55,10 @@ struct wrapper<S, F, layout::soa> : S<F> {
         std::size_t i;
 
         template <template <class> class F_in, class T>
-        DECORATOR() reference<T> operator()(F_in<T> & t) const { return t[i]; }
+        constexpr reference<T> operator()(F_in<T> & t) const { return t[i]; }
         
         template <template <class> class F_in, class T>
-        DECORATOR() const_reference<T> operator()(const F_in<T> & t) const { return t[i]; }
+        constexpr const_reference<T> operator()(const F_in<T> & t) const { return t[i]; }
     };
 };
 

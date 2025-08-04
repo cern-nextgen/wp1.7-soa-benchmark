@@ -63,8 +63,8 @@ struct device_memory_array {
     device_memory_array(int N) : ptr(), N{N} { cudaMalloc((void**)&ptr, N * sizeof(T)); }
     ~device_memory_array() { if (ptr != nullptr) cudaFree(ptr); }
     operator std::span<T>() { return { ptr, ptr + N }; }
-    __device__ constexpr T& operator[](int i) { return ptr[i]; }
-    __device__ constexpr const T& operator[](int i) const { return ptr[i]; }
+    constexpr T& operator[](int i) { return ptr[i]; }
+    constexpr const T& operator[](int i) const { return ptr[i]; }
     T* ptr;
     int N;
 };
