@@ -11,23 +11,34 @@ message(STATUS "Linking EDG versions with ${EDG_LINKER}")
 
 set(CMAKE_DEPFILE_FLAGS_CXX "")
 
-# These should be set in the build of eccp
-set(CMAKE_CXX_FLAGS "")
-unset(CMAKE_CXX_STANDARD)
-
-set(EDG_CPFE_DEFAULT_OPTIONS --set_flag=reflection --c++26 --gnu 140200 -tused --no_strict_gnu --no_char8_t)
+set(EDG_CPFE_DEFAULT_OPTIONS --g++ --set_flag=reflection --c++26 --gnu 140200 -tlocal --no_strict_gnu --no_char8_t)
 set(EDG_DEFAULT_DEFINES __CHAR_BIT__=8  _POSIX_SOURCE)
-set(EDG_C_TO_OBJ_DEFAULT_OPTIONS -Dsetjmp=_setjmp -Dva_copy=__va_copy -falign-functions=4)
-set(EDG_C_TO_OBJ_LIBRARIES -lstdc++ -lgcc_s -lpthread -lm)
+set(EDG_C_TO_OBJ_DEFAULT_OPTIONS -Dsetjmp=_setjmp -Dva_copy=__va_copy -falign-functions=4 -march=skylake ${CMAKE_CXX_FLAGS})
+separate_arguments(EDG_C_TO_OBJ_DEFAULT_OPTIONS)
+set(EDG_C_TO_OBJ_LIBRARIES -shared-libgcc -lstdc++ -lgcc_s -lpthread -lm)
+
+#### Get paths to includes and libraries ####
 
 # Get the path to libgcc.a
 execute_process(COMMAND ${EDG_GCC_TO_USE} -print-libgcc-file-name OUTPUT_VARIABLE LIBGCC_FILE
-OUTPUT_STRIP_TRAILING_WHITESPACE)
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND dirname ${LIBGCC_FILE} OUTPUT_VARIABLE LIBGCC_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 # Get the path to libstdc++.so
-execute_process(COMMAND ${EDG_GCC_TO_USE} -print-file-name=libstdc++.so OUTPUT_VARIABLE LIBSTDC_FILE OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${EDG_GCC_TO_USE} -print-file-name=libstdc++.so OUTPUT_VARIABLE LIBSTDC_FILE
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND dirname ${LIBSTDC_FILE} OUTPUT_VARIABLE LIBSTDC_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+# Get paths to g++ headers/libraries
+file(READ $ENV{EDG_BASE}/lib/g++_incl_paths sys_incl_dirs)
+string(REPLACE ":" ";" sys_incl_dirs ${sys_incl_dirs})
+string(STRIP "${sys_incl_dirs}" sys_incl_dirs) # Remove trailing newline
+separate_arguments(sys_incl_dirs)
+
+#### Options that are set differently for edgcpfe than for g++ ####
+unset(CMAKE_CXX_STANDARD)
+
+set(CMAKE_CXX_FLAGS "")
 
 # Replaces the default -isystem with --sys_include
 set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "--sys_include=")
@@ -46,16 +57,7 @@ unset(CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES)
 # Do not add -Wl, rpath flags to the linker command line (edg_prelink does not support them)
 set(CMAKE_SKIP_RPATH TRUE)
 
-# Do not add -Wl, rpath flags to the linker command line (edg_prelink does not support them)
-set(CMAKE_SKIP_RPATH TRUE)
-# Do not add -Wl, --dependency-file flag to the linker command line
-set(CMAKE_LINK_DEPENDS_USE_LINKER FALSE)
-
-# Get paths to g++ headers/libraries
-file(READ $ENV{EDG_BASE}/lib/g++_incl_paths sys_incl_dirs)
-string(REPLACE ":" ";" sys_incl_dirs ${sys_incl_dirs})
-string(STRIP "${sys_incl_dirs}" sys_incl_dirs) # Remove trailing newline
-separate_arguments(sys_incl_dirs)
+###########
 
 include(CMakePrintHelpers)
 
@@ -68,7 +70,9 @@ function(add_edg_executable target sources)
     # target_compile_options(${target} PUBLIC --error_limit=1) # for debugging
 
     # By products
-    target_compile_options(${target} PUBLIC --gen_c_file_name=CMakeFiles/${target}.dir/${target}.int.c --ii_file=CMakeFiles/${target}.dir/${target}.cpp.ii --template_info_file=CMakeFiles/${target}.dir/${target}.cpp.ti)
+    target_compile_options(${target} PUBLIC --gen_c_file_name=CMakeFiles/${target}.dir/${target}.int.c
+                                            --ii_file=CMakeFiles/${target}.dir/${target}.cpp.ii
+                                            --template_info_file=CMakeFiles/${target}.dir/${target}.cpp.ti)
 
     target_compile_definitions(${target} PUBLIC ${EDG_DEFAULT_DEFINES})
 
@@ -77,7 +81,6 @@ function(add_edg_executable target sources)
         PRE_LINK
         COMMAND ${EDG_GCC_TO_USE} ${EDG_C_TO_OBJ_DEFAULT_OPTIONS} -g -c CMakeFiles/${target}.dir/${target}.int.c
         COMMAND mv -f ${target}.int.o CMakeFiles/${target}.dir/${target}.cpp.o
-        DEPENDS CMakeFiles/${target}.dir/${target}.int.c
         BYPRODUCTS CMakeFiles/${target}.dir/${target}.cpp.o
         COMMENT "Building CMakeFiles/${target}.dir/${target}.cpp.o"
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -102,10 +105,11 @@ function(add_edg_executable target sources)
     add_custom_command(
         TARGET ${target}
         POST_BUILD
-        COMMAND ${EDG_GCC_TO_USE} ${EDG_C_TO_OBJ_DEFAULT_OPTIONS} "$<$<BOOL:${link_dirs}>:-L$<JOIN:${link_dirs},;-L>>" -o ${target} CMakeFiles/${target}.dir/${target}.cpp.o ${link_lib_paths} ${EDG_C_TO_OBJ_LIBRARIES} -lrt -lC
+        COMMAND ${EDG_GCC_TO_USE} ${EDG_C_TO_OBJ_DEFAULT_OPTIONS} "$<$<BOOL:${link_dirs}>:-L$<JOIN:${link_dirs},;-L>>"
+                -o ${target} CMakeFiles/${target}.dir/${target}.cpp.o ${link_lib_paths} ${EDG_C_TO_OBJ_LIBRARIES}
+                -lrt -lC
         COMMENT "Complete linking"
         COMMAND_EXPAND_LISTS
-        DEPENDS CMakeFiles/${target}.dir/${target}.cpp.o
     )
 endfunction()
 
