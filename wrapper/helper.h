@@ -33,7 +33,7 @@ struct is_aggregate_constructible_from_n {
 template <class T> using value = T;
 
 template <class Argument>
-constexpr std::size_t CountMembers() {
+DECORATOR() constexpr std::size_t CountMembers() {
     if constexpr (detail::is_aggregate_constructible_from_n<Argument, 2>::value) return 2;
     else if constexpr (detail::is_aggregate_constructible_from_n<Argument,  3>::value) return  3;
     else if constexpr (detail::is_aggregate_constructible_from_n<Argument,  10>::value) return  10;
@@ -45,7 +45,7 @@ template <
     class Argument,
     class FunctionObject
 >
-constexpr auto invoke(Argument & arg, FunctionObject&& f) {
+DECORATOR() constexpr auto invoke(Argument & arg, FunctionObject&& f) {
     constexpr std::size_t M = helper::CountMembers<Argument>();
     if constexpr (M == 2) {
         auto& [m00, m01] = arg;
@@ -84,7 +84,7 @@ struct memberwise {
     FunctionObject f;
 
     template <class... Args>  // HACK: NVCC cannot deduce template parameters of f.operator() like so: { f(args)... }
-    constexpr S<F_out> operator()(Args&... args) const { return {f.template operator()<F_in>(args)...}; }
+    DECORATOR() constexpr S<F_out> operator()(Args&... args) const { return {f.template operator()<F_in>(args)...}; }
 };
 
 template <
@@ -93,7 +93,7 @@ template <
     template <template <class> class> class S,
     class  FunctionObject
 >
-constexpr S<F_out> invoke_on_members(S<F_in> & s, FunctionObject&& f) {
+DECORATOR() constexpr S<F_out> invoke_on_members(S<F_in> & s, FunctionObject&& f) {
     return invoke(s, memberwise<F_out, F_in, S, FunctionObject>{f});
 }
 
