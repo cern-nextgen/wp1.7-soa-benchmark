@@ -1,10 +1,6 @@
 #ifndef BENCHMARK_ESTIMATE_PI_GPU_H
 #define BENCHMARK_ESTIMATE_PI_GPU_H
 
-#include <span>
-
-#include <Eigen/Core>
-
 #include "wrapper/wrapper.h"
 
 #include <random>
@@ -16,10 +12,9 @@ namespace benchmark { class State; }
 template <template <class> class F>
 struct S3_2 {
     template<template <class> class F_new>
-    operator S3_2<F_new>() { return {x_axis, y_axis, pi_counts}; }
+    operator S3_2<F_new>() { return {x_axis, y_axis}; }
     F<float> x_axis;
     F<float> y_axis;
-    F<float> pi_counts;
 };
 
 template <class KernelInput>
@@ -28,7 +23,6 @@ __global__ void initialize_2(KernelInput data, const float *d_x_axis, const floa
     if (i < N) {
         data[i].x_axis = d_x_axis[i];
         data[i].y_axis = d_y_axis[i];
-        data[i].pi_counts = 0.0f;
     }
 } 
 
@@ -113,7 +107,7 @@ void PiSimp_GPUTest(benchmark::State &state) {
 
     for (auto _ : state) {
         cudaMemset(d_pi_counts, 0, sizeof(float));
-        
+
         cudaEventRecord(start, 0);
         estimate_pi_kernel_shared<KernelInput><<<numBlocks, blockSize, shared_mem_size>>>(t, d_pi_counts, n);
         cudaEventRecord(stop, 0);

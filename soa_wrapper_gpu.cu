@@ -1,3 +1,5 @@
+#include <span>
+
 #include <benchmark/benchmark.h>
 
 #include "benchmark_gpu.h"
@@ -16,8 +18,8 @@ struct CreateWrapper {
 template<wrapper::layout L>
 struct CreateWrapper2 {
     wrapper::wrapper<S3_2, device_memory_array, L> operator()(int n) {
-        if constexpr (L == wrapper::layout::soa) return {n, n, n};
-        else return {{n}};
+        if constexpr (L == wrapper::layout::soa) return {n, n};
+        else return {n};
     }
 };
 
