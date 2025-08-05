@@ -33,7 +33,7 @@ struct is_aggregate_constructible_from_n {
 template <class T> using value = T;
 
 template <class Argument>
-constexpr std::size_t CountMembers() {
+DECORATOR() constexpr std::size_t CountMembers() {
     if constexpr (detail::is_aggregate_constructible_from_n<Argument, 2>::value) return 2;
     else if constexpr (detail::is_aggregate_constructible_from_n<Argument,  3>::value) return  3;
     else if constexpr (detail::is_aggregate_constructible_from_n<Argument,  10>::value) return  10;
@@ -94,6 +94,16 @@ template <
     class  FunctionObject
 >
 DECORATOR() constexpr S<F_out> invoke_on_members(S<F_in> & s, FunctionObject&& f) {
+    return invoke(s, memberwise<F_out, F_in, S, FunctionObject>{f});
+}
+
+template <
+    template <class> class F_out,
+    template <class> class F_in,
+    template <template <class> class> class S,
+    class  FunctionObject
+>
+DECORATOR() constexpr S<F_out> invoke_on_members(const S<F_in> & s, FunctionObject&& f) {
     return invoke(s, memberwise<F_out, F_in, S, FunctionObject>{f});
 }
 

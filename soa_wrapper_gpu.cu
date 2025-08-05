@@ -17,14 +17,13 @@ template<wrapper::layout L>
 struct CreateWrapper2 {
     wrapper::wrapper<S3_2, device_memory_array, L> operator()(int n) {
         if constexpr (L == wrapper::layout::soa) return {n, n, n};
-        else return {n};
+        else return {{n}};
     }
 };
 
 
 int main(int argc, char** argv) {
-    // constexpr int N[] = {1<<10, 1<<12, 1<<14, 1<<16, 1<<18, 1<<20};
-    constexpr int N[] = {1<<20};
+    constexpr int N[] = {1<<10, 1<<12, 1<<14, 1<<16, 1<<18, 1<<20};
 
     /*
     for (int n : N) {
