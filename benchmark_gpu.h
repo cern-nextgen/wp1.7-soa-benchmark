@@ -1,16 +1,7 @@
 #ifndef BENCHMARK_GPU_H
 #define BENCHMARK_GPU_H
 
-#include <span>
-
-#include <Eigen/Core>
-
-#include "wrapper/decorator.h"
-#include "wrapper/wrapper.h"
-
-#include <random>
-#include <chrono>
-#include <cfloat>
+#include <string>
 
 namespace benchmark { class State; }
 
@@ -19,17 +10,6 @@ struct S2 {
     template<template <class> class F_new>
     operator S2<F_new>() { return {x0, x1}; }
     F<int> x0, x1;
-};
-
-template <class T>
-struct device_memory_array {
-    device_memory_array(int N) : ptr(), N{N} { cudaMalloc((void**)&ptr, N * sizeof(T)); }
-    ~device_memory_array() { if (ptr != nullptr) cudaFree(ptr); }
-    __host__ operator std::span<T>() { return { ptr, ptr + N }; }
-    DECORATOR() constexpr T& operator[](int i) { return *(ptr + i); }
-    DECORATOR() constexpr const T& operator[](int i) const { return *(ptr + i); }
-    T* ptr;
-    int N;
 };
 
 template <class KernelInput>
@@ -44,7 +24,7 @@ __global__ void initialize(KernelInput data, int N) {
 template <class KernelInput>
 __global__ void add(KernelInput data, int N) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < N) data[idx].x0 = data[idx].x0 + data[idx].x1;
+    if (idx < N) data[idx].x0  = data[idx].x0 + data[idx].x1;
 }
 
 template <class KernelInput>
@@ -58,20 +38,20 @@ void BM_GPUTest(benchmark::State &state) {
     int n = state.range(0);
     state.counters["n_elem"] = n;
 
-    int blockSize = 1;
+    int blockSize = 32;
     int numBlocks = (n + blockSize - 1) / blockSize;
 
     auto t = Create()(n);
-    initialize<KernelInput><<<numBlocks, blockSize>>>(t, n);
-    cudaDeviceSynchronize();
-
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
     for (auto _ : state) {
+        initialize<KernelInput><<<numBlocks, blockSize>>>(t, n);
+        cudaDeviceSynchronize();
+
         cudaEventRecord(start, 0);
-        //add<KernelInput><<<numBlocks, blockSize>>>(t, n);
+        add<KernelInput><<<numBlocks, blockSize>>>(t, n);
         cudaEventRecord(stop, 0);
         cudaEventSynchronize(stop);
 
@@ -90,11 +70,9 @@ void BM_GPUTest(benchmark::State &state) {
     cudaFree(d_x0);
 
     for (int i = 0; i < n; i++) {
-        if (h_x0[i] != 1) {
-            printf("Error: Expected 1, got %d at index %d\n", h_x0[i], i);
-            break;
-        } else {
-            printf("Correct\n");
+        if (h_x0[i] != 2) {
+            std::string message = "Wrong result at index " + std::to_string(i) + ": expected 2, got " + std::to_string(h_x0[i]);
+            state.SkipWithError(message);
         }
     }
 }

@@ -1,9 +1,25 @@
+#include <span>
+
 #include <benchmark/benchmark.h>
+
+#include "wrapper/decorator.h"
+#include "wrapper/wrapper.h"
 
 #include "benchmark_gpu.h"
 //#include "benchmark_find_max_gpu.h"
 //#include "benchmark_estimate_pi_gpu.h"
 //#include "benchmark_bitonic_sort_gpu.h"
+
+template <class T>
+struct device_memory_array {
+    device_memory_array(int N) : ptr(), N{N} { cudaMalloc((void**)&ptr, N * sizeof(T)); }
+    ~device_memory_array() { if (ptr != nullptr) cudaFree(ptr); }
+    __host__ operator std::span<T>() { return { ptr, ptr + N }; }
+    DECORATOR() constexpr T& operator[](int i) { return *(ptr + i); }
+    DECORATOR() constexpr const T& operator[](int i) const { return *(ptr + i); }
+    T* ptr;
+    int N;
+};
 
 /*template<wrapper::layout L>
 struct CreateWrapper {
