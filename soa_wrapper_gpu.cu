@@ -7,7 +7,7 @@
 
 #include "benchmark_gpu.h"
 //#include "benchmark_find_max_gpu.h"
-//#include "benchmark_estimate_pi_gpu.h"
+#include "benchmark_estimate_pi_gpu.h"
 //#include "benchmark_bitonic_sort_gpu.h"
 
 template <class T>
@@ -15,8 +15,8 @@ struct device_memory_array {
     device_memory_array(int N) : ptr(), N{N} { cudaMalloc((void**)&ptr, N * sizeof(T)); }
     ~device_memory_array() { if (ptr != nullptr) cudaFree(ptr); }
     __host__ operator std::span<T>() { return { ptr, ptr + N }; }
-    DECORATOR() constexpr T& operator[](int i) { return *(ptr + i); }
-    DECORATOR() constexpr const T& operator[](int i) const { return *(ptr + i); }
+    constexpr T& operator[](int i) { return ptr[i]; }
+    constexpr const T& operator[](int i) const { return ptr[i]; }
     T* ptr;
     int N;
 };
@@ -37,15 +37,24 @@ struct CreateWrapper {
     }
 };
 
+template<wrapper::layout L>
+struct CreateWrapper2 {
+    wrapper::wrapper<S3_2, device_memory_array, L> operator()(int n) {
+        if constexpr (L == wrapper::layout::soa) return {n, n};
+        else return {n};
+    }
+};
+
+
 int main(int argc, char** argv) {
-    constexpr int N[] = {32}; //, 1<<12, 1<<14, 1<<16, 1<<18, 1<<20};
+    constexpr int N[] = {1<<10, 1<<12, 1<<14, 1<<16, 1<<18, 1<<20};
 
     for (int n : N) {
         using Create = CreateWrapper<wrapper::layout::soa>;
         using KernelInput = wrapper::wrapper<S2, std::span, wrapper::layout::soa>;
         benchmark::RegisterBenchmark("BM_GPUTest_SOA", BM_GPUTest<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
     }
-    
+
     for (int n : N) {
         using Create = CreateWrapper<wrapper::layout::aos>;
         using KernelInput = wrapper::wrapper<S2, std::span, wrapper::layout::aos>;
@@ -57,7 +66,7 @@ int main(int argc, char** argv) {
         using KernelInput = wrapper::wrapper<S3_1, std::span, wrapper::layout::soa>;
         benchmark::RegisterBenchmark("MAX_GPUTest_SOA", MAX_GPUTest<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
     }
-
+    
     for (int n : N) {
         using Create = CreateWrapper<wrapper::layout::aos>;
         using KernelInput = wrapper::wrapper<S3_1, std::span, wrapper::layout::aos>;
@@ -67,11 +76,23 @@ int main(int argc, char** argv) {
     for (int n : N) {
         benchmark::RegisterBenchmark("BITONIC_Simp", BITONIC_Simp)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
     }
+    */    
     
 
+    // SOA
     for (int n : N) {
-        benchmark::RegisterBenchmark("PiSimp_GPUTest", PiSimp_GPUTest)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
-    }*/
+        using Create = CreateWrapper2<wrapper::layout::soa>;
+        using KernelInput = wrapper::wrapper<S3_2, std::span, wrapper::layout::soa>;
+        benchmark::RegisterBenchmark("PiSimp_GPUTest_SOA", PiSimp_GPUTest<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
+    }
+
+    // AOS
+    for (int n : N) {
+        using Create = CreateWrapper2<wrapper::layout::aos>;
+        using KernelInput = wrapper::wrapper<S3_2, std::span, wrapper::layout::aos>;
+        benchmark::RegisterBenchmark("PiSimp_GPUTest_AOS", PiSimp_GPUTest<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
+    }
+
 
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();

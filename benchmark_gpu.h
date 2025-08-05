@@ -8,7 +8,7 @@ namespace benchmark { class State; }
 template <template <class> class F>
 struct S2 {
     template<template <class> class F_new>
-    operator S2<F_new>() { return {x0, x1}; }
+    constexpr operator S2<F_new>() { return {x0, x1}; }
     F<int> x0, x1;
 };
 
