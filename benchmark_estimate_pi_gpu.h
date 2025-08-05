@@ -12,7 +12,7 @@ namespace benchmark { class State; }
 template <template <class> class F>
 struct S3_2 {
     template<template <class> class F_new>
-    operator S3_2<F_new>() { return {x_axis, y_axis}; }
+    constexpr operator S3_2<F_new>() { return {x_axis, y_axis}; }
     F<float> x_axis;
     F<float> y_axis;
 };
