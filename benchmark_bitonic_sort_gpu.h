@@ -13,6 +13,8 @@
 #include <cfloat>
 #include <iostream>
 
+
+
 /* 
     OBS - this version does only work using a single block
 */
@@ -23,7 +25,7 @@ namespace benchmark { class State; }
 template <template <class> class F>
 struct S3_3 {
     template<template <class> class F_new>
-    constexpr operator S3_3<F_new>() { return {x0, x1, x2}; }
+    operator S3_3<F_new>() { return {x0, x1, x2}; }
     F<float> x0;
     F<float> x1;
     F<int> x2;

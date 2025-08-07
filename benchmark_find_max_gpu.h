@@ -1,25 +1,22 @@
 #ifndef BENCHMARK_FIND_MAX_GPU_H
 #define BENCHMARK_FIND_MAX_GPU_H
 
-#include "wrapper/wrapper.h"
-
 #include <random>
-#include <chrono>
 #include <cfloat>
 
 namespace benchmark { class State; }
 
 template <template <class> class F>
-struct S3_1 {
+struct s_max {
     template<template <class> class F_new>
-    constexpr operator S3_1<F_new>() { return {x0, x1, x2}; }
+    constexpr operator s_max <F_new>() { return {x0, x1, x2}; }
     F<float> x0;
     F<float> x1;
     F<int> x2;
 };
 
 template <class KernelInput>
-__global__ void initialize(KernelInput data, float *d_x0, int N) {
+__global__ void initialize_max(KernelInput data, float *d_x0, int N) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < N) {
         data[i].x0 = d_x0[i];
@@ -44,12 +41,13 @@ __device__ __forceinline__ void warp_reduce_max(float& val, int& idx) {
 
 template <class KernelInput>
 __global__ void arg_max(KernelInput data, int N) {
-    __shared__ float max_vals[32]; 
-    __shared__ int max_idxs[32]; 
+    constexpr int warp_size = 32;
+    __shared__ float max_vals[warp_size]; 
+    __shared__ int max_idxs[warp_size]; 
 
     int tid = threadIdx.x; 
-    int lane_id = tid % 32; 
-    int warp_id = tid / 32; 
+    int lane_id = tid % warp_size; 
+    int warp_id = tid / warp_size; 
 
     float local_max = -FLT_MAX; 
     int local_idx = -1; 
@@ -71,8 +69,8 @@ __global__ void arg_max(KernelInput data, int N) {
     __syncthreads(); 
 
     if (warp_id == 0) { 
-        float val = (tid < blockDim.x / 32) ? max_vals[lane_id] : -FLT_MAX; 
-        int idx = (tid < blockDim.x / 32) ? max_idxs[lane_id] : -1; 
+        float val = (tid < blockDim.x / warp_size) ? max_vals[lane_id] : -FLT_MAX; 
+        int idx = (tid < blockDim.x / warp_size) ? max_idxs[lane_id] : -1; 
 
         warp_reduce_max(val, idx); 
 
@@ -88,8 +86,7 @@ void MAX_GPUTest(benchmark::State &state) {
     int n = state.range();
     state.counters["n_elem"] = n;
 
-    // Set up random input generation
-    unsigned int seed = 0; // static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
+    unsigned int seed = 0;
     std::mt19937 rng(seed);
     std::uniform_real_distribution<float> dist(0, 10);
     std::vector<float> h_x0(n);
@@ -102,7 +99,9 @@ void MAX_GPUTest(benchmark::State &state) {
     auto t = Create()(n);
     int blockSize = 256;
     int numBlocks = (n + blockSize - 1) / blockSize;
-    initialize<KernelInput><<<numBlocks, blockSize>>>(t, d_x0, n);
+
+    initialize_max<KernelInput><<<numBlocks, blockSize>>>(t, d_x0, n);
+    
     cudaDeviceSynchronize();
     cudaFree(d_x0);
 
