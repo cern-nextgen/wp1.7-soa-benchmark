@@ -3,8 +3,6 @@
 
 #include <cstddef>
 
-#include "decorator.h"
-
 namespace helper {
 
 namespace detail {
@@ -28,17 +26,22 @@ struct is_aggregate_constructible_from_n {
     constexpr static bool value = is_aggregate_constructible_from_n_helper<T, N>::value && !is_aggregate_constructible_from_n_helper<T, N+1>::value;
 };
 
+template <typename T>
+constexpr bool false_type = false;
+
 }  // namespace detail
 
-template <class T> using value = T;
-
 template <class Argument>
-DECORATOR() constexpr std::size_t CountMembers() {
+constexpr std::size_t CountMembers() {
     if constexpr (detail::is_aggregate_constructible_from_n<Argument, 2>::value) return 2;
-    else if constexpr (detail::is_aggregate_constructible_from_n<Argument,  3>::value) return  3;
-    else if constexpr (detail::is_aggregate_constructible_from_n<Argument,  10>::value) return  10;
-    else if constexpr (detail::is_aggregate_constructible_from_n<Argument,  64>::value) return  64;
-    else return 100;  // Silence warnings about missing return value
+    else if constexpr (detail::is_aggregate_constructible_from_n<Argument, 3>::value) return 3;
+    else if constexpr (detail::is_aggregate_constructible_from_n<Argument, 6>::value) return 6;
+    else if constexpr (detail::is_aggregate_constructible_from_n<Argument, 10>::value) return 10;
+    else if constexpr (detail::is_aggregate_constructible_from_n<Argument, 64>::value) return 64;
+    else {
+        static_assert(detail::false_type<Argument>, "Unsupported number of members.");
+        return 100;  // Silence warnings about missing return value
+    }
 }
 
 template <
@@ -53,6 +56,9 @@ constexpr auto invoke(Argument & arg, FunctionObject&& f) {
     } else if constexpr (M == 3) {
         auto& [m00, m01, m02] = arg;
         return f(m00, m01, m02);
+    } else if constexpr (M == 6) {
+        auto& [m00, m01, m02, m03, m04, m05] = arg;
+        return f(m00, m01, m02, m03, m04, m05);
     } else if constexpr (M == 10) {
         auto& [m00, m01, m02, m03, m04, m05, m06, m07, m08, m09] = arg;
         return f(m00, m01, m02, m03, m04, m05, m06, m07, m08, m09);
@@ -71,7 +77,10 @@ constexpr auto invoke(Argument & arg, FunctionObject&& f) {
                 m40, m41, m42, m43, m44, m45, m46, m47, m48, m49,
                 m50, m51, m52, m53, m54, m55, m56, m57, m58, m59,
                 m60, m61, m62, m63);
-    } else return void();  // Silence warnings about missing return value
+    } else {
+        static_assert(detail::false_type<Argument>, "Unsupported number of members.");
+        return void();  // Silence warnings about missing return value
+    }
 }
 
 template <
