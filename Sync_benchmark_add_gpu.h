@@ -67,7 +67,6 @@ void SYNC_GPUAdd(benchmark::State &state) {
 
     initialize_add<KernelInput><<<numBlocks, blockSize>>>(t, d_x, d_y, d_z, n);
 
-    cudaFree(d_x);
     cudaFree(d_y);
     cudaFree(d_z);
 
@@ -86,6 +85,23 @@ void SYNC_GPUAdd(benchmark::State &state) {
         float milliseconds;
         cudaEventElapsedTime(&milliseconds, start, stop);
         state.SetIterationTime(milliseconds / 1000.0f);
+    }
+
+    std::vector<float> h_x_copy(n);
+
+    for (int i = 0; i < n; i++) {
+        h_x_copy[i] = h_x[i];
+    }
+
+    cudaMemcpy(h_x.data(), t.x.ptr, n * sizeof(float), cudaMemcpyDeviceToHost);
+
+    cudaFree(d_x);
+
+    for (int i = 0; i < n; i++) {
+        if (h_x[i] = h_x[i] + h_y[i] + h_z[i]) {
+            std::string message = "Wrong result at index " + std::to_string(i) + ": expected 2, got " + std::to_string(h_x[i]);
+            state.SkipWithError(message);
+        }
     }
 }
 
