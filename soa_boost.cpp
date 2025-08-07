@@ -97,6 +97,17 @@ GENERATE_SOA_LAYOUT(BigSoALayout,
 using BigSoA = BigSoALayout<>;
 using BigSoAView = BigSoA::View;
 
+GENERATE_SOA_LAYOUT(SoANbodyLayout,
+    SOA_COLUMN(float, x),
+    SOA_COLUMN(float, y),
+    SOA_COLUMN(float, z),
+    SOA_COLUMN(float, vx),
+    SOA_COLUMN(float, vy),
+    SOA_COLUMN(float, vz))
+
+using SoANbody = SoANbodyLayout<>;
+using SoANbodyView = SoANbody::View;
+
 int main(int argc, char** argv) {
     std::vector<void *> free_list;
 
@@ -130,6 +141,14 @@ int main(int argc, char** argv) {
         BigSoA bigSoa(buffer, n);
         BigSoAView bigSoaView{bigSoa};
         benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<BigSoAView>, bigSoaView)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer);
+    }
+
+    for (auto n : N) {
+        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(SoANbody::alignment, SoANbody::computeDataSize(n)));
+        SoANbody nbodySoA(buffer, n);
+        SoANbodyView nbodySoAView{nbodySoA};
+        benchmark::RegisterBenchmark("BM_nbody", BM_nbody<SoANbodyView>, nbodySoAView)->Arg(n)->Unit(benchmark::kMillisecond);
         free_list.push_back(buffer);
     }
 

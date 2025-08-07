@@ -41,6 +41,13 @@ struct S64 {
     F<Eigen::Matrix3d> x51, x52, x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63;
 };
 
+template <template <class> class F>
+struct Snbody {
+    template<template <class> class F_new>
+    operator Snbody<F_new>() { return {x, y, z, vx, vy, vz}; }
+    F<float> x, y, z, vx, vy, vz;
+};
+
 int main(int argc, char** argv) {
     constexpr wrapper::layout L = wrapper::layout::soa;
 
@@ -84,6 +91,16 @@ int main(int argc, char** argv) {
         using wrapper_type = wrapper::wrapper<S64, std::span, L>;
         wrapper_type t_span(t64);
         benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
+
+    for (std::size_t n : N) {
+        // n * 6 * sizeof(float);
+        std::size_t bytes = n * factory::get_size_in_bytes<Snbody, L>();
+        buffer_pointers.emplace_back(new std::byte[bytes]);
+        auto tnbody = factory::buffer_wrapper<Snbody, L>(buffer_pointers.back(), bytes);
+        using wrapper_type = wrapper::wrapper<Snbody, std::span, L>;
+        wrapper_type t_span(tnbody);
+        benchmark::RegisterBenchmark("BM_nbody", BM_nbody<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
     benchmark::Initialize(&argc, argv);

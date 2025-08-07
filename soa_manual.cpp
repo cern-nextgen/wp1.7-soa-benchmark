@@ -226,6 +226,31 @@ struct S64 {
     }
 };
 
+struct Snbody {
+    float* __restrict__ x, *__restrict__ y, *__restrict__ z;
+    float* __restrict__ vx, *__restrict__ vy, *__restrict__ vz;
+
+    Snbody(std::byte* buf, size_t n) {
+        size_t offset = 0;
+
+        x = reinterpret_cast<float* __restrict__>(buf);
+        offset += align_size(n * sizeof(float));
+        y = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        z = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        vx = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        vy = reinterpret_cast<float* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        vz = reinterpret_cast<float* __restrict__>(buf + offset);
+    }
+
+    static size_t size_bytes(size_t n) {
+        return align_size(sizeof(float[n])) * 6;
+    }
+};
+
 int main(int argc, char** argv) {
     benchmark::Initialize(&argc, argv);
     std::vector<void *> free_list;
@@ -255,6 +280,13 @@ int main(int argc, char** argv) {
         auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, S64::size_bytes(n)));
         S64 t64(buffer, n);
         benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<S64>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer);
+    }
+
+    for (auto n : N) {
+        auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, Snbody::size_bytes(n)));
+        Snbody t64(buffer, n);
+        benchmark::RegisterBenchmark("BM_nbody", BM_nbody<Snbody>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
         free_list.push_back(buffer);
     }
 

@@ -380,4 +380,70 @@ void BM_CPUHardRW(benchmark::State &state, T t)
     state.counters["n_elem"] = n;
 }
 
+inline float rand_float() {
+    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+}
+
+template <typename T>
+void BM_nbody(benchmark::State &state, T t)
+{
+    auto n = state.range(0);
+    float dt = 0.01f;
+    const float softening = 1e-9f;
+
+    std::vector<float> Fx(n, 0.0f);
+    std::vector<float> Fy(n, 0.0f);
+    std::vector<float> Fz(n, 0.0f);
+
+    // Inizializza le posizioni e velocità
+    for (int i = 0; i < n; ++i) {
+        MEMBER_ACCESS(t, x, i) = rand_float();
+        MEMBER_ACCESS(t, y, i) = rand_float();
+        MEMBER_ACCESS(t, z, i) = rand_float();
+        MEMBER_ACCESS(t, vx, i) = rand_float();
+        MEMBER_ACCESS(t, vy, i) = rand_float();
+        MEMBER_ACCESS(t, vz, i) = rand_float();
+    }
+
+    for (auto _ : state) {
+        // Calcolo delle forze
+        for (int i = 0; i < n; ++i) {
+            Fx[i] = 0.0f;
+            Fy[i] = 0.0f;
+            Fz[i] = 0.0f;
+
+            for (int j = 0; j < n; ++j) {
+                if (i != j) {
+                    float dx = MEMBER_ACCESS(t, x, j) - MEMBER_ACCESS(t, x, i);
+                    float dy = MEMBER_ACCESS(t, y, j) - MEMBER_ACCESS(t, y, i);
+                    float dz = MEMBER_ACCESS(t, z, j) - MEMBER_ACCESS(t, z, i);
+                    float distSqr = dx * dx + dy * dy + dz * dz + softening;
+                    float invDist = 1.0f / std::sqrt(distSqr);
+                    float invDist3 = invDist * invDist * invDist;
+
+                    Fx[i] += dx * invDist3;
+                    Fy[i] += dy * invDist3;
+                    Fz[i] += dz * invDist3;
+                }
+            }
+
+            MEMBER_ACCESS(t, vx, i) += dt * Fx[i];
+            MEMBER_ACCESS(t, vy, i) += dt * Fy[i];
+            MEMBER_ACCESS(t, vz, i) += dt * Fz[i];
+        }
+
+        // Integrazione posizioni
+        for (int i = 0; i < n; ++i) {
+            MEMBER_ACCESS(t, x, i) += MEMBER_ACCESS(t, vx, i) * dt;
+            MEMBER_ACCESS(t, y, i) += MEMBER_ACCESS(t, vy, i) * dt;
+            MEMBER_ACCESS(t, z, i) += MEMBER_ACCESS(t, vz, i) * dt;
+        }
+    }
+
+    state.counters["n_elem"] = n;
+    state.counters["N^2_interactions"] = benchmark::Counter(
+        static_cast<double>(n) * static_cast<double>(n),
+        benchmark::Counter::kIsRate);
+}
+
 #endif // BENCHMARK_H
