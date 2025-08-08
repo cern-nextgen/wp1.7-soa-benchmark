@@ -60,6 +60,7 @@ https://github.com/cern-nextgen/wp1.7-soa-benchmark/blob/main/benchmark.h
 #include "benchmark_estimate_pi_gpu.h"
 #include "Sync_benchmark_add_gpu.h"
 #include "Sync_benchmark_posvel_gpu.h"
+#include "Sync_benchmark_posvel_shuf_gpu.h"
 //#include "benchmark_bitonic_sort_gpu.h"
 
 
@@ -111,6 +112,14 @@ struct CreateWrapperAdd {
 template<wrapper::layout L>
 struct CreateWrapperPosVel {
     wrapper::wrapper<s_posvel, device_memory_array, L> operator()(int n) {
+        if constexpr (L == wrapper::layout::soa) return {n, n, n, n, n, n};
+        else return {n};
+    }
+};
+
+template<wrapper::layout L>
+struct CreateWrapperPosVelShuf {
+    wrapper::wrapper<s_posvel_shuf, device_memory_array, L> operator()(int n) {
         if constexpr (L == wrapper::layout::soa) return {n, n, n, n, n, n};
         else return {n};
     }
@@ -184,6 +193,18 @@ int main(int argc, char** argv) {
         using Create = CreateWrapperPosVel<wrapper::layout::aos>;
         using KernelInput = wrapper::wrapper<s_posvel, std::span, wrapper::layout::aos>;
         benchmark::RegisterBenchmark("SYNC_GPUPosVel_AOS", SYNC_GPUPosVel<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
+    }
+
+    for (int n : N) {
+        using Create = CreateWrapperPosVelShuf<wrapper::layout::soa>;
+        using KernelInput = wrapper::wrapper<s_posvel_shuf, std::span, wrapper::layout::soa>;
+        benchmark::RegisterBenchmark("SYNC_GPUPosVelShuf_SOA", SYNC_GPUPosVelShuf<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
+    }
+
+    for (int n : N) {
+        using Create = CreateWrapperPosVelShuf<wrapper::layout::aos>;
+        using KernelInput = wrapper::wrapper<s_posvel_shuf, std::span, wrapper::layout::aos>;
+        benchmark::RegisterBenchmark("SYNC_GPUPosVelShuf_AOS", SYNC_GPUPosVelShuf<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
     }
 
     benchmark::Initialize(&argc, argv);
