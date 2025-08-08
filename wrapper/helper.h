@@ -36,6 +36,7 @@ constexpr std::size_t CountMembers() {
     else if constexpr (detail::is_aggregate_constructible_from_n<Argument,  10>::value) return  10;
     else if constexpr (detail::is_aggregate_constructible_from_n<Argument,  64>::value) return  64;
     else if constexpr (detail::is_aggregate_constructible_from_n<Argument, 6>::value) return 6;
+    else if constexpr (detail::is_aggregate_constructible_from_n<Argument, 3>::value) return 3;
     else return 100;  // Silence warnings about missing return value
 }
 
@@ -70,6 +71,11 @@ template <
         auto& [m00, m01, m02, m03, m04, m05] = arg;
         return f(m00, m01, m02, m03, m04, m05);
     }
+    else if constexpr (M == 3) {
+        auto& [m00, m01, m02] = arg;
+        return f(m00, m01, m02);
+    }
+
     else return void();  // Silence warnings about missing return value
 }
 

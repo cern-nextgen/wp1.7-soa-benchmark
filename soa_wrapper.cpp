@@ -48,6 +48,13 @@ struct Snbody {
     F<float> x, y, z, vx, vy, vz;
 };
 
+template <template <class> class F>
+struct Sstencil {
+    template<template <class> class F_new>
+    operator Sstencil<F_new>() { return {src, dst, rhs}; }
+    F<double> src, dst, rhs;
+};
+
 int main(int argc, char** argv) {
     constexpr wrapper::layout L = wrapper::layout::soa;
 
@@ -102,6 +109,17 @@ int main(int argc, char** argv) {
         wrapper_type t_span(tnbody);
         benchmark::RegisterBenchmark("BM_nbody", BM_nbody<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
     }
+    
+    for (std::size_t n : N) {
+        // n * 6 * sizeof(float);
+        std::size_t bytes = n * factory::get_size_in_bytes<Sstencil, L>();
+        buffer_pointers.emplace_back(new std::byte[bytes]);
+        auto tstencil = factory::buffer_wrapper<Sstencil, L>(buffer_pointers.back(), bytes);
+        using wrapper_type = wrapper::wrapper<Sstencil, std::span, L>;
+        wrapper_type t_span(tstencil);
+        benchmark::RegisterBenchmark("BM_stencil", BM_stencil<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
+
 
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();

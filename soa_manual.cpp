@@ -251,6 +251,24 @@ struct Snbody {
     }
 };
 
+struct Sstencil {
+    double* __restrict__ src, *__restrict__ dst, *__restrict__ rhs;
+
+    Sstencil(std::byte* buf, size_t n) {
+        size_t offset = 0;
+
+        src = reinterpret_cast<double* __restrict__>(buf);
+        offset += align_size(n * sizeof(double));
+        dst = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        rhs = reinterpret_cast<double* __restrict__>(buf + offset);
+    }
+
+    static size_t size_bytes(size_t n) {
+        return align_size(sizeof(double[n])) * 3;
+    }
+};
+
 int main(int argc, char** argv) {
     benchmark::Initialize(&argc, argv);
     std::vector<void *> free_list;
@@ -287,6 +305,13 @@ int main(int argc, char** argv) {
         auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, Snbody::size_bytes(n)));
         Snbody t64(buffer, n);
         benchmark::RegisterBenchmark("BM_nbody", BM_nbody<Snbody>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer);
+    }
+
+    for (auto n : N) {
+        auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, Sstencil::size_bytes(n)));
+        Sstencil t64(buffer, n);
+        benchmark::RegisterBenchmark("BM_stencil", BM_stencil<Sstencil>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
         free_list.push_back(buffer);
     }
 

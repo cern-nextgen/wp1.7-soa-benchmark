@@ -108,6 +108,14 @@ GENERATE_SOA_LAYOUT(SoANbodyLayout,
 using SoANbody = SoANbodyLayout<>;
 using SoANbodyView = SoANbody::View;
 
+GENERATE_SOA_LAYOUT(Stencil,
+    SOA_COLUMN(double, src),
+    SOA_COLUMN(double, dst),
+    SOA_COLUMN(double, rhs))
+
+using SoAStencil = Stencil<>;
+using SoAStencilView = SoAStencil::View;
+
 int main(int argc, char** argv) {
     std::vector<void *> free_list;
 
@@ -149,6 +157,14 @@ int main(int argc, char** argv) {
         SoANbody nbodySoA(buffer, n);
         SoANbodyView nbodySoAView{nbodySoA};
         benchmark::RegisterBenchmark("BM_nbody", BM_nbody<SoANbodyView>, nbodySoAView)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer);
+    }
+
+    for (auto n : N) {
+        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(SoAStencil::alignment, SoAStencil::computeDataSize(n)));
+        SoAStencil stencilSoA(buffer, n);
+        SoAStencilView stencilSoAView{stencilSoA};
+        benchmark::RegisterBenchmark("BM_stencil", BM_stencil<SoAStencilView>, stencilSoAView)->Arg(n)->Unit(benchmark::kMillisecond);
         free_list.push_back(buffer);
     }
 

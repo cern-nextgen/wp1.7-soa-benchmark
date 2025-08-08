@@ -446,4 +446,58 @@ void BM_nbody(benchmark::State &state, T t)
         benchmark::Counter::kIsRate);
 }
 
+// Exact solution (for comparison)
+inline double solution_poisson(const double x) {
+    return x * (x - 1) * std::exp(x);
+}
+
+template <typename T>
+void BM_stencil(benchmark::State &state, T t)
+{
+    const auto n = state.range(0);
+
+    // Domain: [0, L]
+    constexpr double L = 1.0;
+    const double dx = L / static_cast<double>(n - 1);
+    const double dx2 = dx * dx;
+
+    // Initialise the domain
+    for (int i = 0; i < n; ++i) {
+        const double x = static_cast<double>(i) * dx;
+        MEMBER_ACCESS(t, src, i) = 0.0;
+        MEMBER_ACCESS(t, dst, i) = 0.0;
+        MEMBER_ACCESS(t, rhs, i) = -x * (x + 3) * std::exp(x);
+    }
+
+    for (auto _ : state) {
+        for (int i = 1; i < n - 1; ++i) {
+            const double u_left  = MEMBER_ACCESS(t, src, i - 1);
+            const double u_right = MEMBER_ACCESS(t, src, i + 1);
+            const double f       = MEMBER_ACCESS(t, rhs, i);
+            MEMBER_ACCESS(t, dst, i) = 0.5 * (u_left + u_right + dx2 * f);
+        }
+
+        // Maybe use a pointer swap instead
+        for (int i = 1; i < n - 1; ++i) {
+            const double u_left  = MEMBER_ACCESS(t, dst, i - 1);
+            const double u_right = MEMBER_ACCESS(t, dst, i + 1);
+            const double f       = MEMBER_ACCESS(t, rhs, i);
+            MEMBER_ACCESS(t, src, i) = 0.5 * (u_left + u_right + dx2 * f);
+        }
+    }
+
+    /*
+    for (int i = 1; i < n; ++i) {
+        const double x = static_cast<double>(i) * dx;
+        const double u_ex = solution_poisson(x);
+        CheckResult(state, u_ex, MEMBER_ACCESS(t, src, i), "src");
+    }
+    */
+
+    state.counters["n_elem"] = static_cast<double>(n);
+    state.counters["N^2_interactions"] = benchmark::Counter(
+        static_cast<double>(n) * 2.0,
+        benchmark::Counter::kIsRate);
+}
+
 #endif // BENCHMARK_H
