@@ -91,8 +91,8 @@ function(add_edg_executable target sources)
         COMMAND ${CMAKE_CXX_COMPILER} $<TARGET_PROPERTY:${target},COMPILE_OPTIONS>
                 "-D$<JOIN:$<TARGET_PROPERTY:${target},COMPILE_DEFINITIONS>,;-D>"
                 "-I$<JOIN:$<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>,;-I>"
-                --dependencies ${sources} | sed "s/^${target}.o://" | sed "'s/$$/ \\\\/'"
-                >> CMakeFiles/${target}.dir/${target}.cpp.o.d
+                --dependencies "${CMAKE_CURRENT_SOURCE_DIR}/$<JOIN:${sources},;${CMAKE_CURRENT_SOURCE_DIR}/>"
+                | sed "s/^${target}.o://" | sed "'s/$$/ \\\\/'" >> CMakeFiles/${target}.dir/${target}.cpp.o.d
         COMMENT "Add dependencies to CMakeFiles/${target}.dir/${target}.cpp.o.d"
         BYPRODUCTS CMakeFiles/${target}.dir/${target}.cpp.o.d
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
