@@ -17,13 +17,19 @@ struct s_point {
 
 template <class KernelInput>
 __global__ void initialize_add(KernelInput data, float *d_x, const float *d_y, const float *d_z, int N) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < N) {
-        data[i].x = d_x[i];
-        data[i].y = d_y[i];
-        data[i].z = d_z[i];
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < N) {
+        data[idx].x = d_x[idx];
+        data[idx].y = d_y[idx];
+        data[idx].z = d_z[idx];
     }
 } 
+
+template <class KernelInput>
+__global__ void return_add(KernelInput data, float* out, int N) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < N) out[idx] = data[idx].x;
+}
 
 template <class KernelInput>
 __global__ void sync_test_add(KernelInput data, int N) {
@@ -93,12 +99,13 @@ void SYNC_GPUAdd(benchmark::State &state) {
         h_x_copy[i] = h_x[i];
     }
 
-    cudaMemcpy(h_x.data(), t.x.ptr, n * sizeof(float), cudaMemcpyDeviceToHost);
+    return_add<KernelInput><<<numBlocks, blockSize>>>(t, d_x, n);
+    cudaMemcpy(h_x.data(), d_x, n * sizeof(float), cudaMemcpyDeviceToHost);
 
     cudaFree(d_x);
 
     for (int i = 0; i < n; i++) {
-        if (h_x[i] = h_x[i] + h_y[i] + h_z[i]) {
+        if (h_x_copy[i] == h_x[i] + h_y[i] + h_z[i]) {
             std::string message = "Wrong result at index " + std::to_string(i) + ": expected 2, got " + std::to_string(h_x[i]);
             state.SkipWithError(message);
         }
