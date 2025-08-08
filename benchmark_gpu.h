@@ -14,10 +14,10 @@ struct S2 {
 
 template <class KernelInput>
 __global__ void initialize(KernelInput data, int N) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < N) {
-        data[i].x0 = 1;
-        data[i].x1 = 1;
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < N) {
+        data[idx].x0 = 1;
+        data[idx].x1 = 1;
     }
 }
 
@@ -29,8 +29,8 @@ __global__ void add(KernelInput data, int N) {
 
 template <class KernelInput>
 __global__ void copy_x0(KernelInput data, int * d_x0, int N) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < N) d_x0[i] = data[i].x0;
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < N) d_x0[idx] = data[idx].x0;
 }
 
 template <class Create, class KernelInput>

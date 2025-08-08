@@ -16,10 +16,10 @@ struct s_coordinates {
 
 template <class KernelInput>
 __global__ void initialize_coordinates(KernelInput data, const float *d_x_axis, const float *d_y_axis, int N) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < N) {
-        data[i].x_axis = d_x_axis[i];
-        data[i].y_axis = d_y_axis[i];
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < N) {
+        data[idx].x_axis = d_x_axis[idx];
+        data[idx].y_axis = d_y_axis[idx];
     }
 } 
 

@@ -55,7 +55,7 @@ https://github.com/cern-nextgen/wp1.7-soa-benchmark/blob/main/benchmark.h
 #include "wrapper/decorator.h"
 #include "wrapper/wrapper.h"
 
-#include "benchmark_gpu.h"
+// #include "benchmark_gpu.h"
 #include "benchmark_find_max_gpu.h"
 #include "benchmark_estimate_pi_gpu.h"
 #include "Sync_benchmark_add_gpu.h"
