@@ -9,7 +9,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -Rpass-analysis=loop-vectorize -Rpass=loop-vectorize -Rpass-missed=loop-vectorize -march=native -funroll-loops -ffast-math -funsafe-math-optimizations")
 
 # For gcc
-set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -fopt-info-vec -march=native -funroll-loops -ffast-math -funsafe-math-optimizations")
+set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -march=native -funroll-loops -ffast-math -funsafe-math-optimizations \
+--param inline-unit-growth=1000 --param large-stack-frame-growth=1000 --param large-function-growth=2000 \
+--param max-inline-insns-single=1000 --param max-inline-insns-auto=1000 -flto -fopt-info-vec")
 
 find_package(benchmark REQUIRED)
 find_package(Boost REQUIRED)

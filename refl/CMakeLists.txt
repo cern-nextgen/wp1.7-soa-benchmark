@@ -12,12 +12,10 @@ message(STATUS "Linking EDG versions with ${EDG_LINKER}")
 set(CMAKE_DEPFILE_FLAGS_CXX "")
 message(STATUS "CMAKE_DEPFILE_FLAGS_CXX: ${CMAKE_DEPFILE_FLAGS_CXX}")
 
-set(EDG_CPFE_DEFAULT_OPTIONS --g++ --set_flag=reflection --c++26 --gnu 140200 -tlocal --no_strict_gnu --no_char8_t
-                             --extern_inline)
+set(EDG_CPFE_DEFAULT_OPTIONS --g++ --set_flag=reflection --c++26 --gnu 140200 -tlocal --no_strict_gnu --no_char8_t)
 set(EDG_DEFAULT_DEFINES __CHAR_BIT__=8  _POSIX_SOURCE)
 set(EDG_C_TO_OBJ_DEFAULT_OPTIONS -Dsetjmp=_setjmp -Dva_copy=__va_copy -falign-functions=4 -march=skylake
-                                 ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE_UPPER}} ${CMAKE_CXX_FLAGS}
-                                 -finline-functions)
+                                 ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE_UPPER}} ${CMAKE_CXX_FLAGS})
 separate_arguments(EDG_C_TO_OBJ_DEFAULT_OPTIONS)
 set(EDG_C_TO_OBJ_LIBRARIES -shared-libgcc -lstdc++ -lgcc_s -lpthread -lm)
 
@@ -83,6 +81,8 @@ function(add_edg_executable target sources)
                                             -LCMakeFiles/${target}.dir/${target}.diagnostics)
 
     target_compile_definitions(${target} PUBLIC ${EDG_DEFAULT_DEFINES})
+
+    list(APPEND CMAKE_DEPENDS_DEPENDENCY_FILES CMakeFiles/${target}.dir/link.d)
 
     add_custom_command(
         TARGET ${target}
