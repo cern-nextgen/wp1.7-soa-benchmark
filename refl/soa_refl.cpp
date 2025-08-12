@@ -29,6 +29,14 @@ struct S64 {
     Eigen::Matrix3d &x51, &x52, &x53, &x54, &x55, &x56, &x57, &x58, &x59, &x60, &x61, &x62, &x63;
 };
 
+struct Snbody {
+    float &x, &y, &z, &vx, &vy, &vz;
+};
+
+struct Sstencil {
+    double &src, &dst, &rhs;
+};
+
 int main(int argc, char **argv)
 {
     // Seperate loops to sort the output by benchmark.
@@ -57,12 +65,28 @@ int main(int argc, char **argv)
         benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<SoA>, t)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
-    for (auto n : N) {
+        for (auto n : N) {
         using SoA = rmpp::AoS2SoA<S64, 64>;
         auto byte_size = SoA::ComputeSize(n);
         auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
         SoA t(buffer, byte_size, n);
         benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<SoA>, t)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
+
+    for (auto n : N) {
+        using SoA = rmpp::AoS2SoA<Snbody, 64>;
+        auto byte_size = SoA::ComputeSize(n);
+        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
+        SoA t(buffer, byte_size, n);
+        benchmark::RegisterBenchmark("BM_nbody", BM_nbody<SoA>, t)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
+
+    for (auto n : N) {
+        using SoA = rmpp::AoS2SoA<Sstencil, 64>;
+        auto byte_size = SoA::ComputeSize(n);
+        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
+        SoA t(buffer, byte_size, n);
+        benchmark::RegisterBenchmark("BM_stencil", BM_stencil<SoA>, t)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
     benchmark::Initialize(&argc, argv);
