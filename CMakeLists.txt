@@ -8,12 +8,23 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -Rpass-analysis=loop-vectorize -Rpass=loop-vectorize \
 -Rpass-missed=loop-vectorize -march=native -funroll-loops -ffast-math -funsafe-math-optimizations")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+elseif (ENABLE_EDG)
     set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -fopt-info-vec -march=native -funroll-loops -ffast-math \
 -funsafe-math-optimizations --param inline-unit-growth=1000 --param large-stack-frame-growth=1000 \
 --param large-function-growth=2000 --param max-inline-insns-single=1000 --param max-inline-insns-auto=1000 \
 -flto -fopt-info-vec")
+    include(edg_config.cmake)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -fopt-info-vec -march=native -funroll-loops -ffast-math")
 endif()
+
+function(add_benchmark_executable target sources)
+    if (ENABLE_EDG)
+        add_edg_executable(${target} ${sources})
+    else()
+        add_executable(${target} ${sources})
+    endif()
+endfunction()
 
 # Detect if build dir contains "vtune"
 get_filename_component(BUILD_DIR_NAME ${CMAKE_BINARY_DIR} NAME)
@@ -38,13 +49,13 @@ if (NOT CXX_FORMAT_SUPPORT)
     add_compile_definitions(USE_FMTLIB_POLYFILL)
 endif()
 
-add_executable(soa_wrapper soa_wrapper.cpp)
+add_benchmark_executable(soa_wrapper soa_wrapper.cpp)
 target_include_directories(soa_wrapper PUBLIC wrapper)
 
-add_executable(soa_boost soa_boost.cpp)
+add_benchmark_executable(soa_boost soa_boost.cpp)
 target_include_directories(soa_boost PUBLIC boost)
 target_link_libraries(soa_boost Boost::boost)
 
-add_executable(soa_manual soa_manual.cpp)
+add_benchmark_executable(soa_manual soa_manual.cpp)
 
 add_subdirectory(refl)
