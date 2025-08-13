@@ -16,7 +16,7 @@ jobs:
           submodules: 'recursive'
       - name: build and compile
         run: |
-          cmake -B ${{github.workspace}}
+          cmake -DENABLE_EDG=ON -B ${{github.workspace}}
           cmake --build ${{github.workspace}} --verbose
       - name: run benchmarks
         run: |
