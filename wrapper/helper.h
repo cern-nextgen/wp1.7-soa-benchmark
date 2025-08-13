@@ -89,7 +89,7 @@ struct memberwise {
     FunctionObject f;
 
     template <class... Args>
-    [[gnu::always_inline]] constexpr S<F_out> operator()(Args&... args) const { return {f(args)...}; }
+    [[gnu::always_inline]] constexpr S<F_out> operator()(Args&... args) const { return {f.template operator()<F_in>(args)...}; }
 };
 
 template <
