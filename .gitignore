@@ -7,3 +7,8 @@ cmake_install.cmake
 
 soa_boost
 soa_wrapper
+
+# GCC -fdump-ipa-all option files
+*ltrans*
+*wpa*
+*[0-9][0-9][0-9]i*
