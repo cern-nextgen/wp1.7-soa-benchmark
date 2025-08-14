@@ -40,7 +40,7 @@ def plot_results(df, title, out_dir, min_y=-0.000001, max_y=1000):
     ax.set_xticks(df_mean['n_elem'].unique(), labels=["{:g}".format(x) for x in df_mean['n_elem'].unique()], minor=False)
 
     ax.set_ylabel(f'Real Time ({df["time_unit"].iloc[0]})')
-    #ax.set_yscale('log', base=2)
+    ax.set_yscale('log', base=2)
     ax.yaxis.set_major_formatter(FuncFormatter(lambda y, _: '{:g}'.format(y)))
     plt.ylim(min_y, max_y)
     plt.grid()
