@@ -12,13 +12,10 @@ jobs:
     container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark:latest
     steps:
       - uses: actions/checkout@v4
-      - name: build and compile
-        run: |
-          cmake -B ${{github.workspace}}-vtune
-          cmake --build ${{github.workspace}}-vtune
       - name: run benchmarks
         run: |
           env
+          find vtune
           source /opt/intel/oneapi/vtune/setvars.sh
           env
           vtune --help
