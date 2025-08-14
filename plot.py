@@ -1,74 +1,42 @@
-import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
-import pandas as pd
-import subprocess
-import sys
-import os
 import json
-import math
+import sys
 
-def read_data(filename):
-    """
-    Reads the Google Benchmark data from a CSV string and returns a DataFrame.
-    """
-    with open(filename, "r") as read_file:
-        data = json.load(read_file)
-        df = pd.DataFrame.from_dict(data["benchmarks"]).astype({"real_time": float})
-        df["benchmark"] = df["name"].apply(lambda x: x.split('/')[0])
-    return df
+import matplotlib.pyplot as plt
 
-def plot_results(df, title, out_dir, min_y=-0.000001, max_y=1000):
-    """
-    Plots the results from the DataFrame.
-    """
-    # Set the figure size
+def read_data(json_file, filter_names):
+    with open(json_file, "r") as f:
+        data = json.load(f)
+
+    results = {name: {"n_elem": [], "real_time": []} for name in filter_names}
+
+    for bench in data.get("benchmarks", []):
+        name = bench.get("name", "")
+        for filter_name in filter_names:
+            if name.startswith(filter_name):
+                results[filter_name]["n_elem"].append(bench["n_elem"])
+                results[filter_name]["real_time"].append(bench["real_time"])
+                break
+
+    return results
+
+def plot(results, title, output_file):
     plt.figure(figsize=(10, 6))
-    ax = plt.subplot(111)
-
-    # Plot the data
-    for bm in df["benchmark"].unique():
-        # Filter the DataFrame for the current benchmark
-        df_mean = df[(df["benchmark"] == bm) & (df["aggregate_name"] == "mean")]
-        df_std = df[(df["benchmark"] == bm) & (df["aggregate_name"] == "stddev")]
-        ax.errorbar(df_mean['n_elem'].astype(int), df_mean['real_time'], yerr=df_std["real_time"],
-                    ls="-", marker="o", label=bm)
-
-    # Set the title and labels
-    ax.set_title(title)
-    ax.set_xlabel('Number of Elements')
-    ax.set_xscale('log', base=2)
-    ax.set_xticks(df_mean['n_elem'].unique(), labels=["{:g}".format(x) for x in df_mean['n_elem'].unique()], minor=False)
-
-    ax.set_ylabel(f'Real Time ({df["time_unit"].iloc[0]})')
-    ax.set_yscale('log', base=2)
-    ax.yaxis.set_major_formatter(FuncFormatter(lambda y, _: '{:g}'.format(y)))
-    plt.ylim(min_y, max_y)
+    plt.title(title)
+    #plt.xticks(results['n_elem'], labels=["{:g}".format(x) for x in results['n_elem']], minor=False)
     plt.grid()
-
-    # Add a legend
+    for key, value in results.items():
+        plt.loglog(value['n_elem'], value['real_time'], base=2, marker='o', label=key)
+    plt.xlabel('Number of Elements')
+    plt.ylabel('Execution Time (ms)')
+    plt.grid(True)
     plt.legend()
-
-    # Show the plot
-    plt.savefig(f'{out_dir}/{"_".join(title.split())}.png')
+    plt.savefig(output_file)
+    plt.close()
 
 if __name__ == "__main__":
-    print("Running the benchmarks...")
-
-    dirname = sys.argv[1]
-
-    results = {}
-    for f, t in zip(['soa_wrapper_gpu'],
-                    ['AoS vs SoA for the CUDA kernel x+y+z']):
-        filename = f"{dirname}/{f}"
-
-        # Comment this to plot the results from locally saved json files, without running the benchmarks.
-        subprocess.run([f"{filename}", "--benchmark_filter=SYNC_GPUAdd_*", "--benchmark_out_format=json", f"--benchmark_out={filename}.json",
-                        "--benchmark_counters_tabular=true", "--benchmark_repetitions=3", "--benchmark_min_warmup_time=2"])
-
-        results[f] = (read_data(f"{filename}.json"), t)
-
-    # Round the y-axis up/down to the nearest power of 10
-    max_y = max([df[df["aggregate_name"] == "mean"]["real_time"].max() for (df, _) in results.values()])
-    min_y = min([df[df["aggregate_name"] == "mean"]["real_time"].min() for (df, _) in results.values()])
-    for (results, t) in results.values():
-        plot_results(results, t, dirname, min_y, max_y)
+    json_file = sys.argv[1]
+    output_file = sys.argv[2]
+    title = sys.argv[3]
+    filter_names = sys.argv[4:]
+    results = read_data(json_file, filter_names)
+    plot(results, title, output_file)
