@@ -147,15 +147,15 @@ void SYNC_GPUPosVel(benchmark::State &state) {
 
     for (int i = 0; i < n; i++) {
         if (h_x_copy[i] == h_x[i] + h_vx[i] * h) {
-            std::string message = "Wrong result at index " + std::to_string(i) + ": expected 2, got " + std::to_string(h_x[i]);
+            std::string message = "Wrong result at index " + std::to_string(i) + ": got " + std::to_string(h_x[i]);
             state.SkipWithError(message);
         }
         if (h_y_copy[i] == h_y[i] + h_vy[i] * h) {
-            std::string message = "Wrong result at index " + std::to_string(i) + ": expected 2, got " + std::to_string(h_y[i]);
+            std::string message = "Wrong result at index " + std::to_string(i) + ": got " + std::to_string(h_y[i]);
             state.SkipWithError(message);
         }
         if (h_z_copy[i] == h_z[i] + h_vz[i] * h) {
-            std::string message = "Wrong result at index " + std::to_string(i) + ": expected 2, got " + std::to_string(h_z[i]);
+            std::string message = "Wrong result at index " + std::to_string(i) + ": got " + std::to_string(h_z[i]);
             state.SkipWithError(message);
         }
     }
