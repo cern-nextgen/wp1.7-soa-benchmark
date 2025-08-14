@@ -18,10 +18,14 @@ jobs:
           cmake --build ${{github.workspace}}-vtune
       - name: run benchmarks
         run: |
-          python3 run_benchmarks_with_vtune.py ${{github.workspace}}-vtune soa_versions.csv
-          python3 plot_benchmarks.py ${{github.workspace}}-vtune soa_versions.csv
-          echo "Files in Workspace Directory:"
-          ls -l ${{github.workspace}}-vtune
+          env
+          source /opt/intel/oneapi/vtune/setvars.sh
+          env
+          vtune --help
+          # python3 run_benchmarks_with_vtune.py ${{github.workspace}}-vtune soa_versions.csv
+          # python3 plot_benchmarks.py ${{github.workspace}}-vtune soa_versions.csv
+          # echo "Files in Workspace Directory:"
+          # ls -l ${{github.workspace}}-vtune
       - name: collect artifacts
         run: |
           mkdir soa-benchmark-results
