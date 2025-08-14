@@ -20,8 +20,8 @@ jobs:
           cmake --build "$BUILD_DIR"
       - name: run benchmarks
         run: |
-          python3 run_benchmarks_with_vtune.py "$BUILD_DIR" soa_versions_vtune.csv
-          python3 plot_benchmarks.py "$BUILD_DIR" soa_versions_vtune.csv
+          python3 run_benchmarks_with_vtune.py "$BUILD_DIR" soa_versions.csv
+          python3 plot_benchmarks.py "$BUILD_DIR" soa_versions.csv
           echo "Files in Workspace Directory:"
           ls -l "$BUILD_DIR"
       - name: collect artifacts
