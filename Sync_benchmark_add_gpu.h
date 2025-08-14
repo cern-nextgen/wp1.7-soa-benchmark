@@ -16,9 +16,12 @@ struct s_point {
 };
 
 template <class KernelInput>
-__global__ void initialize_add(KernelInput data, float *d_x, const float *d_y, const float *d_z, int N) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < N) {
+__global__ void initialize_add(KernelInput data, float* d_x, const float*__restrict__ d_y, const float* __restrict__ d_z, unsigned long long N) {
+
+    unsigned long long idx = blockIdx.x * (unsigned long long)blockDim.x + threadIdx.x;
+    unsigned long long stride  = (unsigned long long)blockDim.x * gridDim.x;
+
+    for (; idx < N; idx += stride) {
         data[idx].x = d_x[idx];
         data[idx].y = d_y[idx];
         data[idx].z = d_z[idx];
@@ -26,21 +29,29 @@ __global__ void initialize_add(KernelInput data, float *d_x, const float *d_y, c
 } 
 
 template <class KernelInput>
-__global__ void return_add(KernelInput data, float* out, int N) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < N) out[idx] = data[idx].x;
+__global__ void return_add(KernelInput data, float* out, unsigned long long N) {
+
+    unsigned long long idx = blockIdx.x * (unsigned long long)blockDim.x + threadIdx.x;
+    unsigned long long stride  = (unsigned long long)blockDim.x * gridDim.x;
+
+    for (; idx < N; idx += stride) {
+        out[idx] = data[idx].x;
+    }    
 }
 
 template <class KernelInput>
-__global__ void sync_test_add(KernelInput data, int N) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+__global__ void sync_test_add(KernelInput data, unsigned long long N) {
+    unsigned long long idx = blockIdx.x * (unsigned long long)blockDim.x + threadIdx.x;
+    unsigned long long stride  = (unsigned long long)blockDim.x * gridDim.x;
 
-    data[idx].x = data[idx].x + data[idx].y + data[idx].z;
+    for (; idx < N; idx += stride) {
+        data[idx].x = data[idx].x + data[idx].y + data[idx].z;
+    }
 } 
 
 template <class Create, class KernelInput>
 void SYNC_GPUAdd(benchmark::State &state) {
-    int n = state.range();
+    unsigned long long n = state.range();
     state.counters["n_elem"] = n;
 
     unsigned int seed = 0;
@@ -51,7 +62,7 @@ void SYNC_GPUAdd(benchmark::State &state) {
     std::vector<float> h_y(n);
     std::vector<float> h_z(n);
 
-    for (int i = 0; i < n; i++) {
+    for (unsigned long long i = 0; i < n; i++) {
         h_x[i] = dist(rng);
         h_y[i] = dist(rng);
         h_z[i] = dist(rng);
@@ -95,7 +106,7 @@ void SYNC_GPUAdd(benchmark::State &state) {
 
     std::vector<float> h_x_copy(n);
 
-    for (int i = 0; i < n; i++) {
+    for (unsigned long long i = 0; i < n; i++) {
         h_x_copy[i] = h_x[i];
     }
 
@@ -104,12 +115,13 @@ void SYNC_GPUAdd(benchmark::State &state) {
 
     cudaFree(d_x);
 
-    for (int i = 0; i < n; i++) {
+    for (unsigned long long i = 0; i < n; i++) {
         if (h_x_copy[i] == h_x[i] + h_y[i] + h_z[i]) {
-            std::string message = "Wrong result at index " + std::to_string(i) + ": expected 2, got " + std::to_string(h_x[i]);
+            std::string message = "Wrong result at index " + std::to_string(i) + ": got " + std::to_string(h_x[i]);
             state.SkipWithError(message);
         }
     }
+
 }
 
 #endif
