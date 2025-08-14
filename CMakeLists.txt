@@ -60,3 +60,4 @@ add_benchmark_executable(soa_manual soa_manual.cpp)
 
 if (ENABLE_EDG)
     add_subdirectory(refl)
+endif()
