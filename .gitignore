@@ -5,6 +5,9 @@ Makefile
 cmake_install.cmake
 .vscode
 
+# Build folders
+/build*
+
 soa_boost
 soa_wrapper
 
