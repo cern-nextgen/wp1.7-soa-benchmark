@@ -10,26 +10,24 @@ jobs:
   soa-benchmark:
     runs-on: cern-nextgen-h100
     container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark:latest
-    env:
-      BUILD_DIR: ${{github.workspace}}-vtune
     steps:
       - uses: actions/checkout@v4
       - name: build and compile
         run: |
-          cmake -B "$BUILD_DIR"
-          cmake --build "$BUILD_DIR"
+          cmake -B ${{github.workspace}}-vtune
+          cmake --build ${{github.workspace}}-vtune
       - name: run benchmarks
         run: |
           python3 run_benchmarks_with_vtune.py ${{github.workspace}}-vtune soa_versions.csv
           python3 plot_benchmarks.py ${{github.workspace}}-vtune soa_versions.csv
           echo "Files in Workspace Directory:"
-          ls -l "$BUILD_DIR"
+          ls -l ${{github.workspace}}-vtune
       - name: collect artifacts
         run: |
           mkdir soa-benchmark-results
-          mv "$BUILD_DIR"/*.png  soa-benchmark-results/
-          mv "$BUILD_DIR"/*.json soa-benchmark-results/
-          mv "$BUILD_DIR"/*.csv soa-benchmark-results/
+          mv ${{github.workspace}}-vtune/*.png  soa-benchmark-results/
+          mv ${{github.workspace}}-vtune/*.json soa-benchmark-results/
+          mv ${{github.workspace}}-vtune/*.csv soa-benchmark-results/
           echo "Files in Results Directory:"
           ls -l soa-benchmark-results
       - name: upload results
