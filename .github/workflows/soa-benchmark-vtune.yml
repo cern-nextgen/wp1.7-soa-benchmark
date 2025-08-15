@@ -27,7 +27,9 @@ jobs:
       - name: collect artifacts
         run: |
           mkdir soa-benchmark-results
-          tar -czf vtune_results.tar.gz ${{github.workspace}}/vtune_results/
+          pwd
+          ls -la
+          tar -czf vtune_results.tar.gz vtune_results/
           mv vtune_results.tar.gz soa-benchmark-results/
           # mv "$BUILD_DIR"/*.png  soa-benchmark-results/
           # mv "$BUILD_DIR"/*.json soa-benchmark-results/
