@@ -19,7 +19,7 @@ def validate_csv(csvfile):
 
 def run_vtune_analysis(executable_path, result_dir, analysis_type):
     subprocess.run([
-        "vtune",
+        "/opt/intel/oneapi/vtune/latest/bin64/vtune",
         "-collect", analysis_type,
         "-result-dir", result_dir,
         executable_path
@@ -27,7 +27,7 @@ def run_vtune_analysis(executable_path, result_dir, analysis_type):
 
 def export_vtune_report(result_dir, report_type, output_csv):
     cmd = [
-        "vtune",
+        "/opt/intel/oneapi/vtune/latest/bin64/vtune",
         "-report", report_type,
         "-format", "csv",
         "-report-knob", "show-issues=false",
