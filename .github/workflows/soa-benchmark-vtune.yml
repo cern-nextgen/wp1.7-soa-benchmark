@@ -10,11 +10,14 @@ jobs:
   soa-benchmark:
     runs-on: cern-nextgen-h100
     container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark:latest
+    env:
+      PATH: /opt/intel/oneapi/vtune/latest/bin64:$PATH
+      BUILD_DIR: ${{github.workspace}}-vtune
     steps:
       - uses: actions/checkout@v4
       - name: run benchmarks
         run: |
-          echo "export PATH=/opt/intel/oneapi/vtune/latest/bin64:$PATH" >> $GITHUB_ENV
+          # echo "export PATH=/opt/intel/oneapi/vtune/latest/bin64:$PATH" >> $GITHUB_ENV
           env
           find /opt/intel/oneapi/vtune/latest/bin64/vtune
           vtune --help
