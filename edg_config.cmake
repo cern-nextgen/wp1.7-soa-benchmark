@@ -9,13 +9,18 @@ message(STATUS "Linking EDG versions with ${EDG_LINKER}")
 set(CMAKE_DEPFILE_FLAGS_CXX "")
 message(STATUS "CMAKE_DEPFILE_FLAGS_CXX: ${CMAKE_DEPFILE_FLAGS_CXX}")
 
-set(EDG_CPFE_DEFAULT_OPTIONS --g++ --set_flag=reflection --c++26 --gnu 140200 -tlocal --no_strict_gnu --no_char8_t
-                             )
+set(EDG_CPFE_DEFAULT_OPTIONS --g++ --set_flag=reflection --c++26 --gnu 140200 -tlocal --no_strict_gnu --no_char8_t)
 set(EDG_DEFAULT_DEFINES __CHAR_BIT__=8  _POSIX_SOURCE)
+set(EDG_C_TO_OBJ_LIBRARIES -shared-libgcc -lstdc++ -lgcc_s -lpthread -lm)
+
 set(EDG_C_TO_OBJ_DEFAULT_OPTIONS -Dsetjmp=_setjmp -Dva_copy=__va_copy -falign-functions=4 -march=skylake
                                  ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE_UPPER}} ${CMAKE_CXX_FLAGS})
+if (VTUNE_DIR_POS GREATER -1)
+    message(STATUS "VTune build detected (debug symbols enabled)")
+    list (APPEND EDG_C_TO_OBJ_DEFAULT_OPTIONS -g)
+endif()
 separate_arguments(EDG_C_TO_OBJ_DEFAULT_OPTIONS)
-set(EDG_C_TO_OBJ_LIBRARIES -shared-libgcc -lstdc++ -lgcc_s -lpthread -lm)
+
 
 #### Get paths to includes and libraries ####
 
