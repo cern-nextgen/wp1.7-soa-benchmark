@@ -46,7 +46,10 @@ def plot_per_benchmark(all_data, out_dir):
         ax.set_xscale('symlog')
         ax.set_xticks(sorted(df_mean['n_elem'].unique()),
                       labels=["{:g}".format(x) for x in sorted(df_mean['n_elem'].unique())], minor=False)
+
         ax.set_ylabel(f'Real Time ({df["time_unit"].iloc[0]})')
+        ax.set_yscale('log')
+        ax.yaxis.set_major_formatter(FuncFormatter(lambda y, _: '{:g}'.format(y)))
 
         plt.legend()
 
