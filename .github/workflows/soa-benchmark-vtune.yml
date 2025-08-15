@@ -14,10 +14,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: run benchmarks
         run: |
+          echo "export PATH=/opt/intel/oneapi/vtune/latest/bin64:$PATH" >> $GITHUB_ENV
           env
           find /opt/intel/oneapi/vtune/latest/bin64/vtune
-          source /opt/intel/oneapi/vtune/setvars.sh
-          env
           vtune --help
           # python3 run_benchmarks_with_vtune.py ${{github.workspace}}-vtune soa_versions.csv
           # python3 plot_benchmarks.py ${{github.workspace}}-vtune soa_versions.csv
