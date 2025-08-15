@@ -55,7 +55,7 @@ struct wrapper<S, F, layout::soa> : S<F> {
 
         template <template <class> class F_in, class T>
         reference<T> operator()(F_in<T> & t) const { return t[i]; }
-        
+
         template <template <class> class F_in, class T>
         const_reference<T> operator()(const F_in<T> & t) const { return t[i]; }
     };

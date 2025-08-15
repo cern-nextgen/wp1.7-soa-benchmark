@@ -62,69 +62,30 @@ struct PxPyPzM {
     F<double> x, y, z, M;
 };
 
+constexpr wrapper::layout L = wrapper::layout::soa;
+
+template <template <template <class> class> class S>
+void RegisterBenchmarkHelper(const char* name, auto bm_func, std::vector<std::byte*>& buffer_pointers) {
+    for (auto n : N) {
+        std::size_t bytes = n * factory::get_size_in_bytes<S, L>();
+        buffer_pointers.emplace_back(new std::byte[bytes]);
+        auto t = factory::buffer_wrapper<S, L>(buffer_pointers.back(), bytes);
+        using wrapper_type = wrapper::wrapper<S, std::span, L>;
+        wrapper_type t_span(t);
+        benchmark::RegisterBenchmark(name, bm_func, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
+}
 
 int main(int argc, char** argv) {
-    constexpr wrapper::layout L = wrapper::layout::soa;
 
     std::vector<std::byte *> buffer_pointers;
 
-    for (std::size_t n : N) {
-        // n * 2 * sizeof(int);
-        std::size_t bytes = n * factory::get_size_in_bytes<S2, L>();
-        buffer_pointers.emplace_back(new std::byte[bytes]);
-        auto t2b = factory::buffer_wrapper<S2, L>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<S2, std::span, L>;
-        wrapper_type t_span(t2b);
-        benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
-
-    for (std::size_t n : N) {
-        // n * 2 * sizeof(int);
-        std::size_t bytes = n * factory::get_size_in_bytes<S2, L>();
-        buffer_pointers.emplace_back(new std::byte[bytes]);
-        auto t2b = factory::buffer_wrapper<S2, L>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<S2, std::span, L>;
-        wrapper_type t_span(t2b);
-        benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
-
-    for (std::size_t n : N) {
-        // n * 2 * (sizeof(float) + sizeof(double) + sizeof(int) + sizeof(Eigen::Vector3d) + sizeof(Eigen::Matrix3d));
-        std::size_t bytes = n * factory::get_size_in_bytes<S10, L>();
-        buffer_pointers.emplace_back(new std::byte[bytes]);
-        auto t10 = factory::buffer_wrapper<S10, L>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<S10, std::span, L>;
-        wrapper_type t_span(t10);
-        benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
-
-    for (std::size_t n : N) {
-        // n * (13 * (sizeof(float) + sizeof(double) + sizeof(int) + sizeof(Eigen::Matrix3d)) + 12 * sizeof(Eigen::Vector3d));
-        std::size_t bytes = n * factory::get_size_in_bytes<S64, L>();
-        buffer_pointers.emplace_back(new std::byte[bytes]);
-        auto t64 = factory::buffer_wrapper<S64, L>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<S64, std::span, L>;
-        wrapper_type t_span(t64);
-        benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
-
-    for (std::size_t n : N) {
-        std::size_t bytes = n * factory::get_size_in_bytes<Snbody, L>();
-        buffer_pointers.emplace_back(new std::byte[bytes]);
-        auto tnbody = factory::buffer_wrapper<Snbody, L>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<Snbody, std::span, L>;
-        wrapper_type t_span(tnbody);
-        benchmark::RegisterBenchmark("BM_nbody", BM_nbody<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
-
-    for (std::size_t n : N) {
-        std::size_t bytes = n * factory::get_size_in_bytes<Sstencil, L>();
-        buffer_pointers.emplace_back(new std::byte[bytes]);
-        auto tstencil = factory::buffer_wrapper<Sstencil, L>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<Sstencil, std::span, L>;
-        wrapper_type t_span(tstencil);
-        benchmark::RegisterBenchmark("BM_stencil", BM_stencil<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
+    RegisterBenchmarkHelper<S2>("BM_CPUEasyRW", BM_CPUEasyRW<wrapper::wrapper<S2, std::span, L>>, buffer_pointers);
+    RegisterBenchmarkHelper<S2>("BM_CPUEasyCompute", BM_CPUEasyCompute<wrapper::wrapper<S2, std::span, L>>, buffer_pointers);
+    RegisterBenchmarkHelper<S10>("BM_CPURealRW", BM_CPURealRW<wrapper::wrapper<S10, std::span, L>>, buffer_pointers);
+    RegisterBenchmarkHelper<S64>("BM_CPUHardRW", BM_CPUHardRW<wrapper::wrapper<S64, std::span, L>>, buffer_pointers);
+    RegisterBenchmarkHelper<Snbody>("BM_nbody", BM_nbody<wrapper::wrapper<Snbody, std::span, L>>, buffer_pointers);
+    RegisterBenchmarkHelper<Sstencil>("BM_stencil", BM_stencil<wrapper::wrapper<Sstencil, std::span, L>>, buffer_pointers);
 
     for (std::size_t n : N) {
         std::size_t bytes = n * factory::get_size_in_bytes<PxPyPzM, L>();

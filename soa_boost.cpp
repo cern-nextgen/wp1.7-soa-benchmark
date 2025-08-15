@@ -124,58 +124,27 @@ GENERATE_SOA_LAYOUT(PxPyPzM,
 using SoAPxPyPzM = PxPyPzM<>;
 using SoAPxPyPzMView = SoAPxPyPzM::View;
 
+template <typename SoA, typename SoAView>
+void RegisterBenchmarkHelper(const char* name, auto bm_func, auto& free_list) {
+    for (auto n : N) {
+        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(n)));
+        SoA soa(buffer, n);
+        SoAView soaView{soa};
+        benchmark::RegisterBenchmark(name, bm_func, soaView)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer);
+    }
+}
 
 int main(int argc, char** argv) {
     std::vector<void *> free_list;
 
     // Seperate loops to sort the output by benchmark.
-    for (size_t n : N) {
-        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(n)));
-        SoA soa(buffer, n);
-        SoAView soaView{soa};
-        benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<SoAView>, soaView)->Arg(n)->Unit(benchmark::kMillisecond);
-        free_list.push_back(buffer);
-    }
-
-    for (auto n : N) {
-        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(n)));
-        SoA fullsoa(buffer, n);
-        SoAView fullsoaView{fullsoa};
-        benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<SoAView>, fullsoaView)->Arg(n)->Unit(benchmark::kMillisecond);
-        free_list.push_back(buffer);
-    }
-
-    for (auto n : N) {
-        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(MediumSoA::alignment, MediumSoA::computeDataSize(n)));
-        MediumSoA mediumsoa(buffer, n);
-        MediumSoAView mediumsoaView{mediumsoa};
-        benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<MediumSoAView>, mediumsoaView)->Arg(n)->Unit(benchmark::kMillisecond);
-        free_list.push_back(buffer);
-    }
-
-    for (auto n : N) {
-        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(BigSoA::alignment, BigSoA::computeDataSize(n)));
-        BigSoA bigSoa(buffer, n);
-        BigSoAView bigSoaView{bigSoa};
-        benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<BigSoAView>, bigSoaView)->Arg(n)->Unit(benchmark::kMillisecond);
-        free_list.push_back(buffer);
-    }
-
-    for (auto n : N) {
-        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(SoANbody::alignment, SoANbody::computeDataSize(n)));
-        SoANbody nbodySoA(buffer, n);
-        SoANbodyView nbodySoAView{nbodySoA};
-        benchmark::RegisterBenchmark("BM_nbody", BM_nbody<SoANbodyView>, nbodySoAView)->Arg(n)->Unit(benchmark::kMillisecond);
-        free_list.push_back(buffer);
-    }
-
-    for (auto n : N) {
-        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(SoAStencil::alignment, SoAStencil::computeDataSize(n)));
-        SoAStencil stencilSoA(buffer, n);
-        SoAStencilView stencilSoAView{stencilSoA};
-        benchmark::RegisterBenchmark("BM_stencil", BM_stencil<SoAStencilView>, stencilSoAView)->Arg(n)->Unit(benchmark::kMillisecond);
-        free_list.push_back(buffer);
-    }
+    RegisterBenchmarkHelper<SoA, SoAView>("BM_CPUEasyRW", BM_CPUEasyRW<SoAView>, free_list);
+    RegisterBenchmarkHelper<SoA, SoAView>("BM_CPUEasyCompute", BM_CPUEasyCompute<SoAView>, free_list);
+    RegisterBenchmarkHelper<MediumSoA, MediumSoAView>("BM_CPURealRW", BM_CPURealRW<MediumSoAView>, free_list);
+    RegisterBenchmarkHelper<BigSoA, BigSoAView>("BM_CPUHardRW", BM_CPUHardRW<BigSoAView>, free_list);
+    RegisterBenchmarkHelper<SoANbody, SoANbodyView>("BM_nbody", BM_nbody<SoANbodyView>, free_list);
+    RegisterBenchmarkHelper<SoAStencil, SoAStencilView>("BM_stencil", BM_stencil<SoAStencilView>, free_list);
 
     for (auto n : N) {
         auto buffer1 = reinterpret_cast<std::byte *>(aligned_alloc(SoAPxPyPzM::alignment, SoAPxPyPzM::computeDataSize(n)));

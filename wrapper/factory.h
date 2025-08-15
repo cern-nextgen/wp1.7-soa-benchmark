@@ -54,6 +54,8 @@ constexpr std::size_t get_size_in_bytes() {
         auto sizes = helper::invoke(S_value, get_sizes{});
         return std::reduce(sizes.cbegin(), sizes.cend());
     }
+
+    return -1;
 }
 
 template <template <template <class> class> class S, wrapper::layout L>
