@@ -269,6 +269,25 @@ struct Sstencil {
     }
 };
 
+struct PxPyPzM {
+    double *x, *y, *z, *M;
+
+    PxPyPzM(std::byte* buf, size_t n) {
+        size_t offset = 0;
+        x = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        y = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        z = reinterpret_cast<double* __restrict__>(buf + offset);
+        offset += align_size(n * sizeof(double));
+        M = reinterpret_cast<double* __restrict__>(buf + offset);
+    }
+
+    static size_t size_bytes(size_t n) {
+        return align_size(sizeof(double[n])) * 4;
+    }
+};
+
 int main(int argc, char** argv) {
     benchmark::Initialize(&argc, argv);
     std::vector<void *> free_list;
@@ -282,37 +301,48 @@ int main(int argc, char** argv) {
 
     for (auto n : N) {
         auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, S2::size_bytes(n)));
-        S2 t2b(buffer, n);
-        benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<S2>, t2b)->Arg(n)->Unit(benchmark::kMillisecond);
+        S2 t(buffer, n);
+        benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<S2>, t)->Arg(n)->Unit(benchmark::kMillisecond);
         free_list.push_back(buffer);
     }
 
     for (auto n : N) {
         auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, S10::size_bytes(n)));
-        S10 t10(buffer, n);
-        benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<S10>, t10)->Arg(n)->Unit(benchmark::kMillisecond);
+        S10 t(buffer, n);
+        benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<S10>, t)->Arg(n)->Unit(benchmark::kMillisecond);
         free_list.push_back(buffer);
     }
 
     for (auto n : N) {
         auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, S64::size_bytes(n)));
-        S64 t64(buffer, n);
-        benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<S64>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
+        S64 t(buffer, n);
+        benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<S64>, t)->Arg(n)->Unit(benchmark::kMillisecond);
         free_list.push_back(buffer);
     }
 
     for (auto n : N) {
         auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, Snbody::size_bytes(n)));
-        Snbody t64(buffer, n);
-        benchmark::RegisterBenchmark("BM_nbody", BM_nbody<Snbody>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
+        Snbody t(buffer, n);
+        benchmark::RegisterBenchmark("BM_nbody", BM_nbody<Snbody>, t)->Arg(n)->Unit(benchmark::kMillisecond);
         free_list.push_back(buffer);
     }
 
     for (auto n : N) {
         auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, Sstencil::size_bytes(n)));
-        Sstencil t64(buffer, n);
-        benchmark::RegisterBenchmark("BM_stencil", BM_stencil<Sstencil>, t64)->Arg(n)->Unit(benchmark::kMillisecond);
+        Sstencil t(buffer, n);
+        benchmark::RegisterBenchmark("BM_stencil", BM_stencil<Sstencil>, t)->Arg(n)->Unit(benchmark::kMillisecond);
         free_list.push_back(buffer);
+    }
+
+
+    for (auto n : N) {
+        auto buffer1 = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, PxPyPzM::size_bytes(n)));
+        auto buffer2 = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, PxPyPzM::size_bytes(n)));
+        PxPyPzM t1(buffer1, n);
+        PxPyPzM t2(buffer2, n);
+        benchmark::RegisterBenchmark("BM_InvariantMass", BM_InvariantMass<PxPyPzM, PxPyPzM>, t1, t2)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer1);
+        free_list.push_back(buffer2);
     }
 
     benchmark::RunSpecifiedBenchmarks();

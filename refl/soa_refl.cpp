@@ -37,6 +37,10 @@ struct Sstencil {
     double &src, &dst, &rhs;
 };
 
+struct PxPyPzM {
+    double &x, &y, &z, &M;
+};
+
 int main(int argc, char **argv)
 {
     // Seperate loops to sort the output by benchmark.
@@ -53,8 +57,9 @@ int main(int argc, char **argv)
         auto byte_size = SoA::ComputeSize(n);
         auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
         SoA t(buffer, byte_size, n);
-        benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<SoA>,
-        t)->Arg(n)->Unit(benchmark::kMillisecond);
+        benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<SoA>, t)
+            ->Arg(n)
+            ->Unit(benchmark::kMillisecond);
     }
 
     for (auto n : N) {
@@ -65,7 +70,7 @@ int main(int argc, char **argv)
         benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<SoA>, t)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
-        for (auto n : N) {
+    for (auto n : N) {
         using SoA = rmpp::AoS2SoA<S64, 64>;
         auto byte_size = SoA::ComputeSize(n);
         auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
@@ -87,6 +92,16 @@ int main(int argc, char **argv)
         auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
         SoA t(buffer, byte_size, n);
         benchmark::RegisterBenchmark("BM_stencil", BM_stencil<SoA>, t)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
+
+    for (auto n : N) {
+        using SoA = rmpp::AoS2SoA<PxPyPzM, 64>;
+        auto byte_size = SoA::ComputeSize(n);
+        auto buffer1 = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
+        auto buffer2 = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
+        SoA t1(buffer1, byte_size, n);
+        SoA t2(buffer2, byte_size, n);
+        benchmark::RegisterBenchmark("BM_InvariantMass", BM_InvariantMass<SoA, SoA>, t1, t2)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
     benchmark::Initialize(&argc, argv);

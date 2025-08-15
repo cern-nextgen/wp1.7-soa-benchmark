@@ -55,6 +55,14 @@ struct Sstencil {
     F<double> src, dst, rhs;
 };
 
+template <template <class> class F>
+struct PxPyPzM {
+    template<template <class> class F_new>
+    operator PxPyPzM<F_new>() { return {x, y, z, M}; }
+    F<double> x, y, z, M;
+};
+
+
 int main(int argc, char** argv) {
     constexpr wrapper::layout L = wrapper::layout::soa;
 
@@ -101,7 +109,6 @@ int main(int argc, char** argv) {
     }
 
     for (std::size_t n : N) {
-        // n * 6 * sizeof(float);
         std::size_t bytes = n * factory::get_size_in_bytes<Snbody, L>();
         buffer_pointers.emplace_back(new std::byte[bytes]);
         auto tnbody = factory::buffer_wrapper<Snbody, L>(buffer_pointers.back(), bytes);
@@ -109,9 +116,8 @@ int main(int argc, char** argv) {
         wrapper_type t_span(tnbody);
         benchmark::RegisterBenchmark("BM_nbody", BM_nbody<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
     }
-    
+
     for (std::size_t n : N) {
-        // n * 6 * sizeof(float);
         std::size_t bytes = n * factory::get_size_in_bytes<Sstencil, L>();
         buffer_pointers.emplace_back(new std::byte[bytes]);
         auto tstencil = factory::buffer_wrapper<Sstencil, L>(buffer_pointers.back(), bytes);
@@ -120,6 +126,18 @@ int main(int argc, char** argv) {
         benchmark::RegisterBenchmark("BM_stencil", BM_stencil<wrapper_type>, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
+    for (std::size_t n : N) {
+        std::size_t bytes = n * factory::get_size_in_bytes<PxPyPzM, L>();
+        auto buffer1 = new std::byte[bytes];
+        auto buffer2 = new std::byte[bytes];
+        auto tpxpypxm1 = factory::buffer_wrapper<PxPyPzM, L>(buffer1, bytes);
+        auto tpxpypxm2 = factory::buffer_wrapper<PxPyPzM, L>(buffer2, bytes);
+        using wrapper_type = wrapper::wrapper<PxPyPzM, std::span, L>;
+        wrapper_type t_span1(tpxpypxm1);
+        wrapper_type t_span2(tpxpypxm2);
+        benchmark::RegisterBenchmark("BM_InvariantMass", BM_InvariantMass<wrapper_type, wrapper_type>,
+                                     t_span1, t_span2)->Arg(n)->Unit(benchmark::kMillisecond);
+    }
 
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();

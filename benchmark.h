@@ -6,13 +6,13 @@
 #include <benchmark/benchmark.h>
 
 #ifdef USE_FMTLIB_POLYFILL
-  // std::format polyfill using fmtlib
-  #include <fmt/core.h>
-  namespace std {
-  using fmt::format;
-  }
+// std::format polyfill using fmtlib
+#include <fmt/core.h>
+namespace std {
+using fmt::format;
+}
 #else
-  #include <format>
+#include <format>
 #endif
 
 /* AoS-like access (except for the baseline) */
@@ -170,19 +170,19 @@ void BM_CPURealRW(benchmark::State &state, T t)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x5, i) += 2;
         }
-        #pragma clang loop vectorize(assume_safety)
+#pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x6, i) += v;
         }
-        #pragma clang loop vectorize(assume_safety)
+#pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x7, i) += v;
         }
-        #pragma clang loop vectorize(assume_safety)
+#pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x8, i) += m;
         }
-        #pragma clang loop vectorize(assume_safety)
+#pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x9, i) += m;
         }
@@ -251,33 +251,33 @@ void BM_CPUHardRW(benchmark::State &state, T t)
     for (auto _ : state) {
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x0, i) += 2.f;  MEMBER_ACCESS(t, x1, i) += 2.f;  MEMBER_ACCESS(t, x2, i) += 2.f;
-            MEMBER_ACCESS(t, x3, i) += 2.f;  MEMBER_ACCESS(t, x4, i) += 2.f; 
+            MEMBER_ACCESS(t, x3, i) += 2.f;  MEMBER_ACCESS(t, x4, i) += 2.f;
         }
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x5, i) += 2.f;  MEMBER_ACCESS(t, x6, i) += 2.f;  MEMBER_ACCESS(t, x7, i) += 2.f;
-            MEMBER_ACCESS(t, x8, i) += 2.f;  MEMBER_ACCESS(t, x9, i) += 2.f; 
+            MEMBER_ACCESS(t, x8, i) += 2.f;  MEMBER_ACCESS(t, x9, i) += 2.f;
         }
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x10, i) += 2.f; MEMBER_ACCESS(t, x11, i) += 2.f; MEMBER_ACCESS(t, x12, i) += 2.f;
         }
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x13, i) += 2.0; MEMBER_ACCESS(t, x14, i) += 2.0; MEMBER_ACCESS(t, x15, i) += 2.0;
-            MEMBER_ACCESS(t, x16, i) += 2.0; MEMBER_ACCESS(t, x17, i) += 2.0; 
+            MEMBER_ACCESS(t, x16, i) += 2.0; MEMBER_ACCESS(t, x17, i) += 2.0;
         }
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x18, i) += 2.0; MEMBER_ACCESS(t, x19, i) += 2.0; MEMBER_ACCESS(t, x20, i) += 2.0;
-            MEMBER_ACCESS(t, x21, i) += 2.0; MEMBER_ACCESS(t, x22, i) += 2.0; 
+            MEMBER_ACCESS(t, x21, i) += 2.0; MEMBER_ACCESS(t, x22, i) += 2.0;
         }
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x23, i) += 2.0; MEMBER_ACCESS(t, x24, i) += 2.0; MEMBER_ACCESS(t, x25, i) += 2.0;
         }
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x26, i) += 2;   MEMBER_ACCESS(t, x27, i) += 2;   MEMBER_ACCESS(t, x28, i) += 2;
-            MEMBER_ACCESS(t, x29, i) += 2;   MEMBER_ACCESS(t, x30, i) += 2; 
-        }   
+            MEMBER_ACCESS(t, x29, i) += 2;   MEMBER_ACCESS(t, x30, i) += 2;
+        }
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x31, i) += 2;   MEMBER_ACCESS(t, x32, i) += 2;   MEMBER_ACCESS(t, x33, i) += 2;
-            MEMBER_ACCESS(t, x34, i) += 2;   MEMBER_ACCESS(t, x35, i) += 2; 
+            MEMBER_ACCESS(t, x34, i) += 2;   MEMBER_ACCESS(t, x35, i) += 2;
         }
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x36, i) += 2;   MEMBER_ACCESS(t, x37, i) += 2;   MEMBER_ACCESS(t, x38, i) += 2;
@@ -285,22 +285,22 @@ void BM_CPUHardRW(benchmark::State &state, T t)
         #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x39, i) += v;   MEMBER_ACCESS(t, x40, i) += v;   MEMBER_ACCESS(t, x41, i) += v;
-            MEMBER_ACCESS(t, x42, i) += v;   MEMBER_ACCESS(t, x43, i) += v; 
+            MEMBER_ACCESS(t, x42, i) += v;   MEMBER_ACCESS(t, x43, i) += v;
         }
         #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x44, i) += v;   MEMBER_ACCESS(t, x45, i) += v;   MEMBER_ACCESS(t, x46, i) += v;
-            MEMBER_ACCESS(t, x47, i) += v;   MEMBER_ACCESS(t, x48, i) += v; 
+            MEMBER_ACCESS(t, x47, i) += v;   MEMBER_ACCESS(t, x48, i) += v;
         }
         #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x49, i) += v;   MEMBER_ACCESS(t, x50, i) += v;   MEMBER_ACCESS(t, x51, i) += m;
-            MEMBER_ACCESS(t, x52, i) += m;   MEMBER_ACCESS(t, x53, i) += m; 
+            MEMBER_ACCESS(t, x52, i) += m;   MEMBER_ACCESS(t, x53, i) += m;
         }
         #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x54, i) += m;   MEMBER_ACCESS(t, x55, i) += m;   MEMBER_ACCESS(t, x56, i) += m;
-            MEMBER_ACCESS(t, x57, i) += m;   MEMBER_ACCESS(t, x58, i) += m; 
+            MEMBER_ACCESS(t, x57, i) += m;   MEMBER_ACCESS(t, x58, i) += m;
         }
         #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
@@ -376,11 +376,13 @@ void BM_CPUHardRW(benchmark::State &state, T t)
         CheckResult(state, m * state.iterations(), MEMBER_ACCESS(t, x62, i), "x62");
         CheckResult(state, m * state.iterations(), MEMBER_ACCESS(t, x63, i), "x63");
     }
+    // clang-format on
 
     state.counters["n_elem"] = n;
 }
 
-inline float rand_float() {
+inline float rand_float()
+{
     return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
@@ -441,13 +443,13 @@ void BM_nbody(benchmark::State &state, T t)
     }
 
     state.counters["n_elem"] = n;
-    state.counters["N^2_interactions"] = benchmark::Counter(
-        static_cast<double>(n) * static_cast<double>(n),
-        benchmark::Counter::kIsRate);
+    state.counters["N^2_interactions"] =
+        benchmark::Counter(static_cast<double>(n) * static_cast<double>(n), benchmark::Counter::kIsRate);
 }
 
 // Exact solution (for comparison)
-inline double solution_poisson(const double x) {
+inline double solution_poisson(const double x)
+{
     return x * (x - 1) * std::exp(x);
 }
 
@@ -471,17 +473,17 @@ void BM_stencil(benchmark::State &state, T t)
 
     for (auto _ : state) {
         for (int i = 1; i < n - 1; ++i) {
-            const double u_left  = MEMBER_ACCESS(t, src, i - 1);
+            const double u_left = MEMBER_ACCESS(t, src, i - 1);
             const double u_right = MEMBER_ACCESS(t, src, i + 1);
-            const double f       = MEMBER_ACCESS(t, rhs, i);
+            const double f = MEMBER_ACCESS(t, rhs, i);
             MEMBER_ACCESS(t, dst, i) = 0.5 * (u_left + u_right + dx2 * f);
         }
 
         // Maybe use a pointer swap instead
         for (int i = 1; i < n - 1; ++i) {
-            const double u_left  = MEMBER_ACCESS(t, dst, i - 1);
+            const double u_left = MEMBER_ACCESS(t, dst, i - 1);
             const double u_right = MEMBER_ACCESS(t, dst, i + 1);
-            const double f       = MEMBER_ACCESS(t, rhs, i);
+            const double f = MEMBER_ACCESS(t, rhs, i);
             MEMBER_ACCESS(t, src, i) = 0.5 * (u_left + u_right + dx2 * f);
         }
     }
@@ -495,9 +497,91 @@ void BM_stencil(benchmark::State &state, T t)
     */
 
     state.counters["n_elem"] = static_cast<double>(n);
-    state.counters["N^2_interactions"] = benchmark::Counter(
-        static_cast<double>(n) * 2.0,
-        benchmark::Counter::kIsRate);
+    state.counters["N^2_interactions"] = benchmark::Counter(static_cast<double>(n) * 2.0, benchmark::Counter::kIsRate);
+}
+
+template <typename T0, typename T1 = T0, typename T2 = T0, typename T3 = T0, typename T4 = T0, typename T5 = T0,
+          typename Common_t = std::common_type_t<T0, T1>>
+Common_t Angle(T0 x1, T1 y1, T2 z1, T3 x2, T4 y2, T5 z2)
+{
+    // cross product
+    const auto cx = y1 * z2 - y2 * z1;
+    const auto cy = x1 * z2 - x2 * z1;
+    const auto cz = x1 * y2 - x2 * y1;
+
+    // norm of cross product
+    const auto c = std::sqrt(cx * cx + cy * cy + cz * cz);
+
+    // dot product
+    const auto d = x1 * x2 + y1 * y2 + z1 * z2;
+
+    return std::atan2(c, d);
+}
+
+template <typename T1, typename T2>
+void BM_InvariantMass(benchmark::State &state, T1 v1, T2 v2)
+{
+    const auto n = state.range(0);
+
+    // Initialise x,y,z,M vectors
+    for (int i = 0; i < n; ++i) {
+        MEMBER_ACCESS(v1, x, i) = 0.0;
+        MEMBER_ACCESS(v1, y, i) = 0.0;
+        MEMBER_ACCESS(v1, z, i) = 0.0;
+        MEMBER_ACCESS(v1, M, i) = 0.0;
+        MEMBER_ACCESS(v2, x, i) = 0.0;
+        MEMBER_ACCESS(v2, y, i) = 0.0;
+        MEMBER_ACCESS(v2, z, i) = 0.0;
+        MEMBER_ACCESS(v2, M, i) = 0.0;
+    }
+
+    for (auto _ : state) {
+        for (int i = 1; i < n - 1; ++i) {
+            // Numerically stable computation of Invariant Masses
+            const auto p1_sq = MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v1, x, i) +
+                               MEMBER_ACCESS(v1, y, i) * MEMBER_ACCESS(v1, y, i) +
+                               MEMBER_ACCESS(v1, z, i) * MEMBER_ACCESS(v1, z, i);
+            const auto p2_sq = MEMBER_ACCESS(v2, x, i) * MEMBER_ACCESS(v2, x, i) +
+                               MEMBER_ACCESS(v2, y, i) * MEMBER_ACCESS(v2, y, i) +
+                               MEMBER_ACCESS(v2, z, i) * MEMBER_ACCESS(v2, z, i);
+
+            const auto m1_sq = MEMBER_ACCESS(v1, M, i) * MEMBER_ACCESS(v1, M, i);
+            const auto m2_sq = MEMBER_ACCESS(v2, M, i) * MEMBER_ACCESS(v2, M, i);
+
+            const auto r1 = m1_sq / p1_sq;
+            const auto r2 = m2_sq / p2_sq;
+            const auto x = r1 + r2 + r1 * r2;
+
+            const auto cx =
+                MEMBER_ACCESS(v1, y, i) * MEMBER_ACCESS(v2, z, i) - MEMBER_ACCESS(v2, y, i) * MEMBER_ACCESS(v2, z, i);
+            const auto cy =
+                MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v2, z, i) - MEMBER_ACCESS(v2, x, i) * MEMBER_ACCESS(v2, z, i);
+            const auto cz =
+                MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v2, y, i) - MEMBER_ACCESS(v2, x, i) * MEMBER_ACCESS(v2, y, i);
+
+            // norm of cross product
+            const auto c = std::sqrt(cx * cx + cy * cy + cz * cz);
+
+            // dot product
+            const auto d = MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v2, x, i) +
+                           MEMBER_ACCESS(v1, y, i) * MEMBER_ACCESS(v2, y, i) +
+                           MEMBER_ACCESS(v1, z, i) * MEMBER_ACCESS(v2, z, i);
+
+            const auto a = std::atan2(c, d);
+
+            const auto cos_a = std::cos(a);
+            auto y = x;
+            if (cos_a >= 0) {
+                y = (x + std::sin(a) * std::sin(a)) / (std::sqrt(x + 1) + cos_a);
+            } else {
+                y = std::sqrt(x + 1) - cos_a;
+            }
+
+            const auto z = 2 * std::sqrt(p1_sq * p2_sq);
+        }
+    }
+
+    state.counters["n_elem"] = static_cast<double>(n);
 }
 
 #endif // BENCHMARK_H

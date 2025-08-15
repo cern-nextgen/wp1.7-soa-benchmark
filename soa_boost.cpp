@@ -116,6 +116,15 @@ GENERATE_SOA_LAYOUT(Stencil,
 using SoAStencil = Stencil<>;
 using SoAStencilView = SoAStencil::View;
 
+GENERATE_SOA_LAYOUT(PxPyPzM,
+    SOA_COLUMN(double, x),
+    SOA_COLUMN(double, y),
+    SOA_COLUMN(double, z),
+    SOA_COLUMN(double, M))
+using SoAPxPyPzM = PxPyPzM<>;
+using SoAPxPyPzMView = SoAPxPyPzM::View;
+
+
 int main(int argc, char** argv) {
     std::vector<void *> free_list;
 
@@ -166,6 +175,19 @@ int main(int argc, char** argv) {
         SoAStencilView stencilSoAView{stencilSoA};
         benchmark::RegisterBenchmark("BM_stencil", BM_stencil<SoAStencilView>, stencilSoAView)->Arg(n)->Unit(benchmark::kMillisecond);
         free_list.push_back(buffer);
+    }
+
+    for (auto n : N) {
+        auto buffer1 = reinterpret_cast<std::byte *>(aligned_alloc(SoAPxPyPzM::alignment, SoAPxPyPzM::computeDataSize(n)));
+        auto buffer2 = reinterpret_cast<std::byte *>(aligned_alloc(SoAPxPyPzM::alignment, SoAPxPyPzM::computeDataSize(n)));
+        SoAPxPyPzM pxpypzm1(buffer1, n);
+        SoAPxPyPzM pxpypzm2(buffer2, n);
+        SoAPxPyPzMView pxpypzmView1{pxpypzm1};
+        SoAPxPyPzMView pxpypzmView2{pxpypzm2};
+        benchmark::RegisterBenchmark("BM_InvariantMass", BM_InvariantMass<SoAPxPyPzMView, SoAPxPyPzMView>,
+                                     pxpypzmView1, pxpypzmView2)->Arg(n)->Unit(benchmark::kMillisecond);
+        free_list.push_back(buffer1);
+        free_list.push_back(buffer2);
     }
 
     benchmark::Initialize(&argc, argv);
