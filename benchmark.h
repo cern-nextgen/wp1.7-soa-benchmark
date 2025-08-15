@@ -490,24 +490,6 @@ void BM_stencil(benchmark::State &state, T t)
     state.counters["N^2_interactions"] = benchmark::Counter(static_cast<double>(n) * 2.0, benchmark::Counter::kIsRate);
 }
 
-template <typename T0, typename T1 = T0, typename T2 = T0, typename T3 = T0, typename T4 = T0, typename T5 = T0,
-          typename Common_t = std::common_type_t<T0, T1>>
-Common_t Angle(T0 x1, T1 y1, T2 z1, T3 x2, T4 y2, T5 z2)
-{
-    // cross product
-    const auto cx = y1 * z2 - y2 * z1;
-    const auto cy = x1 * z2 - x2 * z1;
-    const auto cz = x1 * y2 - x2 * y1;
-
-    // norm of cross product
-    const auto c = std::sqrt(cx * cx + cy * cy + cz * cz);
-
-    // dot product
-    const auto d = x1 * x2 + y1 * y2 + z1 * z2;
-
-    return std::atan2(c, d);
-}
-
 template <typename T1, typename T2>
 void BM_InvariantMass(benchmark::State &state, T1 v1, T2 v2)
 {
@@ -515,18 +497,18 @@ void BM_InvariantMass(benchmark::State &state, T1 v1, T2 v2)
 
     // Initialise x,y,z,M vectors
     for (int i = 0; i < n; ++i) {
-        MEMBER_ACCESS(v1, x, i) = 0.0;
-        MEMBER_ACCESS(v1, y, i) = 0.0;
-        MEMBER_ACCESS(v1, z, i) = 0.0;
-        MEMBER_ACCESS(v1, M, i) = 0.0;
-        MEMBER_ACCESS(v2, x, i) = 0.0;
-        MEMBER_ACCESS(v2, y, i) = 0.0;
-        MEMBER_ACCESS(v2, z, i) = 0.0;
-        MEMBER_ACCESS(v2, M, i) = 0.0;
+        MEMBER_ACCESS(v1, x, i) = i * 5;
+        MEMBER_ACCESS(v1, y, i) = i * 3;
+        MEMBER_ACCESS(v1, z, i) = i;
+        MEMBER_ACCESS(v1, M, i) = i / 2.;
+        MEMBER_ACCESS(v2, x, i) = i;
+        MEMBER_ACCESS(v2, y, i) = i * 20;
+        MEMBER_ACCESS(v2, z, i) = i / 9.;
+        MEMBER_ACCESS(v2, M, i) = i * 42;
     }
 
     for (auto _ : state) {
-        for (int i = 1; i < n - 1; ++i) {
+        for (int i = 0; i < n; ++i) {
             // Numerically stable computation of Invariant Masses
             const auto p1_sq = MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v1, x, i) +
                                MEMBER_ACCESS(v1, y, i) * MEMBER_ACCESS(v1, y, i) +
@@ -543,11 +525,11 @@ void BM_InvariantMass(benchmark::State &state, T1 v1, T2 v2)
             const auto x = r1 + r2 + r1 * r2;
 
             const auto cx =
-                MEMBER_ACCESS(v1, y, i) * MEMBER_ACCESS(v2, z, i) - MEMBER_ACCESS(v2, y, i) * MEMBER_ACCESS(v2, z, i);
+                MEMBER_ACCESS(v1, y, i) * MEMBER_ACCESS(v2, z, i) - MEMBER_ACCESS(v2, y, i) * MEMBER_ACCESS(v1, z, i);
             const auto cy =
-                MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v2, z, i) - MEMBER_ACCESS(v2, x, i) * MEMBER_ACCESS(v2, z, i);
+                MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v2, z, i) - MEMBER_ACCESS(v2, x, i) * MEMBER_ACCESS(v1, z, i);
             const auto cz =
-                MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v2, y, i) - MEMBER_ACCESS(v2, x, i) * MEMBER_ACCESS(v2, y, i);
+                MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v2, y, i) - MEMBER_ACCESS(v2, x, i) * MEMBER_ACCESS(v1, y, i);
 
             // norm of cross product
             const auto c = std::sqrt(cx * cx + cy * cy + cz * cz);
@@ -568,6 +550,9 @@ void BM_InvariantMass(benchmark::State &state, T1 v1, T2 v2)
             }
 
             const auto z = 2 * std::sqrt(p1_sq * p2_sq);
+
+            auto result = std::sqrt(m1_sq + m2_sq + y * z);
+            benchmark::DoNotOptimize(result);
         }
     }
 
