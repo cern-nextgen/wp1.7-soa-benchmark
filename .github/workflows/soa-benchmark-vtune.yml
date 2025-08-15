@@ -15,7 +15,7 @@ jobs:
       - name: run benchmarks
         run: |
           env
-          find vtune
+          find /opt/intel/oneapi/vtune/latest/bin64/vtune
           source /opt/intel/oneapi/vtune/setvars.sh
           env
           vtune --help
