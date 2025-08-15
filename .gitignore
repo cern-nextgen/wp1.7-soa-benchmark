@@ -8,6 +8,9 @@ cmake_install.cmake
 # Build folders
 /build*
 
+# Vtune results
+/vtune_results*
+
 soa_boost
 soa_wrapper
 
