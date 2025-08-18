@@ -22,7 +22,8 @@ def read_data(json_file, filter_names):
 def plot(results, title, output_file):
     plt.figure(figsize=(10, 6))
     plt.title(title)
-    #plt.xticks(results['n_elem'], labels=["{:g}".format(x) for x in results['n_elem']], minor=False)
+    ticks = results.keys()[0]['n_elem']
+    plt.xticks(ticks, labels=["{:g}".format(x) for x in ticks], minor=False)
     plt.grid()
     for key, value in results.items():
         plt.loglog(value['n_elem'], value['real_time'], base=2, marker='o', label=key)
@@ -40,3 +41,5 @@ if __name__ == "__main__":
     filter_names = sys.argv[4:]
     results = read_data(json_file, filter_names)
     plot(results, title, output_file)
+
+# ./build/soa_wrapper_gpu --benchmark_filter=SYNC_GPUAdd_* --benchmark_counters_tabular=true --benchmark_out_format=json --benchmark_out=build/SYNC_GPUAdd.json --benchmark_min_warmup_time=2
