@@ -8,22 +8,24 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -Rpass-analysis=loop-vectorize -Rpass=loop-vectorize \
 -Rpass-missed=loop-vectorize -march=native -funroll-loops -ffast-math -funsafe-math-optimizations")
-elseif (ENABLE_EDG)
-    set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -fopt-info-vec -march=native -funroll-loops -ffast-math \
--funsafe-math-optimizations --param inline-unit-growth=1000 --param large-stack-frame-growth=1000 \
---param large-function-growth=2000 --param max-inline-insns-single=1000 --param max-inline-insns-auto=1000 \
--flto -fopt-info-vec")
-    include(edg_config.cmake)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -fopt-info-vec -march=native -funroll-loops -ffast-math")
+    set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -fopt-info-vec -march=native -funroll-loops -ffast-math \
+-funsafe-math-optimizations -fopt-info-vec")
+endif()
+
+if (ENABLE_EDG)
+    list(APPEND CMAKE_CXX_FLAGS "-flto")
+    include(edg_config.cmake)
 endif()
 
 # Detect if build dir contains "vtune"
 get_filename_component(BUILD_DIR_NAME ${CMAKE_BINARY_DIR} NAME)
 string(FIND "${BUILD_DIR_NAME}" "vtune" VTUNE_DIR_POS)
 if (VTUNE_DIR_POS GREATER -1)
-    if (NOT ENABLE_EDG)
-        message(STATUS "VTune build detected (debug symbols enabled)")
+    message(STATUS "VTune build detected (debug symbols enabled)")
+    if (ENABLE_EDG)
+        list(APPEND CMAKE_CXX_FLAGS "-g")
+    else()
         add_compile_options(-g) # Need to add this to EDG_C_TO_OBJ_DEFAULT_OPTIONS instead of CMAKE_CXX_FLAGS
     endif()
 else()
