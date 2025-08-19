@@ -158,7 +158,7 @@ void SYNC_GPUPosVelShuf(benchmark::State &state) {
     cudaFree(d_y);
     cudaFree(d_z);
 
-    float h = 0.0f;
+    // float h = 0.0f;
 
     /*
     for (unsigned long long i = 0; i < n; i++) {

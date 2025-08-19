@@ -78,7 +78,7 @@ struct device_memory_array {
 
 template<wrapper::layout L>
 struct CreateWrapperMax {
-    wrapper::wrapper<s_max, device_memory_array, L> operator()(int n) {
+    wrapper::wrapper<s_max, device_memory_array, L> operator()(std::size_t n) {
         if constexpr (L == wrapper::layout::soa) return {n, n, n};
         else return {n};
     }
@@ -160,13 +160,13 @@ int main(int argc, char** argv) {
     }
     */
 
-    for (int n : N) {
+    for (int n : N_LONGLONG) {
         using Create = CreateWrapperMax<wrapper::layout::soa>;
         using KernelInput = wrapper::wrapper<s_max, std::span, wrapper::layout::soa>;
         benchmark::RegisterBenchmark("MAX_GPUTest_SOA", MAX_GPUTest<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
     }
     
-    for (int n : N) {
+    for (int n : N_LONGLONG) {
         using Create = CreateWrapperMax<wrapper::layout::aos>;
         using KernelInput = wrapper::wrapper<s_max, std::span, wrapper::layout::aos>;
         benchmark::RegisterBenchmark("MAX_GPUTest_AOS", MAX_GPUTest<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);

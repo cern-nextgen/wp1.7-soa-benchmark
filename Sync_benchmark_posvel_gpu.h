@@ -153,7 +153,7 @@ void SYNC_GPUPosVel(benchmark::State &state) {
     cudaFree(d_y);
     cudaFree(d_z);
 
-    float h = 0.1f;
+    // float h = 0.1f;
 
     /*
     for (unsigned long long i = 0; i < n; i++) {
