@@ -43,3 +43,4 @@ if __name__ == "__main__":
     plot(results, title, output_file)
 
 # ./build/soa_wrapper_gpu --benchmark_filter=SYNC_GPUAdd_* --benchmark_counters_tabular=true --benchmark_out_format=json --benchmark_out=build/SYNC_GPUAdd.json --benchmark_min_warmup_time=2
+# python3 plot.py build/SYNC_GPUAdd.json build/SYNC_GPUAdd.png "SYNC_GPUAdd Benchmark Results" SYNC_GPUAdd
