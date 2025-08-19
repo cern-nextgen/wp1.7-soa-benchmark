@@ -112,7 +112,7 @@ struct CreateWrapperAdd {
 
 template<wrapper::layout L>
 struct CreateWrapperPosVel {
-    wrapper::wrapper<s_posvel, device_memory_array, L> operator()(int n) {
+    wrapper::wrapper<s_posvel, device_memory_array, L> operator()(std::size_t n) {
         if constexpr (L == wrapper::layout::soa) return {n, n, n, n, n, n};
         else return {n};
     }
@@ -120,7 +120,7 @@ struct CreateWrapperPosVel {
 
 template<wrapper::layout L>
 struct CreateWrapperPosVelShuf {
-    wrapper::wrapper<s_posvel_shuf, device_memory_array, L> operator()(int n) {
+    wrapper::wrapper<s_posvel_shuf, device_memory_array, L> operator()(std::size_t n) {
         if constexpr (L == wrapper::layout::soa) return {n, n, n, n, n, n};
         else return {n};
     }
@@ -144,6 +144,8 @@ struct CreateWrapper64Add {
 
 int main(int argc, char** argv) {
     constexpr int N[] = {1<<10, 1<<12, 1<<14, 1<<16, 1<<18, 1<<20};
+    constexpr unsigned long long N_LONGLONG[] = {1ull<<16, 1ull<<18, 1ull<<20, 1ull<<22, 1ull<<24, 1ull<<26, 1ull<<28};
+
     /*
     for (int n : N) {
         using Create = CreateWrapper<wrapper::layout::soa>;
@@ -188,16 +190,14 @@ int main(int argc, char** argv) {
         benchmark::RegisterBenchmark("PiSimp_GPUTest_AOS", PiSimp_GPUTest<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
     }
 
-    constexpr unsigned long long N_GPUAdd[] = {1ull<<16, 1ull<<18, 1ull<<20, 1ull<<22, 1ull<<24, 1ull<<26, 1ull<<28};
-
-    for (unsigned long long n : N_GPUAdd) {
+    for (unsigned long long n : N_LONGLONG) {
         using Create = CreateWrapperAdd<wrapper::layout::soa>;
         using KernelInput = wrapper::wrapper<s_point, std::span, wrapper::layout::soa>;
         benchmark::RegisterBenchmark("SYNC_GPUAdd_SOA", SYNC_GPUAdd<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
     }
 
 
-    for (unsigned long long n : N_GPUAdd) {
+    for (unsigned long long n : N_LONGLONG) {
         using Create = CreateWrapperAdd<wrapper::layout::aos>;
         using KernelInput = wrapper::wrapper<s_point, std::span, wrapper::layout::aos>;
         benchmark::RegisterBenchmark("SYNC_GPUAdd_AOS", SYNC_GPUAdd<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
@@ -218,25 +218,25 @@ int main(int argc, char** argv) {
     }
     */
 
-    for (unsigned long long n : N) {
+    for (unsigned long long n : N_LONGLONG) {
         using Create = CreateWrapperPosVel<wrapper::layout::soa>;
         using KernelInput = wrapper::wrapper<s_posvel, std::span, wrapper::layout::soa>;
         benchmark::RegisterBenchmark("SYNC_GPUPosVel_SOA", SYNC_GPUPosVel<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
     }
 
-    for (int n : N) {
+    for (unsigned long long n : N_LONGLONG) {
         using Create = CreateWrapperPosVel<wrapper::layout::aos>;
         using KernelInput = wrapper::wrapper<s_posvel, std::span, wrapper::layout::aos>;
         benchmark::RegisterBenchmark("SYNC_GPUPosVel_AOS", SYNC_GPUPosVel<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
     }
 
-    for (int n : N) {
+    for (int n : N_LONGLONG) {
         using Create = CreateWrapperPosVelShuf<wrapper::layout::soa>;
         using KernelInput = wrapper::wrapper<s_posvel_shuf, std::span, wrapper::layout::soa>;
         benchmark::RegisterBenchmark("SYNC_GPUPosVelShuf_SOA", SYNC_GPUPosVelShuf<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
     }
 
-    for (int n : N) {
+    for (int n : N_LONGLONG) {
         using Create = CreateWrapperPosVelShuf<wrapper::layout::aos>;
         using KernelInput = wrapper::wrapper<s_posvel_shuf, std::span, wrapper::layout::aos>;
         benchmark::RegisterBenchmark("SYNC_GPUPosVelShuf_AOS", SYNC_GPUPosVelShuf<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
