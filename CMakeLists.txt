@@ -13,11 +13,6 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 -funsafe-math-optimizations -fopt-info-vec")
 endif()
 
-if (ENABLE_EDG)
-    list(APPEND CMAKE_CXX_FLAGS "-flto")
-    include(edg_config.cmake)
-endif()
-
 # Detect if build dir contains "vtune"
 get_filename_component(BUILD_DIR_NAME ${CMAKE_BINARY_DIR} NAME)
 string(FIND "${BUILD_DIR_NAME}" "vtune" VTUNE_DIR_POS)
@@ -26,10 +21,15 @@ if (VTUNE_DIR_POS GREATER -1)
     if (ENABLE_EDG)
         list(APPEND CMAKE_CXX_FLAGS "-g")
     else()
-        add_compile_options(-g) # Need to add this to EDG_C_TO_OBJ_DEFAULT_OPTIONS instead of CMAKE_CXX_FLAGS
+        add_compile_options(-g)
     endif()
 else()
     message(STATUS "Release build (no debug symbols)")
+endif()
+
+if (ENABLE_EDG)
+    list(APPEND CMAKE_CXX_FLAGS "-flto")
+    include(edg_config.cmake)
 endif()
 
 function(add_benchmark_executable target sources)
