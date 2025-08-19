@@ -59,6 +59,7 @@ https://github.com/cern-nextgen/wp1.7-soa-benchmark/blob/main/benchmark.h
 #include "benchmark_find_max_gpu.h"
 #include "benchmark_estimate_pi_gpu.h"
 #include "Sync_benchmark_add_gpu.h"
+// #include "Sync_benchmark_64_add_gpu.h"
 #include "Sync_benchmark_posvel_gpu.h"
 #include "Sync_benchmark_posvel_shuf_gpu.h"
 //#include "benchmark_bitonic_sort_gpu.h"
@@ -124,6 +125,22 @@ struct CreateWrapperPosVelShuf {
         else return {n};
     }
 };
+/*
+template<wrapper::layout L>
+struct CreateWrapper64Add {
+    wrapper::wrapper<s_64_dim_point, device_memory_array, L> operator()(int n) {
+        if constexpr (L == wrapper::layout::soa) return {n, n, n, n, n, n, n, n,
+                                                         n, n, n, n, n, n, n, n,
+                                                         n, n, n, n, n, n, n, n,
+                                                         n, n, n, n, n, n, n, n,
+                                                         n, n, n, n, n, n, n, n,   
+                                                         n, n, n, n, n, n, n, n, 
+                                                         n, n, n, n, n, n, n, n, 
+                                                         n, n, n, n, n, n, n, n};
+        else return {n};
+    }
+};
+*/
 
 int main(int argc, char** argv) {
     constexpr int N[] = {1<<10, 1<<12, 1<<14, 1<<16, 1<<18, 1<<20};
@@ -185,6 +202,21 @@ int main(int argc, char** argv) {
         using KernelInput = wrapper::wrapper<s_point, std::span, wrapper::layout::aos>;
         benchmark::RegisterBenchmark("SYNC_GPUAdd_AOS", SYNC_GPUAdd<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
     }
+
+    /*
+    for (unsigned long long n : N) {
+        using Create = CreateWrapperAdd<wrapper::layout::soa>;
+        using KernelInput = wrapper::wrapper<s_64_dim_point, std::span, wrapper::layout::soa>;
+        benchmark::RegisterBenchmark("SYNC_GPU64Add_SOA", SYNC_GPU64Add<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
+    }
+
+
+    for (unsigned long long n : N) {
+        using Create = CreateWrapperAdd<wrapper::layout::aos>;
+        using KernelInput = wrapper::wrapper<s_64_dim_point, std::span, wrapper::layout::aos>;
+        benchmark::RegisterBenchmark("SYNC_GPU64AddAOS", SYNC_GPU64Add<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
+    }
+    */
 
     for (unsigned long long n : N) {
         using Create = CreateWrapperPosVel<wrapper::layout::soa>;
