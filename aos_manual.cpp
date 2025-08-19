@@ -1,3 +1,5 @@
+#define AOS_MANUAL
+
 #include <Eigen/Core>
 
 #include "benchmark.h"
