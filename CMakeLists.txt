@@ -62,6 +62,8 @@ target_link_libraries(soa_boost Boost::boost)
 
 add_benchmark_executable(soa_manual soa_manual.cpp)
 
+add_benchmark_executable(aos_manual aos_manual.cpp)
+
 if (ENABLE_EDG)
     add_subdirectory(refl)
 endif()
