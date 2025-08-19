@@ -30,10 +30,11 @@ jobs:
           mkdir soa-benchmark-results
           mv ${{github.workspace}}/*.png  soa-benchmark-results/
           mv ${{github.workspace}}/*.json soa-benchmark-results/
+          mv ${{github.workspace}}/refl/*.json soa-benchmark-results/
           echo "Files in Results Directory:"
           ls -l soa-benchmark-results
       - name: upload results
         uses: actions/upload-artifact@v4
         with:
-          name: soa-benchmark-results
+          name: soa-benchmark-results-${{ github.sha }}
           path: soa-benchmark-results
