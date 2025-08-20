@@ -42,7 +42,7 @@ struct PxPyPzM {
 };
 
 template <typename S>
-void RegisterBenchmarkHelper(const char* name, auto bm_func, auto& free_list)
+void RegisterBenchmarkHelper(const char* name, auto bm_func, auto& free_list, auto &N)
 {
     for (auto n : N) {
         using SoA = rmpp::AoS2SoA<S, 64>;
@@ -59,14 +59,14 @@ int main(int argc, char **argv)
     std::vector<std::byte *> free_list;
 
     // Separate loops to sort the output by benchmark.
-        RegisterBenchmarkHelper<S2>("BM_CPUEasyRW", BM_CPUEasyRW<rmpp::AoS2SoA<S2, 64>>, free_list);
-        RegisterBenchmarkHelper<S2>("BM_CPUEasyCompute", BM_CPUEasyCompute<rmpp::AoS2SoA<S2, 64>>, free_list);
-        RegisterBenchmarkHelper<S10>("BM_CPURealRW", BM_CPURealRW<rmpp::AoS2SoA<S10, 64>>, free_list);
-        RegisterBenchmarkHelper<S64>("BM_CPUHardRW", BM_CPUHardRW<rmpp::AoS2SoA<S64, 64>>, free_list);
-        RegisterBenchmarkHelper<Snbody>("BM_nbody", BM_nbody<rmpp::AoS2SoA<Snbody, 64>>, free_list);
-        RegisterBenchmarkHelper<Sstencil>("BM_stencil", BM_stencil<rmpp::AoS2SoA<Sstencil, 64>>, free_list);
+    RegisterBenchmarkHelper<S2>("BM_CPUEasyRW", BM_CPUEasyRW<rmpp::AoS2SoA<S2, 64>>, free_list, N);
+    RegisterBenchmarkHelper<S2>("BM_CPUEasyCompute", BM_CPUEasyCompute<rmpp::AoS2SoA<S2, 64>>, free_list, N);
+    RegisterBenchmarkHelper<S10>("BM_CPURealRW", BM_CPURealRW<rmpp::AoS2SoA<S10, 64>>, free_list, N);
+    RegisterBenchmarkHelper<S64>("BM_CPUHardRW", BM_CPUHardRW<rmpp::AoS2SoA<S64, 64>>, free_list, N);
+    RegisterBenchmarkHelper<Snbody>("BM_nbody", BM_nbody<rmpp::AoS2SoA<Snbody, 64>>, free_list, N);
+    RegisterBenchmarkHelper<Sstencil>("BM_stencil", BM_stencil<rmpp::AoS2SoA<Sstencil, 64>>, free_list, N_Large);
 
-    for (auto n : N) {
+    for (auto n : N_Large) {
         using SoA = rmpp::AoS2SoA<PxPyPzM, 64>;
         auto byte_size = SoA::ComputeSize(n);
         auto buffer1 = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));

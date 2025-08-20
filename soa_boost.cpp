@@ -125,7 +125,7 @@ using SoAPxPyPzM = PxPyPzM<>;
 using SoAPxPyPzMView = SoAPxPyPzM::View;
 
 template <typename SoA, typename SoAView>
-void RegisterBenchmarkHelper(const char* name, auto bm_func, auto& free_list) {
+void RegisterBenchmarkHelper(const char* name, auto bm_func, auto& free_list, auto &N) {
     for (auto n : N) {
         auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(n)));
         SoA soa(buffer, n);
@@ -139,14 +139,14 @@ int main(int argc, char** argv) {
     std::vector<void *> free_list;
 
     // Seperate loops to sort the output by benchmark.
-    RegisterBenchmarkHelper<SoA, SoAView>("BM_CPUEasyRW", BM_CPUEasyRW<SoAView>, free_list);
-    RegisterBenchmarkHelper<SoA, SoAView>("BM_CPUEasyCompute", BM_CPUEasyCompute<SoAView>, free_list);
-    RegisterBenchmarkHelper<MediumSoA, MediumSoAView>("BM_CPURealRW", BM_CPURealRW<MediumSoAView>, free_list);
-    RegisterBenchmarkHelper<BigSoA, BigSoAView>("BM_CPUHardRW", BM_CPUHardRW<BigSoAView>, free_list);
-    RegisterBenchmarkHelper<SoANbody, SoANbodyView>("BM_nbody", BM_nbody<SoANbodyView>, free_list);
-    RegisterBenchmarkHelper<SoAStencil, SoAStencilView>("BM_stencil", BM_stencil<SoAStencilView>, free_list);
+    RegisterBenchmarkHelper<SoA, SoAView>("BM_CPUEasyRW", BM_CPUEasyRW<SoAView>, free_list, N_Large);
+    RegisterBenchmarkHelper<SoA, SoAView>("BM_CPUEasyCompute", BM_CPUEasyCompute<SoAView>, free_list, N);
+    RegisterBenchmarkHelper<MediumSoA, MediumSoAView>("BM_CPURealRW", BM_CPURealRW<MediumSoAView>, free_list, N);
+    RegisterBenchmarkHelper<BigSoA, BigSoAView>("BM_CPUHardRW", BM_CPUHardRW<BigSoAView>, free_list, N);
+    RegisterBenchmarkHelper<SoANbody, SoANbodyView>("BM_nbody", BM_nbody<SoANbodyView>, free_list, N);
+    RegisterBenchmarkHelper<SoAStencil, SoAStencilView>("BM_stencil", BM_stencil<SoAStencilView>, free_list, N_Large);
 
-    for (auto n : N) {
+    for (auto n : N_Large) {
         auto buffer1 = reinterpret_cast<std::byte *>(aligned_alloc(SoAPxPyPzM::alignment, SoAPxPyPzM::computeDataSize(n)));
         auto buffer2 = reinterpret_cast<std::byte *>(aligned_alloc(SoAPxPyPzM::alignment, SoAPxPyPzM::computeDataSize(n)));
         SoAPxPyPzM pxpypzm1(buffer1, n);

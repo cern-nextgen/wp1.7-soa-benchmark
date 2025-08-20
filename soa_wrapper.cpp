@@ -65,7 +65,7 @@ struct PxPyPzM {
 constexpr wrapper::layout L = wrapper::layout::soa;
 
 template <template <template <class> class> class S>
-void RegisterBenchmarkHelper(const char* name, auto bm_func, std::vector<std::byte*>& buffer_pointers) {
+void RegisterBenchmarkHelper(const char* name, auto bm_func, std::vector<std::byte*>& buffer_pointers, auto &N) {
     for (auto n : N) {
         std::size_t bytes = n * factory::get_size_in_bytes<S, L>();
         buffer_pointers.emplace_back(new std::byte[bytes]);
@@ -80,14 +80,14 @@ int main(int argc, char** argv) {
 
     std::vector<std::byte *> buffer_pointers;
 
-    RegisterBenchmarkHelper<S2>("BM_CPUEasyRW", BM_CPUEasyRW<wrapper::wrapper<S2, std::span, L>>, buffer_pointers);
-    RegisterBenchmarkHelper<S2>("BM_CPUEasyCompute", BM_CPUEasyCompute<wrapper::wrapper<S2, std::span, L>>, buffer_pointers);
-    RegisterBenchmarkHelper<S10>("BM_CPURealRW", BM_CPURealRW<wrapper::wrapper<S10, std::span, L>>, buffer_pointers);
-    RegisterBenchmarkHelper<S64>("BM_CPUHardRW", BM_CPUHardRW<wrapper::wrapper<S64, std::span, L>>, buffer_pointers);
-    RegisterBenchmarkHelper<Snbody>("BM_nbody", BM_nbody<wrapper::wrapper<Snbody, std::span, L>>, buffer_pointers);
-    RegisterBenchmarkHelper<Sstencil>("BM_stencil", BM_stencil<wrapper::wrapper<Sstencil, std::span, L>>, buffer_pointers);
+    RegisterBenchmarkHelper<S2>("BM_CPUEasyRW", BM_CPUEasyRW<wrapper::wrapper<S2, std::span, L>>, buffer_pointers, N_Large);
+    RegisterBenchmarkHelper<S2>("BM_CPUEasyCompute", BM_CPUEasyCompute<wrapper::wrapper<S2, std::span, L>>, buffer_pointers, N);
+    RegisterBenchmarkHelper<S10>("BM_CPURealRW", BM_CPURealRW<wrapper::wrapper<S10, std::span, L>>, buffer_pointers, N);
+    RegisterBenchmarkHelper<S64>("BM_CPUHardRW", BM_CPUHardRW<wrapper::wrapper<S64, std::span, L>>, buffer_pointers, N);
+    RegisterBenchmarkHelper<Snbody>("BM_nbody", BM_nbody<wrapper::wrapper<Snbody, std::span, L>>, buffer_pointers, N);
+    RegisterBenchmarkHelper<Sstencil>("BM_stencil", BM_stencil<wrapper::wrapper<Sstencil, std::span, L>>, buffer_pointers, N_Large);
 
-    for (std::size_t n : N) {
+    for (std::size_t n : N_Large) {
         std::size_t bytes = n * factory::get_size_in_bytes<PxPyPzM, L>();
         auto buffer1 = new std::byte[bytes];
         auto buffer2 = new std::byte[bytes];

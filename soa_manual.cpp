@@ -290,7 +290,7 @@ struct PxPyPzM {
 
 // Helper function to register benchmarks with one argument
 template <typename S>
-void RegisterBenchmarkHelper(const char* name, auto bm_func, auto &free_list) {
+void RegisterBenchmarkHelper(const char* name, auto bm_func, auto &free_list, auto &N) {
     for (auto n : N) {
         auto buffer = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, S::size_bytes(n)));
         S t(buffer, n);
@@ -304,14 +304,14 @@ int main(int argc, char** argv) {
     std::vector<void *> free_list;
 
     // Seperate loops to sort the output by benchmark.
-    RegisterBenchmarkHelper<S2>("BM_CPUEasyRW", BM_CPUEasyRW<S2>, free_list);
-    RegisterBenchmarkHelper<S2>("BM_CPUEasyCompute", BM_CPUEasyCompute<S2>, free_list);
-    RegisterBenchmarkHelper<S10>("BM_CPURealRW", BM_CPURealRW<S10>, free_list);
-    RegisterBenchmarkHelper<S64>("BM_CPUHardRW", BM_CPUHardRW<S64>, free_list);
-    RegisterBenchmarkHelper<Snbody>("BM_nbody", BM_nbody<Snbody>, free_list);
-    RegisterBenchmarkHelper<Sstencil>("BM_stencil", BM_stencil<Sstencil>, free_list);
+    RegisterBenchmarkHelper<S2>("BM_CPUEasyRW", BM_CPUEasyRW<S2>, free_list, N_Large);
+    RegisterBenchmarkHelper<S2>("BM_CPUEasyCompute", BM_CPUEasyCompute<S2>, free_list, N);
+    RegisterBenchmarkHelper<S10>("BM_CPURealRW", BM_CPURealRW<S10>, free_list, N);
+    RegisterBenchmarkHelper<S64>("BM_CPUHardRW", BM_CPUHardRW<S64>, free_list, N);
+    RegisterBenchmarkHelper<Snbody>("BM_nbody", BM_nbody<Snbody>, free_list, N);
+    RegisterBenchmarkHelper<Sstencil>("BM_stencil", BM_stencil<Sstencil>, free_list, N_Large);
 
-    for (auto n : N) {
+    for (auto n : N_Large) {
         auto buffer1 = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, PxPyPzM::size_bytes(n)));
         auto buffer2 = reinterpret_cast<std::byte * __restrict__>(std::aligned_alloc(Alignment, PxPyPzM::size_bytes(n)));
         PxPyPzM t1(buffer1, n);

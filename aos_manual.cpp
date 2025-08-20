@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
     benchmark::Initialize(&argc, argv);
 
     std::vector<S2*> BM_CPUEasyRW_ptrs;
-    for (auto n : N) {
+    for (auto n : N_Large) {
         S2* t = new S2[n];
         BM_CPUEasyRW_ptrs.push_back(t);
         benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<S2*>, t)->Arg(n)->Unit(benchmark::kMillisecond);
@@ -67,14 +67,14 @@ int main(int argc, char** argv) {
     }
 
     std::vector<Sstencil*> BM_stencil_ptrs;
-    for (auto n : N) {
+    for (auto n : N_Large) {
         Sstencil* t = new Sstencil[n];
         BM_stencil_ptrs.push_back(t);
         benchmark::RegisterBenchmark("BM_stencil", BM_stencil<Sstencil*>, t)->Arg(n)->Unit(benchmark::kMillisecond);
     }
 
     std::vector<PxPyPzM*> BM_InvariantMass_ptrs;
-    for (std::size_t n : N) {
+    for (std::size_t n : N_Large) {
         PxPyPzM* t1 = new PxPyPzM[n];
         PxPyPzM* t2 = new PxPyPzM[n];
         BM_InvariantMass_ptrs.push_back(t1);
