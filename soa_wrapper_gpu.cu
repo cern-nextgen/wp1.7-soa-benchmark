@@ -96,7 +96,7 @@ struct CreateWrapper {
 
 template<wrapper::layout L>
 struct CreateWrapperCoor {
-    wrapper::wrapper<s_coordinates, device_memory_array, L> operator()(int n) {
+    wrapper::wrapper<s_coordinates, device_memory_array, L> operator()(std::size_t n) {
         if constexpr (L == wrapper::layout::soa) return {n, n};
         else return {n};
     }
@@ -143,7 +143,7 @@ struct CreateWrapper64Add {
 */
 
 int main(int argc, char** argv) {
-    constexpr int N[] = {1<<10, 1<<12, 1<<14, 1<<16, 1<<18, 1<<20};
+    // constexpr int N[] = {1<<10, 1<<12, 1<<14, 1<<16, 1<<18, 1<<20};
     constexpr unsigned long long N_LONGLONG[] = {1ull<<16, 1ull<<18, 1ull<<20, 1ull<<22, 1ull<<24, 1ull<<26, 1ull<<28};
 
     /*
@@ -178,13 +178,13 @@ int main(int argc, char** argv) {
     } 
     */  
 
-    for (int n : N) {
+    for (int n : N_LONGLONG) {
         using Create = CreateWrapperCoor<wrapper::layout::soa>;
         using KernelInput = wrapper::wrapper<s_coordinates, std::span, wrapper::layout::soa>;
         benchmark::RegisterBenchmark("PiSimp_GPUTest_SOA", PiSimp_GPUTest<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);
     }
 
-    for (int n : N) {
+    for (int n : N_LONGLONG) {
         using Create = CreateWrapperCoor<wrapper::layout::aos>;
         using KernelInput = wrapper::wrapper<s_coordinates, std::span, wrapper::layout::aos>;
         benchmark::RegisterBenchmark("PiSimp_GPUTest_AOS", PiSimp_GPUTest<Create, KernelInput>)->Arg(n)->UseManualTime()->Unit(benchmark::kMillisecond);

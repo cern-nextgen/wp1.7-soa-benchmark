@@ -15,22 +15,28 @@ struct s_coordinates {
 };
 
 template <class KernelInput>
-__global__ void initialize_coordinates(KernelInput data, const float *d_x_axis, const float *d_y_axis, int N) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < N) {
+__global__ void initialize_coordinates(KernelInput data, const float *d_x_axis, const float *d_y_axis, unsigned long long N) {
+    
+    unsigned long long idx = blockIdx.x * (unsigned long long)blockDim.x + threadIdx.x;
+    unsigned long long stride  = (unsigned long long)blockDim.x * gridDim.x;
+
+    for (; idx < N; idx += stride) {
         data[idx].x_axis = d_x_axis[idx];
         data[idx].y_axis = d_y_axis[idx];
     }
 } 
 
 template <class KernelInput>
-__global__ void estimate_pi_kernel_shared(const KernelInput data, float * pi_counts, int n) {
+__global__ void estimate_pi_kernel_shared(const KernelInput data, float * pi_counts, unsigned long long N) {
     extern __shared__ float local_counts[];
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    int tid = threadIdx.x; 
 
-    int count = 0;
-    if (idx < n) {
+    unsigned long long idx = blockIdx.x * (unsigned long long)blockDim.x + threadIdx.x;
+    unsigned long long stride  = (unsigned long long)blockDim.x * gridDim.x;
+    unsigned long long tid = threadIdx.x; 
+
+    unsigned long long count = 0;
+
+    for (; idx < N; idx += stride){
         float x = data[idx].x_axis;
         float y = data[idx].y_axis;
         if (x * x + y * y <= 1.0f) {
@@ -41,7 +47,7 @@ __global__ void estimate_pi_kernel_shared(const KernelInput data, float * pi_cou
     local_counts[tid] = count;
     __syncthreads(); 
 
-    for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
+    for (unsigned long long stride = (unsigned long long)blockDim.x / 2; stride > 0; stride /= 2) {
         if (tid < stride) {
             local_counts[tid] += local_counts[tid + stride];        
         }
@@ -59,9 +65,7 @@ __global__ void estimate_pi_kernel_shared(const KernelInput data, float * pi_cou
 
 template <class Create, class KernelInput>
 void PiSimp_GPUTest(benchmark::State &state) {
-    int n = state.range();
-    int scaler = 1<<4;         
-    n = n * scaler;
+    unsigned long long n = state.range();
     state.counters["n_elem"] = n;
 
     unsigned int seed = 0; 
@@ -71,7 +75,7 @@ void PiSimp_GPUTest(benchmark::State &state) {
     std::vector<float> h_x_axis(n);
     std::vector<float> h_y_axis(n);
 
-    for (int i = 0; i < n; i++) {
+    for (unsigned long long i = 0; i < n; i++) {
         h_x_axis[i] = dist(rng);
         h_y_axis[i] = dist(rng);
     }
