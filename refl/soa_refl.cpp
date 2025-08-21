@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     std::vector<std::byte *> free_list;
 
     // Separate loops to sort the output by benchmark.
-    RegisterBenchmarkHelper<S2>("BM_CPUEasyRW", BM_CPUEasyRW<rmpp::AoS2SoA<S2, 64>>, free_list, N);
+    RegisterBenchmarkHelper<S2>("BM_CPUEasyRW", BM_CPUEasyRW<rmpp::AoS2SoA<S2, 64>>, free_list, N_Large);
     RegisterBenchmarkHelper<S2>("BM_CPUEasyCompute", BM_CPUEasyCompute<rmpp::AoS2SoA<S2, 64>>, free_list, N);
     RegisterBenchmarkHelper<S10>("BM_CPURealRW", BM_CPURealRW<rmpp::AoS2SoA<S10, 64>>, free_list, N);
     RegisterBenchmarkHelper<S64>("BM_CPUHardRW", BM_CPUHardRW<rmpp::AoS2SoA<S64, 64>>, free_list, N);

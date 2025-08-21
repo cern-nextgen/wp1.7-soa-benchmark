@@ -30,8 +30,8 @@
 using Vector3D = Eigen::Vector3d;
 using Matrix3D = Eigen::Matrix3d;
 
-constexpr std::size_t N[] = {100, 1000, 10000, 100000, 1000000};
-constexpr std::size_t N_Large[] = {100000, 1000000, 10000000, 100000000, 100000000};
+constexpr std::size_t N[] = {10, 100, 1000, 10000, 100000};
+constexpr std::size_t N_Large[] = {10000, 100000, 1000000, 10000000, 100000000};
 
 template <typename T>
 static std::string ToString(const T &obj)
