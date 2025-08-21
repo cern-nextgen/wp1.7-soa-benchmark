@@ -39,7 +39,7 @@ unsigned long long shfl_xor_ull(unsigned mask, unsigned long long v, int offset)
 
 __device__ __forceinline__
 void warp_reduce_max(float& val, unsigned long long& idx) {
-    unsigned mask = 0xFFFFFFFFu;
+    unsigned mask = __activemask();
     #pragma unroll
     for (int offset = 16; offset > 0; offset >>= 1) {
         float other_val              = __shfl_xor_sync(mask, val, offset);
@@ -52,7 +52,7 @@ void warp_reduce_max(float& val, unsigned long long& idx) {
 }
 
 template <class KernelInput>
-__global__ void arg_max(KernelInput data, unsigned long long N) {
+__global__ void arg_max_blockwise(KernelInput data, unsigned long long N) {
     constexpr int warp_size = 32;
     __shared__ float              max_vals[warp_size];
     __shared__ unsigned long long max_idxs[warp_size];
@@ -69,7 +69,7 @@ __global__ void arg_max(KernelInput data, unsigned long long N) {
 
     for (; idx < N; idx += stride) {
         float v = data[idx].x0;
-        if (v > local_max) {
+        if (v > local_max || (v == local_max && idx < local_idx)) {
             local_max = v;
             local_idx = idx;
         }
@@ -84,12 +84,55 @@ __global__ void arg_max(KernelInput data, unsigned long long N) {
     __syncthreads();
 
     if (warp_id == 0) {
-        float              val = (tid < blockDim.x / warp_size) ? max_vals[lane_id] : -FLT_MAX;
-        unsigned long long id  = (tid < blockDim.x / warp_size) ? max_idxs[lane_id] : 0ull;
+        float              val = (lane_id < blockDim.x / warp_size) ? max_vals[lane_id] : -FLT_MAX;
+        unsigned long long id  = (lane_id < blockDim.x / warp_size) ? max_idxs[lane_id] : 0ull;
         warp_reduce_max(val, id);
         if (lane_id == 0) {
-            data[tid].x1 = val;
-            data[tid].x2 = id;
+            data[blockIdx.x].x1 = val;
+            data[blockIdx.x].x2 = id;
+        }
+    }
+}
+
+template <class KernelInput>
+__global__ void finalize_arg_max(KernelInput data, unsigned long long numBlocks) {
+    constexpr int warp_size = 32;
+    __shared__ float              max_vals[warp_size];
+    __shared__ unsigned long long max_idxs[warp_size];
+
+    int tid     = threadIdx.x;
+    int lane_id = tid % warp_size;
+    int warp_id = tid / warp_size;
+
+    float              local_max = -FLT_MAX;
+    unsigned long long local_idx = 0ull;
+
+    unsigned long long i    = tid;
+    unsigned long long step = blockDim.x;
+    for (; i < numBlocks; i += step) {
+        float v = data[i].x1;
+        unsigned long long j = data[i].x2;
+        if (v > local_max || (v == local_max && j < local_idx)) {
+            local_max = v;
+            local_idx = j;
+        }
+    }
+
+    warp_reduce_max(local_max, local_idx);
+
+    if (lane_id == 0) {
+        max_vals[warp_id] = local_max;
+        max_idxs[warp_id] = local_idx;
+    }
+    __syncthreads();
+
+    if (warp_id == 0) {
+        float              val = (lane_id < blockDim.x / warp_size) ? max_vals[lane_id] : -FLT_MAX;
+        unsigned long long id  = (lane_id < blockDim.x / warp_size) ? max_idxs[lane_id] : 0ull;
+        warp_reduce_max(val, id);
+        if (lane_id == 0) {
+            data[0].x1 = val;
+            data[0].x2 = id;
         }
     }
 }
@@ -124,7 +167,8 @@ void MAX_GPUTest(benchmark::State &state) {
 
     for (auto _ : state) {
         cudaEventRecord(start, 0);
-        arg_max<KernelInput><<<numBlocks, blockSize>>>(t, n);
+        arg_max_blockwise<KernelInput><<<numBlocks, blockSize>>>(t, n);
+        finalize_arg_max<KernelInput><<<1, blockSize>>>(t, (unsigned long long)numBlocks);
         cudaEventRecord(stop, 0);
         cudaEventSynchronize(stop);
         float ms = 0.0f;

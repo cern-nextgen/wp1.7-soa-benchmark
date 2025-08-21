@@ -40,7 +40,7 @@ __global__ void estimate_pi_kernel_shared(const KernelInput data, float * pi_cou
         float x = data[idx].x_axis;
         float y = data[idx].y_axis;
         if (x * x + y * y <= 1.0f) {
-            count = 1;
+            count += 1;
         }
     }       
     
