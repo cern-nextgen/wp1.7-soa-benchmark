@@ -41,44 +41,67 @@ struct PxPyPzM {
     double &x, &y, &z, &M;
 };
 
-template <typename S>
-void RegisterBenchmarkHelper(const char* name, auto bm_func, auto& free_list, auto &N)
-{
-    for (auto n : N) {
-        using SoA = rmpp::AoS2SoA<S, 64>;
+/// Register Benchmarks ///
+template <typename S, typename N>
+class Fixture1 : public benchmark::Fixture {
+ public:
+    using SoA = rmpp::AoS2SoA<S, Alignment>;
+
+    std::byte *buffer;
+    SoA t;
+
+    static constexpr auto n = N::value;
+
+    void SetUp(::benchmark::State &state /* unused */) override
+    {
         auto byte_size = SoA::ComputeSize(n);
-        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
-        SoA t(buffer, byte_size, n);
-        benchmark::RegisterBenchmark(name, bm_func, t)->Arg(n)->Unit(benchmark::kMillisecond);
-        free_list.push_back(buffer);
-    }
-}
-
-int main(int argc, char **argv)
-{
-    std::vector<std::byte *> free_list;
-
-    // Separate loops to sort the output by benchmark.
-    RegisterBenchmarkHelper<S2>("BM_CPUEasyRW", BM_CPUEasyRW<rmpp::AoS2SoA<S2, 64>>, free_list, N_Large);
-    RegisterBenchmarkHelper<S2>("BM_CPUEasyCompute", BM_CPUEasyCompute<rmpp::AoS2SoA<S2, 64>>, free_list, N);
-    RegisterBenchmarkHelper<S10>("BM_CPURealRW", BM_CPURealRW<rmpp::AoS2SoA<S10, 64>>, free_list, N);
-    RegisterBenchmarkHelper<S64>("BM_CPUHardRW", BM_CPUHardRW<rmpp::AoS2SoA<S64, 64>>, free_list, N);
-    RegisterBenchmarkHelper<Snbody>("BM_nbody", BM_nbody<rmpp::AoS2SoA<Snbody, 64>>, free_list, N);
-    RegisterBenchmarkHelper<Sstencil>("BM_stencil", BM_stencil<rmpp::AoS2SoA<Sstencil, 64>>, free_list, N_Large);
-
-    for (auto n : N_Large) {
-        using SoA = rmpp::AoS2SoA<PxPyPzM, 64>;
-        auto byte_size = SoA::ComputeSize(n);
-        auto buffer1 = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
-        auto buffer2 = reinterpret_cast<std::byte *>(aligned_alloc(64, byte_size));
-        SoA t1(buffer1, byte_size, n);
-        SoA t2(buffer2, byte_size, n);
-        benchmark::RegisterBenchmark("BM_InvariantMass", BM_InvariantMass<SoA, SoA>, t1, t2)->Arg(n)->Unit(benchmark::kMillisecond);
+        buffer = reinterpret_cast<std::byte *>(aligned_alloc(Alignment, byte_size));
+        t = SoA(buffer, byte_size, n);
     }
 
-    benchmark::Initialize(&argc, argv);
-    benchmark::RunSpecifiedBenchmarks();
-    benchmark::Shutdown();
+    void TearDown(::benchmark::State &state /* unused */) override { std::free(buffer); }
 
-    for (std::byte * buffer_ptr : free_list)  std::free(buffer_ptr);
-}
+    Fixture1() : t(nullptr, 0, 0) {}
+};
+
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2, N_Large);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2, N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10, N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64, N);
+INSTANTIATE_BENCHMARKS_F1(BM_nbody, Snbody, N);
+INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencil, N_Large);
+
+template <typename S1, typename S2, typename N>
+class Fixture2 : public benchmark::Fixture {
+ public:
+    using SoA1 = rmpp::AoS2SoA<S1, Alignment>;
+    using SoA2 = rmpp::AoS2SoA<S2, Alignment>;
+
+    void *buffer1, *buffer2;
+    SoA1 t1;
+    SoA2 t2;
+
+    static constexpr auto n = N::value;
+
+    void SetUp(::benchmark::State &state /* unused */) override
+    {
+        auto byte_size1 = SoA1::ComputeSize(n);
+        auto byte_size2 = SoA2::ComputeSize(n);
+        buffer1 = reinterpret_cast<std::byte *>(aligned_alloc(Alignment, byte_size1));
+        buffer2 = reinterpret_cast<std::byte *>(aligned_alloc(Alignment, byte_size2));
+        t1 = SoA1(reinterpret_cast<std::byte *>(buffer1), byte_size1, n);
+        t2 = SoA2(reinterpret_cast<std::byte *>(buffer2), byte_size2, n);
+    }
+
+    void TearDown(::benchmark::State &state /* unused */) override
+    {
+        std::free(buffer1);
+        std::free(buffer2);
+    }
+
+    Fixture2() : t1(nullptr, 0, 0), t2(nullptr, 0, 0) {}
+};
+
+INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzM, PxPyPzM, N_Large);
+
+BENCHMARK_MAIN();

@@ -4,7 +4,9 @@
 
 #include "benchmark.h"
 
-struct S2 { int x0, x1; };
+struct S2 {
+    int x0, x1;
+};
 
 struct S10 {
     float x0, x1;
@@ -22,76 +24,41 @@ struct S64 {
     Eigen::Matrix3d x51, x52, x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63;
 };
 
-struct Snbody { float x, y, z, vx, vy, vz; };
+struct Snbody {
+    float x, y, z, vx, vy, vz;
+};
 
-struct Sstencil { double src, dst, rhs; };
+struct Sstencil {
+    double src, dst, rhs;
+};
 
-struct PxPyPzM { double x, y, z, M; };
+struct PxPyPzM {
+    double x, y, z, M;
+};
 
-int main(int argc, char** argv) {
-    benchmark::Initialize(&argc, argv);
+/// Register Benchmarks ///
+template <typename S, typename N>
+class Fixture1 : public benchmark::Fixture {
+ public:
+    static constexpr auto n = N::value;
+    S t[n];
+};
 
-    std::vector<S2*> BM_CPUEasyRW_ptrs;
-    for (auto n : N_Large) {
-        S2* t = new S2[n];
-        BM_CPUEasyRW_ptrs.push_back(t);
-        benchmark::RegisterBenchmark("BM_CPUEasyRW", BM_CPUEasyRW<S2*>, t)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2, N_Large);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2, N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10, N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64, N);
+INSTANTIATE_BENCHMARKS_F1(BM_nbody, Snbody, N);
+INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencil, N_Large);
 
-    std::vector<S2*> BM_CPUEasyCompute_ptrs;
-    for (auto n : N) {
-        S2* t = new S2[n];
-        BM_CPUEasyCompute_ptrs.push_back(t);
-        benchmark::RegisterBenchmark("BM_CPUEasyCompute", BM_CPUEasyCompute<S2*>, t)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
+template <typename S1, typename S2, typename N>
+class Fixture2 : public benchmark::Fixture {
+ public:
+    static constexpr auto n = N::value;
+    S1 t1[n];
+    S2 t2[n];
+};
 
-    std::vector<S10*> BM_CPURealRW_ptrs;
-    for (auto n : N) {
-        S10* t = new S10[n];
-        BM_CPURealRW_ptrs.push_back(t);
-        benchmark::RegisterBenchmark("BM_CPURealRW", BM_CPURealRW<S10*>, t)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
+INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzM, PxPyPzM, N_Large);
 
-    std::vector<S64*> BM_CPUHardRW_ptrs;
-    for (auto n : N) {
-        S64* t = new S64[n];
-        BM_CPUHardRW_ptrs.push_back(t);
-        benchmark::RegisterBenchmark("BM_CPUHardRW", BM_CPUHardRW<S64*>, t)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
-
-    std::vector<Snbody*> BM_nbody_ptrs;
-    for (auto n : N) {
-        Snbody* t = new Snbody[n];
-        BM_nbody_ptrs.push_back(t);
-        benchmark::RegisterBenchmark("BM_nbody", BM_nbody<Snbody*>, t)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
-
-    std::vector<Sstencil*> BM_stencil_ptrs;
-    for (auto n : N_Large) {
-        Sstencil* t = new Sstencil[n];
-        BM_stencil_ptrs.push_back(t);
-        benchmark::RegisterBenchmark("BM_stencil", BM_stencil<Sstencil*>, t)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
-
-    std::vector<PxPyPzM*> BM_InvariantMass_ptrs;
-    for (std::size_t n : N_Large) {
-        PxPyPzM* t1 = new PxPyPzM[n];
-        PxPyPzM* t2 = new PxPyPzM[n];
-        BM_InvariantMass_ptrs.push_back(t1);
-        BM_InvariantMass_ptrs.push_back(t2);
-        benchmark::RegisterBenchmark("BM_InvariantMass", BM_InvariantMass<PxPyPzM*, PxPyPzM*>, t1, t2)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
-
-    benchmark::RunSpecifiedBenchmarks();
-    benchmark::Shutdown();
-
-    for (S2* ptr : BM_CPUEasyRW_ptrs) delete[] ptr;
-    for (S2* ptr : BM_CPUEasyCompute_ptrs) delete[] ptr;
-    for (S10* ptr : BM_CPURealRW_ptrs) delete[] ptr;
-    for (S64* ptr : BM_CPUHardRW_ptrs) delete[] ptr;
-    for (Snbody* ptr : BM_nbody_ptrs) delete[] ptr;
-    for (Sstencil* ptr : BM_stencil_ptrs) delete[] ptr;
-    for (PxPyPzM* ptr : BM_InvariantMass_ptrs) delete[] ptr;
-
-    return 0;
-}
+BENCHMARK_MAIN();

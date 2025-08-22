@@ -32,6 +32,24 @@ using Matrix3D = Eigen::Matrix3d;
 
 constexpr std::size_t N[] = {10, 100, 1000, 10000, 100000};
 constexpr std::size_t N_Large[] = {10000, 100000, 1000000, 10000000, 100000000};
+constexpr size_t Alignment = 128;
+
+// clang-format off
+#define INSTANTIATE_BENCHMARKS_F1(BM, Type, N) \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM, Type, std::integral_constant<size_t, N[0]>)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM, Type, std::integral_constant<size_t, N[1]>)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM, Type, std::integral_constant<size_t, N[2]>)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM, Type, std::integral_constant<size_t, N[3]>)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM, Type, std::integral_constant<size_t, N[4]>)->Unit(benchmark::kMillisecond);
+
+#define INSTANTIATE_BENCHMARKS_F2(BM, Type1, Type2, N) \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM, Type1, Type2, std::integral_constant<size_t, N[0]>)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM, Type1, Type2, std::integral_constant<size_t, N[1]>)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM, Type1, Type2, std::integral_constant<size_t, N[2]>)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM, Type1, Type2, std::integral_constant<size_t, N[3]>)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM, Type1, Type2, std::integral_constant<size_t, N[4]>)->Unit(benchmark::kMillisecond);
+// clang-format on
+
 
 template <typename T>
 static std::string ToString(const T &obj)
@@ -52,28 +70,29 @@ void CheckResult(benchmark::State &state, const Expected &expected, const Actual
     }
 }
 
+template <typename S, typename N> class Fixture1; // Forward Declaration
+
 // 2 data members, integers, 10 elements
-template <typename T>
-void BM_CPUEasyRW(benchmark::State &state, T t)
-{
-    auto n = state.range(0);
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUEasyRW)(benchmark::State& state) {
+    auto n = this->n;
+    auto &t = this->t;
 
     // Initialize the data members to zero
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         MEMBER_ACCESS(t, x0, i) = 0;
         MEMBER_ACCESS(t, x1, i) = 0;
     }
 
     // Perform read and write operations
     for (auto _ : state) {
-        for (int i = 0; i < n; ++i) {
+        for (size_t i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x0, i) += 2;
             MEMBER_ACCESS(t, x1, i) += 2;
         }
     }
 
     // Check the result
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         CheckResult(state, 2 * state.iterations(), MEMBER_ACCESS(t, x0, i), "x0");
         CheckResult(state, 2 * state.iterations(), MEMBER_ACCESS(t, x1, i), "x1");
     }
@@ -81,11 +100,11 @@ void BM_CPUEasyRW(benchmark::State &state, T t)
     state.counters["n_elem"] = n;
 }
 
+
 // 2 data members, integers, 10 elements
-template <typename T>
-void BM_CPUEasyCompute(benchmark::State &state, T t)
-{
-    auto n = state.range(0);
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUEasyCompute)(benchmark::State& state) {
+    auto n = this->n;
+    auto &t = this->t;
 
     // Initialize the data members to zero
     for (int i = 0; i < n; ++i) {
@@ -123,10 +142,9 @@ void BM_CPUEasyCompute(benchmark::State &state, T t)
 
 // “Realistic case”:
 //      10 data members (3 doubles, 3 float, 2 integer, 1 Vector3D, 1 Matrix)
-template <typename T>
-void BM_CPURealRW(benchmark::State &state, T t)
-{
-    auto n = state.range(0);
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPURealRW)(benchmark::State& state) {
+    auto n = this->n;
+    auto &t = this->t;
 
     Matrix3D m = Matrix3D::Constant(2);
     Vector3D v = Vector3D::Constant(2);
@@ -201,10 +219,9 @@ void BM_CPURealRW(benchmark::State &state, T t)
 }
 
 // 100 data members (20 floats, 20 doubles, 20 integers, 20 Eigen vector, 20 Eigen matrices)
-template <typename T>
-void BM_CPUHardRW(benchmark::State &state, T t)
-{
-    auto n = state.range(0);
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUHardRW)(benchmark::State& state) {
+    auto n = this->n;
+    auto &t = this->t;
 
     Matrix3D m = Matrix3D::Constant(2);
     Vector3D v = Vector3D::Constant(2);
@@ -381,10 +398,9 @@ inline float rand_float()
     return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
-template <typename T>
-void BM_nbody(benchmark::State &state, T t)
-{
-    auto n = state.range(0);
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_nbody)(benchmark::State& state) {
+    auto n = this->n;
+    auto &t = this->t;
     float dt = 0.01f;
     const float softening = 1e-9f;
 
@@ -393,7 +409,7 @@ void BM_nbody(benchmark::State &state, T t)
     std::vector<float> Fz(n, 0.0f);
 
     // Inizializza le posizioni e velocità
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         MEMBER_ACCESS(t, x, i) = rand_float();
         MEMBER_ACCESS(t, y, i) = rand_float();
         MEMBER_ACCESS(t, z, i) = rand_float();
@@ -404,12 +420,12 @@ void BM_nbody(benchmark::State &state, T t)
 
     for (auto _ : state) {
         // Calcolo delle forze
-        for (int i = 0; i < n; ++i) {
+        for (size_t i = 0; i < n; ++i) {
             Fx[i] = 0.0f;
             Fy[i] = 0.0f;
             Fz[i] = 0.0f;
 
-            for (int j = 0; j < n; ++j) {
+            for (size_t j = 0; j < n; ++j) {
                 if (i != j) {
                     float dx = MEMBER_ACCESS(t, x, j) - MEMBER_ACCESS(t, x, i);
                     float dy = MEMBER_ACCESS(t, y, j) - MEMBER_ACCESS(t, y, i);
@@ -430,7 +446,7 @@ void BM_nbody(benchmark::State &state, T t)
         }
 
         // Integrazione posizioni
-        for (int i = 0; i < n; ++i) {
+        for (size_t i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x, i) += MEMBER_ACCESS(t, vx, i) * dt;
             MEMBER_ACCESS(t, y, i) += MEMBER_ACCESS(t, vy, i) * dt;
             MEMBER_ACCESS(t, z, i) += MEMBER_ACCESS(t, vz, i) * dt;
@@ -448,18 +464,16 @@ inline double solution_poisson(const double x)
     return x * (x - 1) * std::exp(x);
 }
 
-template <typename T>
-void BM_stencil(benchmark::State &state, T t)
-{
-    const auto n = state.range(0);
-
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_stencil)(benchmark::State& state) {
+    auto n = this->n;
+    auto &t = this->t;
     // Domain: [0, L]
     constexpr double L = 1.0;
     const double dx = L / static_cast<double>(n - 1);
     const double dx2 = dx * dx;
 
     // Initialise the domain
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         const double x = static_cast<double>(i) * dx;
         MEMBER_ACCESS(t, src, i) = 0.0;
         MEMBER_ACCESS(t, dst, i) = 0.0;
@@ -467,7 +481,7 @@ void BM_stencil(benchmark::State &state, T t)
     }
 
     for (auto _ : state) {
-        for (int i = 1; i < n - 1; ++i) {
+        for (size_t i = 1; i < n - 1; ++i) {
             const double u_left = MEMBER_ACCESS(t, src, i - 1);
             const double u_right = MEMBER_ACCESS(t, src, i + 1);
             const double f = MEMBER_ACCESS(t, rhs, i);
@@ -475,7 +489,7 @@ void BM_stencil(benchmark::State &state, T t)
         }
 
         // Maybe use a pointer swap instead
-        for (int i = 1; i < n - 1; ++i) {
+        for (size_t i = 1; i < n - 1; ++i) {
             const double u_left = MEMBER_ACCESS(t, dst, i - 1);
             const double u_right = MEMBER_ACCESS(t, dst, i + 1);
             const double f = MEMBER_ACCESS(t, rhs, i);
@@ -495,13 +509,15 @@ void BM_stencil(benchmark::State &state, T t)
     state.counters["N^2_interactions"] = benchmark::Counter(static_cast<double>(n) * 2.0, benchmark::Counter::kIsRate);
 }
 
-template <typename T1, typename T2>
-void BM_InvariantMass(benchmark::State &state, T1 v1, T2 v2)
-{
-    const auto n = state.range(0);
+template<typename T1, typename T2, typename N> class Fixture2; // forward declaration
+
+BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State& state) {
+    auto n = this->n;
+    auto &v1 = this->t1;
+    auto &v2 = this->t2;
 
     // Initialise x,y,z,M vectors
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         MEMBER_ACCESS(v1, x, i) = i * 5;
         MEMBER_ACCESS(v1, y, i) = i * 3;
         MEMBER_ACCESS(v1, z, i) = i;
@@ -513,7 +529,7 @@ void BM_InvariantMass(benchmark::State &state, T1 v1, T2 v2)
     }
 
     for (auto _ : state) {
-        for (int i = 0; i < n; ++i) {
+        for (size_t i = 0; i < n; ++i) {
             // Numerically stable computation of Invariant Masses
             const auto p1_sq = MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v1, x, i) +
                                MEMBER_ACCESS(v1, y, i) * MEMBER_ACCESS(v1, y, i) +

@@ -11,7 +11,6 @@ GENERATE_SOA_LAYOUT(SoALayout,
     SOA_COLUMN(int, x1))
 
 using SoA = SoALayout<>;
-using SoAView = SoA::View;
 
 GENERATE_SOA_LAYOUT(MediumSoALayout,
     SOA_COLUMN(float, x0),
@@ -26,7 +25,6 @@ GENERATE_SOA_LAYOUT(MediumSoALayout,
     SOA_EIGEN_COLUMN(Eigen::Matrix3d, x9))
 
 using MediumSoA = MediumSoALayout<>;
-using MediumSoAView = MediumSoA::View;
 
 GENERATE_SOA_LAYOUT(BigSoALayout,
     SOA_COLUMN(float, x0),
@@ -95,7 +93,6 @@ GENERATE_SOA_LAYOUT(BigSoALayout,
     SOA_EIGEN_COLUMN(Eigen::Matrix3d, x63))
 
 using BigSoA = BigSoALayout<>;
-using BigSoAView = BigSoA::View;
 
 GENERATE_SOA_LAYOUT(SoANbodyLayout,
     SOA_COLUMN(float, x),
@@ -106,7 +103,6 @@ GENERATE_SOA_LAYOUT(SoANbodyLayout,
     SOA_COLUMN(float, vz))
 
 using SoANbody = SoANbodyLayout<>;
-using SoANbodyView = SoANbody::View;
 
 GENERATE_SOA_LAYOUT(Stencil,
     SOA_COLUMN(double, src),
@@ -114,7 +110,6 @@ GENERATE_SOA_LAYOUT(Stencil,
     SOA_COLUMN(double, rhs))
 
 using SoAStencil = Stencil<>;
-using SoAStencilView = SoAStencil::View;
 
 GENERATE_SOA_LAYOUT(PxPyPzM,
     SOA_COLUMN(double, x),
@@ -122,48 +117,63 @@ GENERATE_SOA_LAYOUT(PxPyPzM,
     SOA_COLUMN(double, z),
     SOA_COLUMN(double, M))
 using SoAPxPyPzM = PxPyPzM<>;
-using SoAPxPyPzMView = SoAPxPyPzM::View;
 
-template <typename SoA, typename SoAView>
-void RegisterBenchmarkHelper(const char* name, auto bm_func, auto& free_list, auto &N) {
-    for (auto n : N) {
-        auto buffer = reinterpret_cast<std::byte *>(aligned_alloc(SoA::alignment, SoA::computeDataSize(n)));
+/// Register Benchmarks ///
+template <typename SoA, typename N>
+class Fixture1 : public benchmark::Fixture {
+ public:
+    std::byte *buffer;
+    using SoAView = SoA::View;
+    SoAView t;
+
+    static constexpr auto n = N::value;
+
+    void SetUp(::benchmark::State &state /* unused */) override
+    {
+        buffer = reinterpret_cast<std::byte *>(aligned_alloc(Alignment, SoA::computeDataSize(n)));
         SoA soa(buffer, n);
-        SoAView soaView{soa};
-        benchmark::RegisterBenchmark(name, bm_func, soaView)->Arg(n)->Unit(benchmark::kMillisecond);
-        free_list.push_back(buffer);
-    }
-}
-
-int main(int argc, char** argv) {
-    std::vector<void *> free_list;
-
-    // Seperate loops to sort the output by benchmark.
-    RegisterBenchmarkHelper<SoA, SoAView>("BM_CPUEasyRW", BM_CPUEasyRW<SoAView>, free_list, N_Large);
-    RegisterBenchmarkHelper<SoA, SoAView>("BM_CPUEasyCompute", BM_CPUEasyCompute<SoAView>, free_list, N);
-    RegisterBenchmarkHelper<MediumSoA, MediumSoAView>("BM_CPURealRW", BM_CPURealRW<MediumSoAView>, free_list, N);
-    RegisterBenchmarkHelper<BigSoA, BigSoAView>("BM_CPUHardRW", BM_CPUHardRW<BigSoAView>, free_list, N);
-    RegisterBenchmarkHelper<SoANbody, SoANbodyView>("BM_nbody", BM_nbody<SoANbodyView>, free_list, N);
-    RegisterBenchmarkHelper<SoAStencil, SoAStencilView>("BM_stencil", BM_stencil<SoAStencilView>, free_list, N_Large);
-
-    for (auto n : N_Large) {
-        auto buffer1 = reinterpret_cast<std::byte *>(aligned_alloc(SoAPxPyPzM::alignment, SoAPxPyPzM::computeDataSize(n)));
-        auto buffer2 = reinterpret_cast<std::byte *>(aligned_alloc(SoAPxPyPzM::alignment, SoAPxPyPzM::computeDataSize(n)));
-        SoAPxPyPzM pxpypzm1(buffer1, n);
-        SoAPxPyPzM pxpypzm2(buffer2, n);
-        SoAPxPyPzMView pxpypzmView1{pxpypzm1};
-        SoAPxPyPzMView pxpypzmView2{pxpypzm2};
-        benchmark::RegisterBenchmark("BM_InvariantMass", BM_InvariantMass<SoAPxPyPzMView, SoAPxPyPzMView>,
-                                     pxpypzmView1, pxpypzmView2)->Arg(n)->Unit(benchmark::kMillisecond);
-        free_list.push_back(buffer1);
-        free_list.push_back(buffer2);
+        t = SoAView{soa};
     }
 
-    benchmark::Initialize(&argc, argv);
-    benchmark::RunSpecifiedBenchmarks();
-    benchmark::Shutdown();
+    void TearDown(::benchmark::State &state /* unused */) override { std::free(buffer); }
+};
 
-    for (auto buffer : free_list) {
-        std::free(buffer);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, SoA, N_Large);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, SoA, N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, MediumSoA, N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, BigSoA, N);
+INSTANTIATE_BENCHMARKS_F1(BM_nbody, SoANbody, N);
+INSTANTIATE_BENCHMARKS_F1(BM_stencil, SoAStencil, N_Large);
+
+template <typename SoA1, typename SoA2, typename N>
+class Fixture2 : public benchmark::Fixture {
+ public:
+    std::byte *buffer1, *buffer2;
+    using SoAView1 = SoA1::View;
+    using SoAView2 = SoA2::View;
+
+    SoAView1 t1;
+    SoAView2 t2;
+
+    static constexpr auto n = N::value;
+
+    void SetUp(::benchmark::State &state /* unused */) override
+    {
+        buffer1 = reinterpret_cast<std::byte *>(aligned_alloc(Alignment, SoA1::computeDataSize(n)));
+        buffer2 = reinterpret_cast<std::byte *>(aligned_alloc(Alignment, SoA2::computeDataSize(n)));
+        SoA1 soa1(buffer1, n);
+        SoA2 soa2(buffer2, n);
+        t1 = SoAView1{soa1};
+        t2 = SoAView2{soa2};
     }
-}
+
+    void TearDown(::benchmark::State &state /* unused */) override
+    {
+        std::free(buffer1);
+        std::free(buffer2);
+    }
+};
+
+INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, SoAPxPyPzM, SoAPxPyPzM, N_Large);
+
+BENCHMARK_MAIN();
