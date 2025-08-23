@@ -64,6 +64,45 @@ struct PxPyPzM {
 
 constexpr wrapper::layout L = wrapper::layout::soa;
 
+/// Register Benchmarks ///
+template <typename wrapper_span, typename N>
+class Fixture1 : public benchmark::Fixture {
+ public:
+    static constexpr auto n = N::value;
+
+    template <template <class> class F_type>
+    using S = wrapper_span::template S_type<F_type>;
+
+    std::byte *buffer;
+    wrapper_span t;
+
+    void SetUp(::benchmark::State &state) override
+    {
+        std::size_t bytes = n * factory::get_size_in_bytes<S, L>();
+        buffer = new std::byte[bytes];
+        auto s = factory::buffer_wrapper<S, L>(buffer, bytes);
+        t = static_cast<wrapper_span>(s);
+    }
+
+    void TearDown(::benchmark::State &state) override { std::free(buffer); }
+};
+
+using S2span = wrapper::wrapper<S2, std::span, L>;
+using S10span = wrapper::wrapper<S10, std::span, L>;
+using S64span = wrapper::wrapper<S64, std::span, L>;
+using Snbodyspan = wrapper::wrapper<Snbody, std::span, L>;
+using Sstencilspan = wrapper::wrapper<Sstencil, std::span, L>;
+
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2span, N_Large);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2span, N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10span, N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64span, N);
+INSTANTIATE_BENCHMARKS_F1(BM_nbody, Snbodyspan, N);
+INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencilspan, N_Large);
+
+BENCHMARK_MAIN();
+
+/*
 template <template <template <class> class> class S>
 void RegisterBenchmarkHelper(const char* name, auto bm_func, std::vector<std::byte*>& buffer_pointers, auto &N) {
     for (auto n : N) {
@@ -106,3 +145,4 @@ int main(int argc, char** argv) {
 
     for (std::byte * buffer_ptr : buffer_pointers)  std::free(buffer_ptr);
 }
+*/

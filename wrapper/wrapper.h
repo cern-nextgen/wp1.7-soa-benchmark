@@ -27,6 +27,9 @@ struct wrapper;
 
 template <template <template <class> class> class S, template <class> class F>
 struct wrapper<S, F, layout::aos> {
+    template <template <class> class F_type>
+    using S_type = S<F_type>;
+
     F<S<value>> data;
 
     template <template <class> class F_out>
@@ -38,6 +41,9 @@ struct wrapper<S, F, layout::aos> {
 
 template <template <template <class> class> class S, template <class> class F>
 struct wrapper<S, F, layout::soa> : S<F> {
+    template <template <class> class F_type>
+    using S_type = S<F_type>;
+
     template <template <class> class F_out>
     operator wrapper<S, F_out, layout::soa>() { return {*this}; };
 
