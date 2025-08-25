@@ -92,6 +92,7 @@ using S10span = wrapper::wrapper<S10, std::span, L>;
 using S64span = wrapper::wrapper<S64, std::span, L>;
 using Snbodyspan = wrapper::wrapper<Snbody, std::span, L>;
 using Sstencilspan = wrapper::wrapper<Sstencil, std::span, L>;
+using PxPyPzMspan = wrapper::wrapper<PxPyPzM, std::span, L>;
 
 INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2span, N_Large);
 INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2span, N);
@@ -100,49 +101,37 @@ INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64span, N);
 INSTANTIATE_BENCHMARKS_F1(BM_nbody, Snbodyspan, N);
 INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencilspan, N_Large);
 
+template <typename wrapper_span1, typename wrapper_span2, typename N>
+class Fixture2 : public benchmark::Fixture {
+ public:
+    static constexpr auto n = N::value;
+
+    template <template <class> class F_type>
+    using S1 = wrapper_span1::template S_type<F_type>;
+
+    template <template <class> class F_type>
+    using S2 = wrapper_span2::template S_type<F_type>;
+
+    std::byte *buffer1, *buffer2;
+    wrapper_span1 t1;
+    wrapper_span2 t2;
+
+    void SetUp(::benchmark::State &state) override
+    {
+        std::size_t bytes1 = n * factory::get_size_in_bytes<S1, L>();
+        buffer1 = new std::byte[bytes1];
+        std::size_t bytes2 = n * factory::get_size_in_bytes<S2, L>();
+        buffer2 = new std::byte[bytes2];
+
+        auto s1 = factory::buffer_wrapper<S1, L>(buffer1, bytes1);
+        auto s2 = factory::buffer_wrapper<S2, L>(buffer2, bytes2);
+        t1 = static_cast<wrapper_span1>(s1);
+        t2 = static_cast<wrapper_span2>(s2);
+    }
+
+    void TearDown(::benchmark::State &state) override { std::free(buffer1); std::free(buffer2); }
+};
+
 BENCHMARK_MAIN();
 
-/*
-template <template <template <class> class> class S>
-void RegisterBenchmarkHelper(const char* name, auto bm_func, std::vector<std::byte*>& buffer_pointers, auto &N) {
-    for (auto n : N) {
-        std::size_t bytes = n * factory::get_size_in_bytes<S, L>();
-        buffer_pointers.emplace_back(new std::byte[bytes]);
-        auto t = factory::buffer_wrapper<S, L>(buffer_pointers.back(), bytes);
-        using wrapper_type = wrapper::wrapper<S, std::span, L>;
-        wrapper_type t_span(t);
-        benchmark::RegisterBenchmark(name, bm_func, t_span)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
-}
-
-int main(int argc, char** argv) {
-
-    std::vector<std::byte *> buffer_pointers;
-
-    RegisterBenchmarkHelper<S2>("BM_CPUEasyRW", BM_CPUEasyRW<wrapper::wrapper<S2, std::span, L>>, buffer_pointers, N_Large);
-    RegisterBenchmarkHelper<S2>("BM_CPUEasyCompute", BM_CPUEasyCompute<wrapper::wrapper<S2, std::span, L>>, buffer_pointers, N);
-    RegisterBenchmarkHelper<S10>("BM_CPURealRW", BM_CPURealRW<wrapper::wrapper<S10, std::span, L>>, buffer_pointers, N);
-    RegisterBenchmarkHelper<S64>("BM_CPUHardRW", BM_CPUHardRW<wrapper::wrapper<S64, std::span, L>>, buffer_pointers, N);
-    RegisterBenchmarkHelper<Snbody>("BM_nbody", BM_nbody<wrapper::wrapper<Snbody, std::span, L>>, buffer_pointers, N);
-    RegisterBenchmarkHelper<Sstencil>("BM_stencil", BM_stencil<wrapper::wrapper<Sstencil, std::span, L>>, buffer_pointers, N_Large);
-
-    for (std::size_t n : N_Large) {
-        std::size_t bytes = n * factory::get_size_in_bytes<PxPyPzM, L>();
-        auto buffer1 = new std::byte[bytes];
-        auto buffer2 = new std::byte[bytes];
-        auto tpxpypxm1 = factory::buffer_wrapper<PxPyPzM, L>(buffer1, bytes);
-        auto tpxpypxm2 = factory::buffer_wrapper<PxPyPzM, L>(buffer2, bytes);
-        using wrapper_type = wrapper::wrapper<PxPyPzM, std::span, L>;
-        wrapper_type t_span1(tpxpypxm1);
-        wrapper_type t_span2(tpxpypxm2);
-        benchmark::RegisterBenchmark("BM_InvariantMass", BM_InvariantMass<wrapper_type, wrapper_type>,
-                                     t_span1, t_span2)->Arg(n)->Unit(benchmark::kMillisecond);
-    }
-
-    benchmark::Initialize(&argc, argv);
-    benchmark::RunSpecifiedBenchmarks();
-    benchmark::Shutdown();
-
-    for (std::byte * buffer_ptr : buffer_pointers)  std::free(buffer_ptr);
-}
-*/
+INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzMspan, PxPyPzMspan, N_Large);
