@@ -16,7 +16,7 @@ def read_data(filename):
         data = json.load(read_file)
         df = pd.DataFrame.from_dict(data["benchmarks"]).astype({"real_time": float})
         df = df[df["run_type"] == "aggregate"]
-        df["benchmark"] = df["name"].apply(lambda x: x.split('/')[0])
+        df["benchmark"] = df["name"].apply(lambda x: x.split('/')[1].split('_')[1])
         return df
 
 def plot_per_benchmark(all_data, out_dir):
