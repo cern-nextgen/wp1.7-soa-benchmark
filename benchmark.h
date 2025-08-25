@@ -528,6 +528,7 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State& state)
         MEMBER_ACCESS(v2, M, i) = i * 42;
     }
 
+    std::vector<double> results(n);
     for (auto _ : state) {
         for (size_t i = 0; i < n; ++i) {
             // Numerically stable computation of Invariant Masses
@@ -572,8 +573,7 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State& state)
 
             const auto z = 2 * std::sqrt(p1_sq * p2_sq);
 
-            auto result = std::sqrt(m1_sq + m2_sq + y * z);
-            benchmark::DoNotOptimize(result);
+            results[i] = std::sqrt(m1_sq + m2_sq + y * z);
         }
     }
 
