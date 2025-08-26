@@ -132,6 +132,6 @@ class Fixture2 : public benchmark::Fixture {
     void TearDown(::benchmark::State &state) override { std::free(buffer1); std::free(buffer2); }
 };
 
-BENCHMARK_MAIN();
-
 INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzMspan, PxPyPzMspan, N_Large);
+
+BENCHMARK_MAIN();
