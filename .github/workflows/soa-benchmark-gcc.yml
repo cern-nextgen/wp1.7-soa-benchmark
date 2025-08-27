@@ -1,4 +1,4 @@
-name: run benchmark Clang
+name: run benchmark GCC
 
 on:
   workflow_dispatch:
