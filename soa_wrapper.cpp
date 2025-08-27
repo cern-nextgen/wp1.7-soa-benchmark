@@ -25,6 +25,19 @@ struct S10 {
 };
 
 template <template <class> class F>
+struct S32 {
+    template <template <class> class F_new>
+    operator S32<F_new>() {
+        return {x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12,
+        x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25,
+        x26, x27, x28, x29, x30, x31};
+    }
+    F<float> x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12,
+        x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25,
+        x26, x27, x28, x29, x30, x31;
+};
+
+template <template <class> class F>
 struct S64 {
     template <template <class> class F_new>
     operator S64<F_new>() { return {
@@ -89,6 +102,7 @@ class Fixture1 : public benchmark::Fixture {
 
 using S2span = wrapper::wrapper<S2, std::span, L>;
 using S10span = wrapper::wrapper<S10, std::span, L>;
+using S32span = wrapper::wrapper<S32, std::span, L>;
 using S64span = wrapper::wrapper<S64, std::span, L>;
 using Snbodyspan = wrapper::wrapper<Snbody, std::span, L>;
 using Sstencilspan = wrapper::wrapper<Sstencil, std::span, L>;
@@ -97,6 +111,7 @@ using PxPyPzMspan = wrapper::wrapper<PxPyPzM, std::span, L>;
 INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2span, N_Large);
 INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2span, N);
 INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10span, N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUCacheAssociativity, S32span, N_Large);
 INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64span, N);
 INSTANTIATE_BENCHMARKS_F1(BM_nbody, Snbodyspan, N);
 INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencilspan, N_Large);

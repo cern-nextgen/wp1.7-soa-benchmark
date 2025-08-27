@@ -16,6 +16,10 @@ struct S10 {
     Eigen::Matrix3d x8, x9;
 };
 
+struct S32 {
+    float x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x26, x27, x28, x29, x30, x31;
+};
+
 struct S64 {
     float x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12;
     double x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25;
@@ -47,6 +51,7 @@ class Fixture1 : public benchmark::Fixture {
 INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2, N_Large);
 INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2, N);
 INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10, N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUCacheAssociativity, S32, N_Large);
 INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64, N);
 INSTANTIATE_BENCHMARKS_F1(BM_nbody, Snbody, N);
 INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencil, N_Large);

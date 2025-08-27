@@ -218,6 +218,76 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPURealRW)(benchmark::State& state) {
     state.counters["n_elem"] = n;
 }
 
+// 32 data float
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUCacheAssociativity)(benchmark::State& state) {
+    auto n = this->n;
+    auto &t = this->t;
+
+    // Initialize the data members to zero
+    for (size_t i = 0; i < n; ++i) {
+        MEMBER_ACCESS(t, x0, i) = 0.0f;
+        MEMBER_ACCESS(t, x1, i) = (float)i;
+        MEMBER_ACCESS(t, x2, i) = (float)i;
+        MEMBER_ACCESS(t, x3, i) = (float)i;
+        MEMBER_ACCESS(t, x4, i) = (float)i;
+        MEMBER_ACCESS(t, x5, i) = (float)i;
+        MEMBER_ACCESS(t, x6, i) = (float)i;
+        MEMBER_ACCESS(t, x7, i) = (float)i;
+        MEMBER_ACCESS(t, x8, i) = (float)i;
+        MEMBER_ACCESS(t, x9, i) = (float)i;
+        MEMBER_ACCESS(t, x10, i) = (float)i;
+        MEMBER_ACCESS(t, x11, i) = (float)i;
+        MEMBER_ACCESS(t, x12, i) = (float)i;
+        MEMBER_ACCESS(t, x13, i) = (float)i;
+        MEMBER_ACCESS(t, x14, i) = (float)i;
+        MEMBER_ACCESS(t, x15, i) = (float)i;
+        MEMBER_ACCESS(t, x16, i) = (float)i;
+        MEMBER_ACCESS(t, x17, i) = (float)i;
+        MEMBER_ACCESS(t, x18, i) = (float)i;
+        MEMBER_ACCESS(t, x19, i) = (float)i;
+        MEMBER_ACCESS(t, x20, i) = (float)i;
+        MEMBER_ACCESS(t, x21, i) = (float)i;
+        MEMBER_ACCESS(t, x22, i) = (float)i;
+        MEMBER_ACCESS(t, x23, i) = (float)i;
+        MEMBER_ACCESS(t, x24, i) = (float)i;
+        MEMBER_ACCESS(t, x25, i) = (float)i;
+        MEMBER_ACCESS(t, x26, i) = (float)i;
+        MEMBER_ACCESS(t, x27, i) = (float)i;
+        MEMBER_ACCESS(t, x28, i) = (float)i;
+        MEMBER_ACCESS(t, x29, i) = (float)i;
+        MEMBER_ACCESS(t, x30, i) = (float)i;
+        MEMBER_ACCESS(t, x31, i) = (float)i;
+    }
+
+    size_t stride = 129;
+
+    // Perform read and write operations
+    for (auto _ : state) {
+        for (size_t j = 0; j < n; ++j) {
+            size_t i = (j * stride) % n;
+            MEMBER_ACCESS(t, x0, i) = std::sqrt(MEMBER_ACCESS(t, x1, i) + MEMBER_ACCESS(t, x2, i) + MEMBER_ACCESS(t, x3, i)
+                   + MEMBER_ACCESS(t, x4, i) + MEMBER_ACCESS(t, x5, i) + MEMBER_ACCESS(t, x6, i)
+                   + MEMBER_ACCESS(t, x7, i) + MEMBER_ACCESS(t, x8, i) + MEMBER_ACCESS(t, x9, i)
+                   + MEMBER_ACCESS(t, x10, i) + MEMBER_ACCESS(t, x11, i) + MEMBER_ACCESS(t, x12, i)
+                   + MEMBER_ACCESS(t, x13, i) + MEMBER_ACCESS(t, x14, i) + MEMBER_ACCESS(t, x15, i)
+                   + MEMBER_ACCESS(t, x16, i) + MEMBER_ACCESS(t, x17, i) + MEMBER_ACCESS(t, x18, i)
+                   + MEMBER_ACCESS(t, x19, i) + MEMBER_ACCESS(t, x20, i) + MEMBER_ACCESS(t, x21, i)
+                   + MEMBER_ACCESS(t, x22, i) + MEMBER_ACCESS(t, x23, i) + MEMBER_ACCESS(t, x24, i)
+                   + MEMBER_ACCESS(t, x25, i) + MEMBER_ACCESS(t, x26, i) + MEMBER_ACCESS(t, x27, i)
+                   + MEMBER_ACCESS(t, x28, i) + MEMBER_ACCESS(t, x29, i) + MEMBER_ACCESS(t, x30, i)
+                   + MEMBER_ACCESS(t, x31, i));
+        }
+    }
+
+    // Check the result
+    for (size_t i = 0; i < n; ++i) {
+        int difference = (int)std::abs(MEMBER_ACCESS(t, x0, i) - std::sqrt(31.0f * i));
+        CheckResult(state, 0, difference, "difference");
+    }
+
+    state.counters["n_elem"] = n;
+}
+
 // 100 data members (20 floats, 20 doubles, 20 integers, 20 Eigen vector, 20 Eigen matrices)
 BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUHardRW)(benchmark::State& state) {
     auto n = this->n;

@@ -70,6 +70,86 @@ struct S10 {
     }
 };
 
+struct S32 {
+    float *__restrict__ x0, *__restrict__ x1, *__restrict__ x2, *__restrict__ x3, *__restrict__ x4, *__restrict__ x5, *__restrict__ x6, *__restrict__ x7, *__restrict__ x8, *__restrict__ x9;
+    float *__restrict__ x10, *__restrict__ x11, *__restrict__ x12, *__restrict__ x13, *__restrict__ x14, *__restrict__ x15, *__restrict__ x16, *__restrict__ x17, *__restrict__ x18, *__restrict__ x19;
+    float *__restrict__ x20, *__restrict__ x21, *__restrict__ x22, *__restrict__ x23, *__restrict__ x24, *__restrict__ x25, *__restrict__ x26, *__restrict__ x27, *__restrict__ x28, *__restrict__ x29;
+    float *__restrict__ x30, *__restrict__ x31;
+
+    S32(std::byte *buf, size_t n)
+    {
+        size_t offset = 0;
+        x0 = reinterpret_cast<float *__restrict__>(buf);
+        offset += align_size(n * sizeof(float));
+        x1 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x2 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x3 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x4 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x5 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x6 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x7 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x8 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x9 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x10 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x11 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x12 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x13 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x14 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x15 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x16 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x17 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x18 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x19 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x20 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x21 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x22 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x23 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x24 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x25 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x26 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x27 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x28 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x29 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x30 = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        x31 = reinterpret_cast<float *__restrict__>(buf + offset);
+    }
+
+    static size_t size_bytes(size_t n)
+    {
+        return align_size(sizeof(float[n])) * 32;
+    }
+};
+
 struct S64 {
     std::vector<std::byte> storage;
     float *__restrict__ x0, *__restrict__ x1, *__restrict__ x2, *__restrict__ x3,
@@ -345,6 +425,7 @@ class Fixture1 : public benchmark::Fixture {
 INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2, N_Large);
 INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2, N);
 INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10, N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUCacheAssociativity, S32, N_Large);
 INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64, N);
 INSTANTIATE_BENCHMARKS_F1(BM_nbody, Snbody, N);
 INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencil, N_Large);

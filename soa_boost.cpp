@@ -26,6 +26,42 @@ GENERATE_SOA_LAYOUT(MediumSoALayout,
 
 using MediumSoA = MediumSoALayout<>;
 
+GENERATE_SOA_LAYOUT(ModerateSoALayout,
+    SOA_COLUMN(float, x0),
+    SOA_COLUMN(float, x1),
+    SOA_COLUMN(float, x2),  
+    SOA_COLUMN(float, x3),  
+    SOA_COLUMN(float, x4),  
+    SOA_COLUMN(float, x5),  
+    SOA_COLUMN(float, x6),  
+    SOA_COLUMN(float, x7),  
+    SOA_COLUMN(float, x8),  
+    SOA_COLUMN(float, x9),
+    SOA_COLUMN(float, x10),
+    SOA_COLUMN(float, x11),
+    SOA_COLUMN(float, x12),
+    SOA_COLUMN(double, x13),
+    SOA_COLUMN(double, x14),
+    SOA_COLUMN(double, x15),
+    SOA_COLUMN(double, x16),
+    SOA_COLUMN(double, x17),
+    SOA_COLUMN(double, x18),
+    SOA_COLUMN(double, x19),
+    SOA_COLUMN(double, x20),
+    SOA_COLUMN(double, x21),
+    SOA_COLUMN(double, x22),
+    SOA_COLUMN(double, x23),
+    SOA_COLUMN(double, x24),
+    SOA_COLUMN(double, x25),
+    SOA_COLUMN(int, x26),
+    SOA_COLUMN(int, x27),
+    SOA_COLUMN(int, x28),
+    SOA_COLUMN(int, x29),
+    SOA_COLUMN(int, x30),
+    SOA_COLUMN(int, x31))
+
+using ModerateSoA = ModerateSoALayout<>;
+
 GENERATE_SOA_LAYOUT(BigSoALayout,
     SOA_COLUMN(float, x0),
     SOA_COLUMN(float, x1),
@@ -141,6 +177,7 @@ class Fixture1 : public benchmark::Fixture {
 INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, SoA, N_Large);
 INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, SoA, N);
 INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, MediumSoA, N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUCacheAssociativity, ModerateSoA, N_Large);
 INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, BigSoA, N);
 INSTANTIATE_BENCHMARKS_F1(BM_nbody, SoANbody, N);
 INSTANTIATE_BENCHMARKS_F1(BM_stencil, SoAStencil, N_Large);
