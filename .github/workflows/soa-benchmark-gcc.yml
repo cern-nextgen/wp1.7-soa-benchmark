@@ -1,4 +1,4 @@
-name: run benchmark
+name: run benchmark Clang
 
 on:
   workflow_dispatch:
@@ -14,11 +14,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: build and compile
         run: |
-          cmake -B ${{github.workspace}}
+          cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -B ${{github.workspace}}
           cmake --build ${{github.workspace}}
-        env:
-          CXX: /usr/bin/clang++
-          CC: /usr/bin/clang
       - name: run benchmarks
         run: |
           python3 run_benchmarks.py ${{github.workspace}} soa_versions.csv
@@ -37,3 +34,9 @@ jobs:
         with:
           name: soa-benchmark-results
           path: soa-benchmark-results
+      # - name: run soa_wrapper
+      #   run: |
+      #     ${{github.workspace}}/build/soa_wrapper
+      # - name: run soa_boost
+      #   run: |
+      #     ${{github.workspace}}/build/soa_boost
