@@ -2,4 +2,4 @@ version,label
 soa_boost,Preprocessor Macros SoA
 soa_wrapper,Template Metaprogramming SoA
 soa_manual,Manual SoA
-aos_manual,AoS
+aos_manual,Manual AoS
