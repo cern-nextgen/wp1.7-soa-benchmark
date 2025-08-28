@@ -7,10 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -Rpass-analysis=loop-vectorize -Rpass=loop-vectorize \
--Rpass-missed=loop-vectorize -march=native -funroll-loops -ffast-math -funsafe-math-optimizations")
+-Rpass-missed=loop-vectorize -march=native -funroll-loops -ffast-math -funsafe-math-optimizations -ftime-report")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -fopt-info-vec -march=native -funroll-loops -ffast-math \
--funsafe-math-optimizations -fopt-info-vec")
+    set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -fopt-info-vec-missed -march=native -funroll-loops -ffast-math -ftime-report")
 endif()
 
 # Detect if build dir contains "vtune"
