@@ -50,7 +50,6 @@ constexpr size_t Alignment = 128;
     BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM, Type1, Type2, std::integral_constant<size_t, N[4]>)->Unit(benchmark::kMillisecond);
 // clang-format on
 
-
 template <typename T>
 static std::string ToString(const T &obj)
 {
@@ -70,10 +69,12 @@ void CheckResult(benchmark::State &state, const Expected &expected, const Actual
     }
 }
 
-template <typename S, typename N> class Fixture1; // Forward Declaration
+template <typename S, typename N>
+class Fixture1; // Forward Declaration
 
 // 2 data members, integers, 10 elements
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUEasyRW)(benchmark::State& state) {
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUEasyRW)(benchmark::State &state)
+{
     auto n = this->n;
     auto &t = this->t;
 
@@ -100,9 +101,9 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUEasyRW)(benchmark::State& state) {
     state.counters["n_elem"] = n;
 }
 
-
 // 2 data members, integers, 10 elements
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUEasyCompute)(benchmark::State& state) {
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUEasyCompute)(benchmark::State &state)
+{
     auto n = this->n;
     auto &t = this->t;
 
@@ -142,7 +143,8 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUEasyCompute)(benchmark::State& state
 
 // “Realistic case”:
 //      10 data members (3 doubles, 3 float, 2 integer, 1 Vector3D, 1 Matrix)
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPURealRW)(benchmark::State& state) {
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPURealRW)(benchmark::State &state)
+{
     auto n = this->n;
     auto &t = this->t;
 
@@ -289,7 +291,8 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUCacheAssociativity)(benchmark::State
 }
 
 // 100 data members (20 floats, 20 doubles, 20 integers, 20 Eigen vector, 20 Eigen matrices)
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUHardRW)(benchmark::State& state) {
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUHardRW)(benchmark::State &state)
+{
     auto n = this->n;
     auto &t = this->t;
 
@@ -468,7 +471,8 @@ inline float rand_float()
     return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_nbody)(benchmark::State& state) {
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_nbody)(benchmark::State &state)
+{
     auto n = this->n;
     auto &t = this->t;
     float dt = 0.01f;
@@ -478,7 +482,7 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_nbody)(benchmark::State& state) {
     std::vector<float> Fy(n, 0.0f);
     std::vector<float> Fz(n, 0.0f);
 
-    // Inizializza le posizioni e velocità
+    // Initialize positions and velocities
     for (size_t i = 0; i < n; ++i) {
         MEMBER_ACCESS(t, x, i) = rand_float();
         MEMBER_ACCESS(t, y, i) = rand_float();
@@ -489,12 +493,8 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_nbody)(benchmark::State& state) {
     }
 
     for (auto _ : state) {
-        // Calcolo delle forze
+        // Calculate the force
         for (size_t i = 0; i < n; ++i) {
-            Fx[i] = 0.0f;
-            Fy[i] = 0.0f;
-            Fz[i] = 0.0f;
-
             for (size_t j = 0; j < n; ++j) {
                 if (i != j) {
                     float dx = MEMBER_ACCESS(t, x, j) - MEMBER_ACCESS(t, x, i);
@@ -515,12 +515,14 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_nbody)(benchmark::State& state) {
             MEMBER_ACCESS(t, vz, i) += dt * Fz[i];
         }
 
-        // Integrazione posizioni
+        // Integrate positions
         for (size_t i = 0; i < n; ++i) {
             MEMBER_ACCESS(t, x, i) += MEMBER_ACCESS(t, vx, i) * dt;
             MEMBER_ACCESS(t, y, i) += MEMBER_ACCESS(t, vy, i) * dt;
             MEMBER_ACCESS(t, z, i) += MEMBER_ACCESS(t, vz, i) * dt;
         }
+
+        // benchmark::ClobberMemory();
     }
 
     state.counters["n_elem"] = n;
@@ -534,7 +536,8 @@ inline double solution_poisson(const double x)
     return x * (x - 1) * std::exp(x);
 }
 
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_stencil)(benchmark::State& state) {
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_stencil)(benchmark::State &state)
+{
     auto n = this->n;
     auto &t = this->t;
     // Domain: [0, L]
@@ -579,7 +582,13 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_stencil)(benchmark::State& state) {
     state.counters["N^2_interactions"] = benchmark::Counter(static_cast<double>(n) * 2.0, benchmark::Counter::kIsRate);
 }
 
-template<typename T1, typename T2, typename N> class Fixture2; // forward declaration
+template <typename T1, typename T2, typename N>
+class Fixture2; // forward declaration
+
+inline double rand_double()
+{
+    return static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
+}
 
 BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State& state) {
     auto n = this->n;
@@ -588,18 +597,19 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State& state)
 
     // Initialise x,y,z,M vectors
     for (size_t i = 0; i < n; ++i) {
-        MEMBER_ACCESS(v1, x, i) = i * 5;
-        MEMBER_ACCESS(v1, y, i) = i * 3;
-        MEMBER_ACCESS(v1, z, i) = i;
-        MEMBER_ACCESS(v1, M, i) = i / 2.;
-        MEMBER_ACCESS(v2, x, i) = i;
-        MEMBER_ACCESS(v2, y, i) = i * 20;
-        MEMBER_ACCESS(v2, z, i) = i / 9.;
-        MEMBER_ACCESS(v2, M, i) = i * 42;
+        MEMBER_ACCESS(v1, x, i) = rand_double();
+        MEMBER_ACCESS(v1, y, i) = rand_double();
+        MEMBER_ACCESS(v1, z, i) = rand_double();
+        MEMBER_ACCESS(v1, M, i) = rand_double();
+        MEMBER_ACCESS(v2, x, i) = rand_double();
+        MEMBER_ACCESS(v2, y, i) = rand_double();
+        MEMBER_ACCESS(v2, z, i) = rand_double();
+        MEMBER_ACCESS(v2, M, i) = rand_double();
     }
 
     std::vector<double> results(n);
     for (auto _ : state) {
+        #pragma clang loop vectorize(assume_safety)
         for (size_t i = 0; i < n; ++i) {
             // Numerically stable computation of Invariant Masses
             const auto p1_sq = MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v1, x, i) +
@@ -645,6 +655,10 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State& state)
 
             results[i] = std::sqrt(m1_sq + m2_sq + y * z);
         }
+    }
+
+    for (size_t i = 0; i < n; i++) {
+        benchmark::DoNotOptimize(results[i]);
     }
 
     state.counters["n_elem"] = static_cast<double>(n);

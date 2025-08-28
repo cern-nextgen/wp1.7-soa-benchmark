@@ -1,4 +1,4 @@
-name: run benchmark
+name: run benchmark Clang
 
 on:
   workflow_dispatch:
