@@ -219,7 +219,7 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPURealRW)(benchmark::State& state) {
 }
 
 // 32 data float
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUCacheAssociativity)(benchmark::State& state) {
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUStrided)(benchmark::State& state) {
     auto n = this->n;
     auto &t = this->t;
 
@@ -259,12 +259,11 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUCacheAssociativity)(benchmark::State
         MEMBER_ACCESS(t, x31, i) = (float)i;
     }
 
-    size_t stride = 129;
+    size_t stride = 23;
 
     // Perform read and write operations
     for (auto _ : state) {
-        for (size_t j = 0; j < n; ++j) {
-            size_t i = (j * stride) % n;
+        for (size_t i = 0; i * stride < n; i += stride) {
             MEMBER_ACCESS(t, x0, i) = std::sqrt(MEMBER_ACCESS(t, x1, i) + MEMBER_ACCESS(t, x2, i) + MEMBER_ACCESS(t, x3, i)
                    + MEMBER_ACCESS(t, x4, i) + MEMBER_ACCESS(t, x5, i) + MEMBER_ACCESS(t, x6, i)
                    + MEMBER_ACCESS(t, x7, i) + MEMBER_ACCESS(t, x8, i) + MEMBER_ACCESS(t, x9, i)
@@ -280,7 +279,7 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUCacheAssociativity)(benchmark::State
     }
 
     // Check the result
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i = 0; i * stride < n; i += stride) {
         int difference = (int)std::abs(MEMBER_ACCESS(t, x0, i) - std::sqrt(31.0f * i));
         CheckResult(state, 0, difference, "difference");
     }
