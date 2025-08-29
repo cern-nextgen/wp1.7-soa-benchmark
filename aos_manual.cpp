@@ -36,8 +36,20 @@ struct Sstencil {
     double src, dst, rhs;
 };
 
-struct PxPyPzM {
+struct Particle {
+    // unused members
+    int id;
+
+    // PxPyPzM members
     double x, y, z, M;
+
+    // unused members
+    double fX, fY, fZ, fM;   // reference point
+    double poscovmatrix[9];    // position covariance 3x3 matrix
+    // double momcovmatrix[9];    // momentum covariance 3x3 matrix
+    // double posmomcovmatrix[12]; // position-momentum covariance 4x3 matrix
+    // double measuredMass;
+    // double measuredMassErr;
 };
 
 /// Register Benchmarks ///
@@ -64,6 +76,6 @@ class Fixture2 : public benchmark::Fixture {
     S2 t2[n];
 };
 
-INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzM, PxPyPzM, N_Large);
+INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, Particle, Particle, N_Large);
 
 BENCHMARK_MAIN();
