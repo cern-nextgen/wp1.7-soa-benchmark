@@ -3,11 +3,11 @@
 
 #include "helper.h"
 
-#include <cstddef>
-
 namespace wrapper {
 
 enum class layout { aos = 0, soa = 1 };
+
+using size_t = decltype(sizeof 0); 
 
 template <class T>
 using value = T;
@@ -33,37 +33,37 @@ struct wrapper<S, F, layout::aos> {
     F<S<value>> data;
 
     template <template <class> class F_out>
-    operator wrapper<S, F_out, layout::aos>() { return {data}; };
+    constexpr operator wrapper<S, F_out, layout::aos>() { return {data}; };
 
-    [[gnu::always_inline]] S<reference> operator[](std::size_t i) { return data[i]; }
-    [[gnu::always_inline]] S<const_reference> operator[](std::size_t i) const { return data[i]; }
+    [[gnu::always_inline]] constexpr S<reference> operator[](size_t i) { return data[i]; }
+    [[gnu::always_inline]] constexpr S<const_reference> operator[](size_t i) const { return data[i]; }
 };
 
 template <template <template <class> class> class S, template <class> class F>
 struct wrapper<S, F, layout::soa> : S<F> {
     template <template <class> class F_type>
     using S_type = S<F_type>;
-
+    
     template <template <class> class F_out>
-    operator wrapper<S, F_out, layout::soa>() { return {*this}; };
+    constexpr operator wrapper<S, F_out, layout::soa>() { return {*this}; };
 
-    [[gnu::always_inline]] S<reference> operator[](std::size_t i) {
+    [[gnu::always_inline]] constexpr S<reference> operator[](size_t i) {
         return helper::invoke_on_members<reference, F>(*this, evaluate_at{i});
     }
-    [[gnu::always_inline]] S<const_reference> operator[](std::size_t i) const {
+    [[gnu::always_inline]] constexpr S<const_reference> operator[](size_t i) const {
         return helper::invoke_on_members<const_reference, F>(*this, evaluate_at{i});
     }
 
     private:
 
     struct evaluate_at {
-        std::size_t i;
+        size_t i;
 
         template <template <class> class F_in, class T>
-        reference<T> operator()(F_in<T> & t) const { return t[i]; }
-
+        [[gnu::always_inline]] constexpr reference<T> operator()(F_in<T> & t) const { return t[i]; }
+        
         template <template <class> class F_in, class T>
-        const_reference<T> operator()(const F_in<T> & t) const { return t[i]; }
+        [[gnu::always_inline]] constexpr const_reference<T> operator()(const F_in<T> & t) const { return t[i]; }
     };
 };
 
