@@ -38,14 +38,15 @@ struct Sstencil {
 
 struct Particle {
     // unused members
-    int id;
+
 
     // PxPyPzM members
     double x, y, z, M;
 
     // unused members
-    double fX, fY, fZ, fM;   // reference point
-    double poscovmatrix[9];    // position covariance 3x3 matrix
+    // double fX, fY, fZ, fM;
+
+    // position covariance 3x3 matrix
     // double momcovmatrix[9];    // momentum covariance 3x3 matrix
     // double posmomcovmatrix[12]; // position-momentum covariance 4x3 matrix
     // double measuredMass;
@@ -60,13 +61,13 @@ class Fixture1 : public benchmark::Fixture {
     S t[n];
 };
 
-INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2, N_Large);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2, N);
-INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10, N);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUStrided, S32, N_Large);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64, N);
-INSTANTIATE_BENCHMARKS_F1(BM_nbody, Snbody, N);
-INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencil, N_Large);
+// INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2, N_Large);
+// INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2, N);
+// INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10, N);
+// INSTANTIATE_BENCHMARKS_F1(BM_CPUStrided, S32, N_Large);
+// INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64, N);
+// INSTANTIATE_BENCHMARKS_F1(BM_nbody, Snbody, N);
+// INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencil, N_Large);
 
 template <typename S1, typename S2, typename N>
 class Fixture2 : public benchmark::Fixture {
@@ -76,6 +77,8 @@ class Fixture2 : public benchmark::Fixture {
     S2 t2[n];
 };
 
-INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, Particle, Particle, N_Large);
+// INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, Particle, Particle, N_Large);
+BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM_InvariantMass, Particle, Particle, std::integral_constant<size_t, 10000000>)
+    ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN();

@@ -368,40 +368,43 @@ struct Snbody {
     static size_t size_bytes(size_t n) { return align_size(sizeof(float[n])) * 6; }
 };
 
-struct Sstencil {
-    double *__restrict__ src, *__restrict__ dst, *__restrict__ rhs;
+#include "sstencil.h"
 
-    Sstencil(std::byte *buf, size_t n)
-    {
-        size_t offset = 0;
+// struct Sstencil {
+//     double *__restrict__ src, *__restrict__ dst, *__restrict__ rhs;
 
-        src = reinterpret_cast<double *__restrict__>(buf);
-        offset += align_size(n * sizeof(double));
-        dst = reinterpret_cast<double *__restrict__>(buf + offset);
-        offset += align_size(n * sizeof(double));
-        rhs = reinterpret_cast<double *__restrict__>(buf + offset);
-    }
+//     Sstencil(std::byte *buf, size_t n)
+//     {
+//         size_t offset = 0;
 
-    static size_t size_bytes(size_t n) { return align_size(sizeof(double[n])) * 3; }
-};
+//         src = reinterpret_cast<double *__restrict__>(buf);
+//         offset += align_size(n * sizeof(double));
+//         dst = reinterpret_cast<double *__restrict__>(buf + offset);
+//         offset += align_size(n * sizeof(double));
+//         rhs = reinterpret_cast<double *__restrict__>(buf + offset);
+//     }
 
-struct PxPyPzM {
-    double *x, *y, *z, *M;
+//     static size_t size_bytes(size_t n) { return align_size(sizeof(double[n])) * 3; }
+// };
 
-    PxPyPzM(std::byte *buf, size_t n)
-    {
-        size_t offset = 0;
-        x = reinterpret_cast<double *__restrict__>(buf + offset);
-        offset += align_size(n * sizeof(double));
-        y = reinterpret_cast<double *__restrict__>(buf + offset);
-        offset += align_size(n * sizeof(double));
-        z = reinterpret_cast<double *__restrict__>(buf + offset);
-        offset += align_size(n * sizeof(double));
-        M = reinterpret_cast<double *__restrict__>(buf + offset);
-    }
+#include "pxpypzm.h"
+// struct PxPyPzM {
+//     double *x, *y, *z, *M;
 
-    static size_t size_bytes(size_t n) { return align_size(sizeof(double[n])) * 4; }
-};
+//     PxPyPzM(std::byte *buf, size_t n)
+//     {
+//         size_t offset = 0;
+//         x = reinterpret_cast<double *__restrict__>(buf + offset);
+//         offset += align_size(n * sizeof(double));
+//         y = reinterpret_cast<double *__restrict__>(buf + offset);
+//         offset += align_size(n * sizeof(double));
+//         z = reinterpret_cast<double *__restrict__>(buf + offset);
+//         offset += align_size(n * sizeof(double));
+//         M = reinterpret_cast<double *__restrict__>(buf + offset);
+//     }
+
+//     static size_t size_bytes(size_t n) { return align_size(sizeof(double[n])) * 4; }
+// };
 
 /// Register Benchmarks ///
 template <typename S, typename N>
@@ -422,13 +425,13 @@ class Fixture1 : public benchmark::Fixture {
     Fixture1() : t(nullptr, 0) {}
 };
 
-INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2, N_Large);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2, N);
-INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10, N);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUStrided, S32, N_Large);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64, N);
-INSTANTIATE_BENCHMARKS_F1(BM_nbody, Snbody, N);
-INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencil, N_Large);
+// INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2, N_Large);
+// INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2, N);
+// INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10, N);
+// INSTANTIATE_BENCHMARKS_F1(BM_CPUStrided, S32, N_Large);
+// INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64, N);
+// INSTANTIATE_BENCHMARKS_F1(BM_nbody, Snbody, N);
+// INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencil, N_Large);
 
 template <typename S1, typename S2, typename N>
 class Fixture2 : public benchmark::Fixture {
@@ -456,6 +459,8 @@ class Fixture2 : public benchmark::Fixture {
     Fixture2() : t1(nullptr, 0), t2(nullptr, 0) {}
 };
 
-INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzM, PxPyPzM, N_Large);
+// INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzM, PxPyPzM, N_Large);
+BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM_InvariantMass, PxPyPzM, PxPyPzM, std::integral_constant<size_t, 10000000>)
+    ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN();

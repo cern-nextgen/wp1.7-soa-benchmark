@@ -221,7 +221,8 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPURealRW)(benchmark::State &state)
 }
 
 // 32 data float
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUStrided)(benchmark::State& state) {
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUStrided)(benchmark::State &state)
+{
     auto n = this->n;
     auto &t = this->t;
 
@@ -266,17 +267,17 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUStrided)(benchmark::State& state) {
     // Perform read and write operations
     for (auto _ : state) {
         for (size_t i = 0; i * stride < n; i += stride) {
-            MEMBER_ACCESS(t, x0, i) = std::sqrt(MEMBER_ACCESS(t, x1, i) + MEMBER_ACCESS(t, x2, i) + MEMBER_ACCESS(t, x3, i)
-                   + MEMBER_ACCESS(t, x4, i) + MEMBER_ACCESS(t, x5, i) + MEMBER_ACCESS(t, x6, i)
-                   + MEMBER_ACCESS(t, x7, i) + MEMBER_ACCESS(t, x8, i) + MEMBER_ACCESS(t, x9, i)
-                   + MEMBER_ACCESS(t, x10, i) + MEMBER_ACCESS(t, x11, i) + MEMBER_ACCESS(t, x12, i)
-                   + MEMBER_ACCESS(t, x13, i) + MEMBER_ACCESS(t, x14, i) + MEMBER_ACCESS(t, x15, i)
-                   + MEMBER_ACCESS(t, x16, i) + MEMBER_ACCESS(t, x17, i) + MEMBER_ACCESS(t, x18, i)
-                   + MEMBER_ACCESS(t, x19, i) + MEMBER_ACCESS(t, x20, i) + MEMBER_ACCESS(t, x21, i)
-                   + MEMBER_ACCESS(t, x22, i) + MEMBER_ACCESS(t, x23, i) + MEMBER_ACCESS(t, x24, i)
-                   + MEMBER_ACCESS(t, x25, i) + MEMBER_ACCESS(t, x26, i) + MEMBER_ACCESS(t, x27, i)
-                   + MEMBER_ACCESS(t, x28, i) + MEMBER_ACCESS(t, x29, i) + MEMBER_ACCESS(t, x30, i)
-                   + MEMBER_ACCESS(t, x31, i));
+            MEMBER_ACCESS(t, x0, i) = std::sqrt(
+                MEMBER_ACCESS(t, x1, i) + MEMBER_ACCESS(t, x2, i) + MEMBER_ACCESS(t, x3, i) + MEMBER_ACCESS(t, x4, i) +
+                MEMBER_ACCESS(t, x5, i) + MEMBER_ACCESS(t, x6, i) + MEMBER_ACCESS(t, x7, i) + MEMBER_ACCESS(t, x8, i) +
+                MEMBER_ACCESS(t, x9, i) + MEMBER_ACCESS(t, x10, i) + MEMBER_ACCESS(t, x11, i) +
+                MEMBER_ACCESS(t, x12, i) + MEMBER_ACCESS(t, x13, i) + MEMBER_ACCESS(t, x14, i) +
+                MEMBER_ACCESS(t, x15, i) + MEMBER_ACCESS(t, x16, i) + MEMBER_ACCESS(t, x17, i) +
+                MEMBER_ACCESS(t, x18, i) + MEMBER_ACCESS(t, x19, i) + MEMBER_ACCESS(t, x20, i) +
+                MEMBER_ACCESS(t, x21, i) + MEMBER_ACCESS(t, x22, i) + MEMBER_ACCESS(t, x23, i) +
+                MEMBER_ACCESS(t, x24, i) + MEMBER_ACCESS(t, x25, i) + MEMBER_ACCESS(t, x26, i) +
+                MEMBER_ACCESS(t, x27, i) + MEMBER_ACCESS(t, x28, i) + MEMBER_ACCESS(t, x29, i) +
+                MEMBER_ACCESS(t, x30, i) + MEMBER_ACCESS(t, x31, i));
         }
     }
 
@@ -589,7 +590,8 @@ inline double rand_double()
     return static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
 }
 
-BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State& state) {
+BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State &state)
+{
     auto n = this->n;
     auto &v1 = this->t1;
     auto &v2 = this->t2;
@@ -607,52 +609,55 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State& state)
     }
 
     std::vector<double> results(n);
+size_t stride = 2;
     for (auto _ : state) {
-        #pragma clang loop vectorize(assume_safety)
-        for (size_t i = 0; i < n; ++i) {
-            // Numerically stable computation of Invariant Masses
-            const auto p1_sq = MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v1, x, i) +
-                               MEMBER_ACCESS(v1, y, i) * MEMBER_ACCESS(v1, y, i) +
-                               MEMBER_ACCESS(v1, z, i) * MEMBER_ACCESS(v1, z, i);
-            const auto p2_sq = MEMBER_ACCESS(v2, x, i) * MEMBER_ACCESS(v2, x, i) +
-                               MEMBER_ACCESS(v2, y, i) * MEMBER_ACCESS(v2, y, i) +
-                               MEMBER_ACCESS(v2, z, i) * MEMBER_ACCESS(v2, z, i);
+#pragma clang loop vectorize(assume_safety)
+        for (size_t start = 0; start < stride; ++start) {
+            for (size_t i = start; i < n; i += stride) {
+                // Numerically stable computation of Invariant Masses
+                const auto p1_sq = MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v1, x, i) +
+                                   MEMBER_ACCESS(v1, y, i) * MEMBER_ACCESS(v1, y, i) +
+                                   MEMBER_ACCESS(v1, z, i) * MEMBER_ACCESS(v1, z, i);
+                const auto p2_sq = MEMBER_ACCESS(v2, x, i) * MEMBER_ACCESS(v2, x, i) +
+                                   MEMBER_ACCESS(v2, y, i) * MEMBER_ACCESS(v2, y, i) +
+                                   MEMBER_ACCESS(v2, z, i) * MEMBER_ACCESS(v2, z, i);
 
-            const auto m1_sq = MEMBER_ACCESS(v1, M, i) * MEMBER_ACCESS(v1, M, i);
-            const auto m2_sq = MEMBER_ACCESS(v2, M, i) * MEMBER_ACCESS(v2, M, i);
+                const auto m1_sq = MEMBER_ACCESS(v1, M, i) * MEMBER_ACCESS(v1, M, i);
+                const auto m2_sq = MEMBER_ACCESS(v2, M, i) * MEMBER_ACCESS(v2, M, i);
 
-            const auto r1 = m1_sq / p1_sq;
-            const auto r2 = m2_sq / p2_sq;
-            const auto x = r1 + r2 + r1 * r2;
+                const auto r1 = m1_sq / p1_sq;
+                const auto r2 = m2_sq / p2_sq;
+                const auto x = r1 + r2 + r1 * r2;
 
-            const auto cx =
-                MEMBER_ACCESS(v1, y, i) * MEMBER_ACCESS(v2, z, i) - MEMBER_ACCESS(v2, y, i) * MEMBER_ACCESS(v1, z, i);
-            const auto cy =
-                MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v2, z, i) - MEMBER_ACCESS(v2, x, i) * MEMBER_ACCESS(v1, z, i);
-            const auto cz =
-                MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v2, y, i) - MEMBER_ACCESS(v2, x, i) * MEMBER_ACCESS(v1, y, i);
+                const auto cx = MEMBER_ACCESS(v1, y, i) * MEMBER_ACCESS(v2, z, i) -
+                                MEMBER_ACCESS(v2, y, i) * MEMBER_ACCESS(v1, z, i);
+                const auto cy = MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v2, z, i) -
+                                MEMBER_ACCESS(v2, x, i) * MEMBER_ACCESS(v1, z, i);
+                const auto cz = MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v2, y, i) -
+                                MEMBER_ACCESS(v2, x, i) * MEMBER_ACCESS(v1, y, i);
 
-            // norm of cross product
-            const auto c = std::sqrt(cx * cx + cy * cy + cz * cz);
+                // norm of cross product
+                const auto c = std::sqrt(cx * cx + cy * cy + cz * cz);
 
-            // dot product
-            const auto d = MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v2, x, i) +
-                           MEMBER_ACCESS(v1, y, i) * MEMBER_ACCESS(v2, y, i) +
-                           MEMBER_ACCESS(v1, z, i) * MEMBER_ACCESS(v2, z, i);
+                // dot product
+                const auto d = MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v2, x, i) +
+                               MEMBER_ACCESS(v1, y, i) * MEMBER_ACCESS(v2, y, i) +
+                               MEMBER_ACCESS(v1, z, i) * MEMBER_ACCESS(v2, z, i);
 
-            const auto a = std::atan2(c, d);
+                const auto a = std::atan2(c, d);
 
-            const auto cos_a = std::cos(a);
-            auto y = x;
-            if (cos_a >= 0) {
-                y = (x + std::sin(a) * std::sin(a)) / (std::sqrt(x + 1) + cos_a);
-            } else {
-                y = std::sqrt(x + 1) - cos_a;
+                const auto cos_a = std::cos(a);
+                auto y = x;
+                if (cos_a >= 0) {
+                    y = (x + std::sin(a) * std::sin(a)) / (std::sqrt(x + 1) + cos_a);
+                } else {
+                    y = std::sqrt(x + 1) - cos_a;
+                }
+
+                const auto z = 2 * std::sqrt(p1_sq * p2_sq);
+
+                results[i] = std::sqrt(m1_sq + m2_sq + y * z);
             }
-
-            const auto z = 2 * std::sqrt(p1_sq * p2_sq);
-
-            results[i] = std::sqrt(m1_sq + m2_sq + y * z);
         }
     }
 
