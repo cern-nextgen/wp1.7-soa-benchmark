@@ -95,7 +95,7 @@ struct PxPyPzM {{
     print(result.stderr)
 
 
-def modify_stride_invariantmass(exe, stride):
+def modify_stride_invariantmass(stride):
     """
     ASSUMES that lines 612-616 in benchmark.h are as follows:
         size_t stride = 1;
@@ -116,7 +116,7 @@ def modify_stride_invariantmass(exe, stride):
         f.writelines(lines)
 
     # Recompile the executable
-    result = subprocess.run(["make", exe], capture_output=True, text=True)
+    result = subprocess.run(["make", "aos_manual", "soa_manual"], capture_output=True, text=True)
     print(result.stdout)
     print(result.stderr)
 
@@ -337,15 +337,19 @@ def get_results(events, filter):
 # Experiment functions
 ##
 
-def experiment_stride(output_file, app="im", layout="aos"):
-    exe = "aos_manual" if layout == "aos" else "soa_manual"
-
+def experiment_stride(output_file, app="im"):
     if app == "im":
-        modify_pxpyzpm_aos_manual(0, 0) if layout == "aos" else modify_pxpyzpm_soa_manual(0, 0)
+        modify_pxpyzpm_aos_manual(0, 0)
+        modify_pxpyzpm_soa_manual(0, 0)
+        filter = "BM_InvariantMass"
     elif app == "stcl":
-        modify_sstencil_aos_manual(0, 0) if layout == "aos" else modify_sstencil_soa_manual(0, 0)
+        modify_sstencil_aos_manual(0, 0)
+        modify_sstencil_soa_manual(0, 0)
+        filter = "BM_Stencil"
     elif app == "nbody":
-        modify_nbody_aos_manual(0, 0) if layout == "aos" else modify_nbody_soa_manual(0, 0)
+        modify_nbody_aos_manual(0, 0)
+        modify_nbody_soa_manual(0, 0)
+        filter = "BM_nbody"
     else:
         raise ValueError(f"Unknown app: {app}")
 
@@ -361,22 +365,23 @@ def experiment_stride(output_file, app="im", layout="aos"):
     stride_list = range(0, 65)
     for stride in stride_list:
         if app == "im":
-            modify_stride_invariantmass(exe, stride)
+            modify_stride_invariantmass(stride)
         else:
             raise ValueError(f"Stride experiment is only implemented for invariant mass.")
 
-        df_mean, df_std, perf_ctrs = get_results(exe, events)
+        aos_results, soa_results = get_results(events, filter)
 
-        with open(output_file, "a") as f:
-            f.write(
-                "{},{},{},{},{}\n".format(
-                    exe,
-                    stride,
-                    ",".join([c[0] for c in perf_ctrs]),
-                    df_mean["real_time"],
-                    df_std["real_time"],
+        for exe, df_mean, df_std, perf_ctrs in [aos_results, soa_results]:
+            with open(output_file, "a") as f:
+                f.write(
+                    "{},{},{},{},{}\n".format(
+                        exe,
+                        stride,
+                        ",".join([c[0] for c in perf_ctrs]),
+                        df_mean["real_time"],
+                        df_std["real_time"],
+                    )
                 )
-            )
 
 def experiment_nmembers(output_file, app="im"):
     before_list = range(0, 25)
@@ -425,7 +430,6 @@ def experiment_nmembers(output_file, app="im"):
 
 if __name__ == "__main__":
     experiment_nmembers("perf_output_nmembers_im.csv", "im")
-    experiment_nmembers("perf_output_nmembers_im.csv", "stcl")
-    experiment_nmembers("perf_output_nmembers_im.csv", "nbody")
-    # experiment_stride("perf_output_stride_im_aos.csv", "im", "aos")
-    # experiment_stride("perf_output_stride_im_soa.csv", "im", "soa")
+    experiment_nmembers("perf_output_nmembers_stcl.csv", "stcl")
+    experiment_nmembers("perf_output_nmembers_nbody.csv", "nbody")
+    experiment_stride("perf_output_stride_im.csv", "im")
