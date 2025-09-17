@@ -360,67 +360,17 @@ def get_results(exe, events):
 # Experiment functions
 ##
 
-def experiment_nmembers_invariantmass(output_file, layout="aos"):
+def experiment_stride(output_file, app="im", layout="aos"):
     exe = "aos_manual" if layout == "aos" else "soa_manual"
 
-    before_list = range(13, 25)
-    after_list = range(0, 25)
-
-    header = (
-        "version,before,after,{},runtime_mean,runtime_stddev\n".format(
-            ",".join(events)
-        )
-    )
-    if not os.path.exists(output_file):
-        with open(output_file, "w") as f:
-            f.write(header)
-
-    modify_stride_invariantmass(exe, 1)
-
-    for ib, ia in product(before_list, after_list):
-        modify_pxpyzpm_aos_manual(ib, ia) if layout == "aos" else modify_pxpyzpm_soa_manual(ib, ia)
-
-        df_mean, df_std, perf_ctrs = get_results(exe, events)
-
-        with open(output_file, "a") as f:
-            f.write(
-                "{},{},{},{},{},{}\n".format(
-                    exe,
-                    ib,
-                    ia,
-                    ",".join([c[0] for c in perf_ctrs]),
-                    df_mean["real_time"],
-                    df_std["real_time"],
-                )
-            )
-
-    before_list = range(0, 13)
-    after_list = range(13, 25)
-
-    for ib, ia in product(before_list, after_list):
-        modify_pxpyzpm_aos_manual(ib, ia) if layout == "aos" else modify_pxpyzpm_soa_manual(ib, ia)
-
-        df_mean, df_std, perf_ctrs = get_results(exe, events)
-
-        with open(output_file, "a") as f:
-            f.write(
-                "{},{},{},{},{},{}\n".format(
-                    exe,
-                    ib,
-                    ia,
-                    ",".join([c[0] for c in perf_ctrs]),
-                    df_mean["real_time"],
-                    df_std["real_time"],
-                )
-            )
-
-def experiment_stride_invariantmass(output_file, layout="aos"):
-    if layout == "aos":
-        exe = "aos_manual"
-        modify_pxpyzpm_aos_manual(0, 0)
+    if app == "im":
+        modify_pxpyzpm_aos_manual(0, 0) if layout == "aos" else modify_pxpyzpm_soa_manual(0, 0)
+    elif app == "stcl":
+        modify_sstencil_aos_manual(0, 0) if layout == "aos" else modify_sstencil_soa_manual(0, 0)
+    elif app == "nbody":
+        modify_nbody_aos_manual(0, 0) if layout == "aos" else modify_nbody_soa_manual(0, 0)
     else:
-        exe = "soa_manual"
-        modify_pxpyzpm_soa_manual(0, 0)
+        raise ValueError(f"Unknown app: {app}")
 
     header = (
         "version,stride,{},runtime_mean,runtime_stddev\n".format(
@@ -433,7 +383,10 @@ def experiment_stride_invariantmass(output_file, layout="aos"):
 
     stride_list = range(1, 33)
     for stride in stride_list:
-        modify_stride_invariantmass(exe, stride)
+        if app == "im":
+            modify_stride_invariantmass(exe, stride)
+        else:
+            raise ValueError(f"Stride experiment is only implemented for invariant mass.")
 
         df_mean, df_std, perf_ctrs = get_results(exe, events)
 
@@ -448,7 +401,7 @@ def experiment_stride_invariantmass(output_file, layout="aos"):
                 )
             )
 
-def experiment_nmembers_stencil(output_file, layout="aos"):
+def experiment_nmembers(output_file, app="im", layout="aos"):
     exe = "aos_manual" if layout == "aos" else "soa_manual"
 
     before_list = range(0, 25)
@@ -464,7 +417,14 @@ def experiment_nmembers_stencil(output_file, layout="aos"):
             f.write(header)
 
     for ib, ia in product(before_list, after_list):
-        modify_sstencil_aos_manual(ib, ia) if layout == "aos" else modify_sstencil_soa_manual(ib, ia)
+        if app == "im":
+            modify_pxpyzpm_aos_manual(ib, ia) if layout == "aos" else modify_pxpyzpm_soa_manual(ib, ia)
+        elif app == "stcl":
+            modify_sstencil_aos_manual(ib, ia) if layout == "aos" else modify_sstencil_soa_manual(ib, ia)
+        elif app == "nbody":
+            modify_nbody_aos_manual(ib, ia) if layout == "aos" else modify_nbody_soa_manual(ib, ia)
+        else:
+            raise ValueError(f"Unknown app: {app}")
 
         df_mean, df_std, perf_ctrs = get_results(exe, events)
 
@@ -480,44 +440,13 @@ def experiment_nmembers_stencil(output_file, layout="aos"):
                 )
             )
 
-def experiment_nmembers_nbody(output_file, layout="aos"):
-    exe = "aos_manual" if layout == "aos" else "soa_manual"
-
-    before_list = range(0, 25)
-    after_list = range(0, 25)
-
-    header = (
-        "version,before,after,{},runtime_mean,runtime_stddev\n".format(
-            ",".join(events)
-        )
-    )
-    if not os.path.exists(output_file):
-        with open(output_file, "w") as f:
-            f.write(header)
-
-    for ib, ia in product(before_list, after_list):
-        modify_nbody_aos_manual(ib, ia) if layout == "aos" else modify_nbody_soa_manual(ib, ia)
-
-        df_mean, df_std, perf_ctrs = get_results(exe, events)
-
-        with open(output_file, "a") as f:
-            f.write(
-                "{},{},{},{},{},{}\n".format(
-                    exe,
-                    ib,
-                    ia,
-                    ",".join([c[0] for c in perf_ctrs]),
-                    df_mean["real_time"],
-                    df_std["real_time"],
-                )
-            )
 
 if __name__ == "__main__":
-    # experiment_nmembers_invariantmass("perf_output_nmembers_im_aos.csv", "aos")
-    experiment_nmembers_invariantmass("perf_output_nmembers_im_soa.csv", "soa")
-    # experiment_stride_invariantmass("perf_output_stride_im_aos.csv", "aos")
-    # experiment_stride_invariantmass("perf_output_stride_im_soa.csv", "soa")
-    # experiment_nmembers_stencil("perf_output_nmembers_stcl_aos.csv", "aos")
-    # experiment_nmembers_stencil("perf_output_nmembers_stcl_soa.csv", "soa")
-    # experiment_nmembers_nbody("perf_output_nmembers_nbody_aos.csv", "aos")
-    # experiment_nmembers_nbody("perf_output_nmembers_nbody_soa.csv", "soa")
+    # experiment_nmembers("perf_output_nmembers_im_aos.csv", "im", "aos")
+    experiment_nmembers("perf_output_nmembers_im_soa.csv", "im", "soa")
+    # experiment_stride("perf_output_stride_im_aos.csv", "im", "aos")
+    # experiment_stride("perf_output_stride_im_soa.csv", "im", "soa")
+    # experiment_nmembers_stencil("perf_output_nmembers_stcl_aos.csv", "stcl", "aos")
+    # experiment_nmembers_stencil("perf_output_nmembers_stcl_soa.csv", "stcl", "soa")
+    # experiment_nmembers_nbody("perf_output_nmembers_nbody_aos.csv", "nbody", "aos")
+    # experiment_nmembers_nbody("perf_output_nmembers_nbody_soa.csv", "nbody", "soa")
