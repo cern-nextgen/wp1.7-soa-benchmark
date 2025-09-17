@@ -29,19 +29,16 @@ struct S64 {
 };
 
 struct Snbody {
-    float x, y, z, vx, vy, vz;
+	double x, y, z, vx, vy, vz, a0, a1;
 };
 
 struct Sstencil {
-    double src, dst, rhs;
+	double src, dst, rhs, a0;
 };
 
 struct Particle {
     // unused members
-
-
-    // PxPyPzM members
-    double x, y, z, M;
+	double x, y, z, M;
 
     // unused members
     // double fX, fY, fZ, fM;
@@ -78,7 +75,9 @@ class Fixture2 : public benchmark::Fixture {
 };
 
 // INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, Particle, Particle, N_Large);
-BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM_InvariantMass, Particle, Particle, std::integral_constant<size_t, 10000000>)
-    ->Unit(benchmark::kMillisecond);
+
+BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM_nbody, Snbody, std::integral_constant<size_t, N_nbody>)->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM_stencil, Sstencil, std::integral_constant<size_t, N_stencil>)->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM_InvariantMass, Particle, Particle, std::integral_constant<size_t, N_im>)->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN();

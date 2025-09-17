@@ -1,10 +1,11 @@
-from attr import ib
-import numpy as np
+import multiprocessing
 import subprocess
 import pandas as pd
 from io import StringIO
 import os
 from itertools import product
+from multiprocessing import Process
+import numpy as np
 
 events = [
     "fp_arith_inst_retired.scalar",
@@ -19,8 +20,6 @@ events = [
     "major-faults",
     "minor-faults",
 ]
-
-
 
 ##
 # File modification functions
@@ -109,7 +108,7 @@ def modify_stride_invariantmass(stride):
         lines = f.readlines()
 
     # Replace line 94 (index 93) with new content
-    lines[611] = f"    size_t stride = {stride};\n"
+    lines[614] = f"    size_t stride = {stride};\n"
 
     # Write back to the file
     with open("benchmark.h", "w") as f:
@@ -345,7 +344,7 @@ def experiment_stride(output_file, app="im"):
     elif app == "stcl":
         modify_sstencil_aos_manual(0, 0)
         modify_sstencil_soa_manual(0, 0)
-        filter = "BM_Stencil"
+        filter = "BM_stencil"
     elif app == "nbody":
         modify_nbody_aos_manual(0, 0)
         modify_nbody_soa_manual(0, 0)
@@ -404,7 +403,7 @@ def experiment_nmembers(output_file, app="im"):
         elif app == "stcl":
             modify_sstencil_aos_manual(ib, ia)
             modify_sstencil_soa_manual(ib, ia)
-            filter = "BM_Stencil"
+            filter = "BM_stencil"
         elif app == "nbody":
             modify_nbody_aos_manual(ib, ia)
             modify_nbody_soa_manual(ib, ia)

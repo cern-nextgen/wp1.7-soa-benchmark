@@ -34,6 +34,10 @@ constexpr std::size_t N[] = {10, 100, 1000, 10000, 100000};
 constexpr std::size_t N_Large[] = {10000, 100000, 1000000, 10000000, 100000000};
 constexpr size_t Alignment = 128;
 
+constexpr size_t N_im = 10000000;
+constexpr size_t N_stencil = 100000;
+constexpr size_t N_nbody = 10000;
+
 // clang-format off
 #define INSTANTIATE_BENCHMARKS_F1(BM, Type, N) \
     BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM, Type, std::integral_constant<size_t, N[0]>)->Unit(benchmark::kMillisecond); \
@@ -290,7 +294,7 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUStrided)(benchmark::State &state)
     state.counters["n_elem"] = n;
 }
 
-// 100 data members (20 floats, 20 doubles, 20 integers, 20 Eigen vector, 20 Eigen matrices)
+// 100 data members (20 floats,they 20 doubles, 20 integers, 20 Eigen vector, 20 Eigen matrices)
 BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUHardRW)(benchmark::State &state)
 {
     auto n = this->n;
@@ -605,11 +609,10 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State &state)
         MEMBER_ACCESS(v2, x, i) = rand_double();
         MEMBER_ACCESS(v2, y, i) = rand_double();
         MEMBER_ACCESS(v2, z, i) = rand_double();
-        MEMBER_ACCESS(v2, M, i) = rand_double();
     }
 
     std::vector<double> results(n);
-size_t stride = 2;
+    size_t stride = 64;
     for (auto _ : state) {
 #pragma clang loop vectorize(assume_safety)
         for (size_t start = 0; start < stride; ++start) {

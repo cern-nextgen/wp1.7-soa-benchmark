@@ -344,29 +344,31 @@ struct S64 {
     }
 };
 
-struct Snbody {
-    float *__restrict__ x, *__restrict__ y, *__restrict__ z;
-    float *__restrict__ vx, *__restrict__ vy, *__restrict__ vz;
+#include "snbody.h"
 
-    Snbody(std::byte *buf, size_t n)
-    {
-        size_t offset = 0;
+// struct Snbody {
+//     float *__restrict__ x, *__restrict__ y, *__restrict__ z;
+//     float *__restrict__ vx, *__restrict__ vy, *__restrict__ vz;
 
-        x = reinterpret_cast<float *__restrict__>(buf);
-        offset += align_size(n * sizeof(float));
-        y = reinterpret_cast<float *__restrict__>(buf + offset);
-        offset += align_size(n * sizeof(float));
-        z = reinterpret_cast<float *__restrict__>(buf + offset);
-        offset += align_size(n * sizeof(float));
-        vx = reinterpret_cast<float *__restrict__>(buf + offset);
-        offset += align_size(n * sizeof(float));
-        vy = reinterpret_cast<float *__restrict__>(buf + offset);
-        offset += align_size(n * sizeof(float));
-        vz = reinterpret_cast<float *__restrict__>(buf + offset);
-    }
+//     Snbody(std::byte *buf, size_t n)
+//     {
+//         size_t offset = 0;
 
-    static size_t size_bytes(size_t n) { return align_size(sizeof(float[n])) * 6; }
-};
+//         x = reinterpret_cast<float *__restrict__>(buf);
+//         offset += align_size(n * sizeof(float));
+//         y = reinterpret_cast<float *__restrict__>(buf + offset);
+//         offset += align_size(n * sizeof(float));
+//         z = reinterpret_cast<float *__restrict__>(buf + offset);
+//         offset += align_size(n * sizeof(float));
+//         vx = reinterpret_cast<float *__restrict__>(buf + offset);
+//         offset += align_size(n * sizeof(float));
+//         vy = reinterpret_cast<float *__restrict__>(buf + offset);
+//         offset += align_size(n * sizeof(float));
+//         vz = reinterpret_cast<float *__restrict__>(buf + offset);
+//     }
+
+//     static size_t size_bytes(size_t n) { return align_size(sizeof(float[n])) * 6; }
+// };
 
 #include "sstencil.h"
 
@@ -388,6 +390,7 @@ struct Snbody {
 // };
 
 #include "pxpypzm.h"
+
 // struct PxPyPzM {
 //     double *x, *y, *z, *M;
 
@@ -460,7 +463,9 @@ class Fixture2 : public benchmark::Fixture {
 };
 
 // INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzM, PxPyPzM, N_Large);
-BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM_InvariantMass, PxPyPzM, PxPyPzM, std::integral_constant<size_t, 10000000>)
-    ->Unit(benchmark::kMillisecond);
+
+BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM_nbody, Snbody, std::integral_constant<size_t, N_nbody>)->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM_stencil, Sstencil, std::integral_constant<size_t, N_stencil>)->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM_InvariantMass, PxPyPzM, PxPyPzM, std::integral_constant<size_t, N_im>)->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN();
