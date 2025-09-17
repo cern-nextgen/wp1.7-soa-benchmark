@@ -22,6 +22,7 @@ events = [
 
 N_im = 10000000
 N_stencil = 100000
+N_nbody = 10000
 
 ##
 # File modification functions
@@ -64,12 +65,12 @@ def modify_pxpyzpm_soa_manual(ib, ia):
     ib_defs = "\tdouble" if ib > 0 else ""
     ib_cstrct = ""
     for b in range(ib):
-        ib_defs += f"{',' if b > 0 else ''} *b{b}{';' if b == ib-1 else ''}"
+        ib_defs += f"{',' if b > 0 else ''} *__restrict__ b{b}{';' if b == ib-1 else ''}"
         ib_cstrct += f"\t\tb{b} = reinterpret_cast<double *__restrict__>(buf + offset);\n\t\toffset += align_size(n * sizeof(double));\n"
     ia_defs = "\tdouble" if ia > 0 else ""
     ia_cstrct = ""
     for b in range(ia):
-        ia_defs += f"{',' if b > 0 else ''} *a{b}{';' if b == ia-1 else ''}"
+        ia_defs += f"{',' if b > 0 else ''} *__restrict__ a{b}{';' if b == ia-1 else ''}"
         ia_cstrct += f"\t\ta{b} = reinterpret_cast<double *__restrict__>(buf + offset);\n\t\toffset += align_size(n * sizeof(double));\n"
 
     with open("pxpypzm.h", "w") as f:
@@ -99,7 +100,7 @@ struct PxPyPzM {{
 
     with open("soa_manual.cpp", "r") as f:
         lines = f.readlines()
-        lines[463] = f"BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM_InvariantMass, PxPyPzM, PxPyPzM, std::integral_constant<size_t, {N_im}>)->Unit(benchmark::kMillisecond);\n"
+        lines[465] = f"BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM_InvariantMass, PxPyPzM, PxPyPzM, std::integral_constant<size_t, {N_im}>)->Unit(benchmark::kMillisecond);\n"
 
     with open("soa_manual.cpp", "w") as f:
         f.writelines(lines)
@@ -172,12 +173,12 @@ def modify_sstencil_soa_manual(ib, ia):
     ib_defs = "\tdouble" if ib > 0 else ""
     ib_cstrct = ""
     for b in range(ib):
-        ib_defs += f"{',' if b > 0 else ''} *b{b}{';' if b == ib-1 else ''}"
+        ib_defs += f"{',' if b > 0 else ''} *__restrict__  b{b}{';' if b == ib-1 else ''}"
         ib_cstrct += f"\t\tb{b} = reinterpret_cast<double *__restrict__>(buf + offset);\n\t\toffset += align_size(n * sizeof(double));\n"
     ia_defs = "\tdouble" if ia > 0 else ""
     ia_cstrct = ""
     for b in range(ia):
-        ia_defs += f"{',' if b > 0 else ''} *a{b}{';' if b == ia-1 else ''}"
+        ia_defs += f"{',' if b > 0 else ''} *__restrict__  a{b}{';' if b == ia-1 else ''}"
         ia_cstrct += f"\t\ta{b} = reinterpret_cast<double *__restrict__>(buf + offset);\n\t\toffset += align_size(n * sizeof(double));\n"
 
     with open("sstencil.h", "w") as f:
@@ -205,7 +206,92 @@ struct Sstencil {{
 
     with open("soa_manual.cpp", "r") as f:
         lines = f.readlines()
-        lines[463] = f"BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM_stencil, Sstencil, std::integral_constant<size_t, {N_stencil}>)->Unit(benchmark::kMillisecond);\n"
+        lines[465] = f"BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM_stencil, Sstencil, std::integral_constant<size_t, {N_stencil}>)->Unit(benchmark::kMillisecond);\n"
+    with open("soa_manual.cpp", "w") as f:
+        f.writelines(lines)
+
+    result = subprocess.run(["make", "soa_manual"], capture_output=True, text=True)
+    print(result.stdout)
+    print(result.stderr)
+
+def modify_nbody_aos_manual(ib, ia):
+    """
+    ASSUMES that line 32 contains all the data members of Snbody
+    """
+    # Read the file
+    with open("aos_manual.cpp", "r") as f:
+        lines = f.readlines()
+
+    # Replace line 48 (index 47) with new content
+    if ib == 0:
+        ib_line = f"float "
+    else:
+        ib_line = f"float before[{ib}], "
+
+    if ia == 0:
+        ia_line = f";\n"
+    else:
+        ia_line = f", after[{ia}];\n"
+
+    lines[31] = f"    {ib_line}x, y, z, vx, vy, vz{ia_line}"
+    lines[80] = f"BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM_nbody, Snbody, std::integral_constant<size_t, {N_nbody}>)->Unit(benchmark::kMillisecond);\n"
+
+    # Write back to the file
+    with open("aos_manual.cpp", "w") as f:
+        f.writelines(lines)
+
+    result = subprocess.run(["make", "aos_manual"], capture_output=True, text=True)
+    print(result.stdout)
+    print(result.stderr)
+
+def modify_nbody_soa_manual(ib, ia):
+    """
+    ASSUMES that the struct Snbody is in snbody.h
+    """
+    ib_defs = "\tfloat" if ib > 0 else ""
+    ib_cstrct = ""
+    for b in range(ib):
+        ib_defs += f"{',' if b > 0 else ''} *__restrict__  b{b}{';' if b == ib-1 else ''}"
+        ib_cstrct += f"\t\tb{b} = reinterpret_cast<float *__restrict__>(buf + offset);\n\t\toffset += align_size(n * sizeof(float));\n"
+    ia_defs = "\tfloat" if ia > 0 else ""
+    ia_cstrct = ""
+    for b in range(ia):
+        ia_defs += f"{',' if b > 0 else ''} *__restrict__  a{b}{';' if b == ia-1 else ''}"
+        ia_cstrct += f"\t\ta{b} = reinterpret_cast<float *__restrict__>(buf + offset);\n\t\toffset += align_size(n * sizeof(float));\n"
+
+    with open("snbody.h", "w") as f:
+        f.write(
+f"""
+struct Snbody {{
+{ib_defs}
+    float *__restrict__ x, *__restrict__ y, *__restrict__ z;
+    float *__restrict__ vx, *__restrict__ vy, *__restrict__ vz;
+{ia_defs}
+
+    static size_t size_bytes(size_t n) {{ return align_size(sizeof(float[n])) * {ib+ia+6}; }}
+
+    Snbody(std::byte *buf, size_t n) {{
+        size_t offset = 0;
+{ib_cstrct}
+        x = reinterpret_cast<float *__restrict__>(buf);
+        offset += align_size(n * sizeof(float));
+        y = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        z = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        vx = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        vy = reinterpret_cast<float *__restrict__>(buf + offset);
+        offset += align_size(n * sizeof(float));
+        vz = reinterpret_cast<float *__restrict__>(buf + offset);
+{ia_cstrct}
+    }}
+}};
+""")
+
+    with open("soa_manual.cpp", "r") as f:
+        lines = f.readlines()
+        lines[465] = f"BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM_nbody, Snbody, std::integral_constant<size_t, {N_nbody}>)->Unit(benchmark::kMillisecond);\n"
     with open("soa_manual.cpp", "w") as f:
         f.writelines(lines)
 
@@ -277,8 +363,8 @@ def get_results(exe, events):
 def experiment_nmembers_invariantmass(output_file, layout="aos"):
     exe = "aos_manual" if layout == "aos" else "soa_manual"
 
-    before_list = range(11, 13)
-    after_list = range(0, 13)
+    before_list = range(13, 25)
+    after_list = range(0, 25)
 
     header = (
         "version,before,after,{},runtime_mean,runtime_stddev\n".format(
@@ -290,6 +376,26 @@ def experiment_nmembers_invariantmass(output_file, layout="aos"):
             f.write(header)
 
     modify_stride_invariantmass(exe, 1)
+
+    for ib, ia in product(before_list, after_list):
+        modify_pxpyzpm_aos_manual(ib, ia) if layout == "aos" else modify_pxpyzpm_soa_manual(ib, ia)
+
+        df_mean, df_std, perf_ctrs = get_results(exe, events)
+
+        with open(output_file, "a") as f:
+            f.write(
+                "{},{},{},{},{},{}\n".format(
+                    exe,
+                    ib,
+                    ia,
+                    ",".join([c[0] for c in perf_ctrs]),
+                    df_mean["real_time"],
+                    df_std["real_time"],
+                )
+            )
+
+    before_list = range(0, 13)
+    after_list = range(13, 25)
 
     for ib, ia in product(before_list, after_list):
         modify_pxpyzpm_aos_manual(ib, ia) if layout == "aos" else modify_pxpyzpm_soa_manual(ib, ia)
@@ -374,11 +480,44 @@ def experiment_nmembers_stencil(output_file, layout="aos"):
                 )
             )
 
+def experiment_nmembers_nbody(output_file, layout="aos"):
+    exe = "aos_manual" if layout == "aos" else "soa_manual"
+
+    before_list = range(0, 25)
+    after_list = range(0, 25)
+
+    header = (
+        "version,before,after,{},runtime_mean,runtime_stddev\n".format(
+            ",".join(events)
+        )
+    )
+    if not os.path.exists(output_file):
+        with open(output_file, "w") as f:
+            f.write(header)
+
+    for ib, ia in product(before_list, after_list):
+        modify_nbody_aos_manual(ib, ia) if layout == "aos" else modify_nbody_soa_manual(ib, ia)
+
+        df_mean, df_std, perf_ctrs = get_results(exe, events)
+
+        with open(output_file, "a") as f:
+            f.write(
+                "{},{},{},{},{},{}\n".format(
+                    exe,
+                    ib,
+                    ia,
+                    ",".join([c[0] for c in perf_ctrs]),
+                    df_mean["real_time"],
+                    df_std["real_time"],
+                )
+            )
 
 if __name__ == "__main__":
     # experiment_nmembers_invariantmass("perf_output_nmembers_im_aos.csv", "aos")
-    # experiment_nmembers_invariantmass("perf_output_nmembers_im_soa.csv", "soa")
-    experiment_stride_invariantmass("perf_output_stride_im_aos.csv", "aos")
-    experiment_stride_invariantmass("perf_output_stride_im_soa.csv", "soa")
-    experiment_nmembers_stencil("perf_output_nmembers_stcl_aos.csv", "aos")
-    experiment_nmembers_stencil("perf_output_nmembers_stcl_soa.csv", "soa")
+    experiment_nmembers_invariantmass("perf_output_nmembers_im_soa.csv", "soa")
+    # experiment_stride_invariantmass("perf_output_stride_im_aos.csv", "aos")
+    # experiment_stride_invariantmass("perf_output_stride_im_soa.csv", "soa")
+    # experiment_nmembers_stencil("perf_output_nmembers_stcl_aos.csv", "aos")
+    # experiment_nmembers_stencil("perf_output_nmembers_stcl_soa.csv", "soa")
+    # experiment_nmembers_nbody("perf_output_nmembers_nbody_aos.csv", "aos")
+    # experiment_nmembers_nbody("perf_output_nmembers_nbody_soa.csv", "soa")
