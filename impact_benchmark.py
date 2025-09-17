@@ -20,9 +20,7 @@ events = [
     "minor-faults",
 ]
 
-N_im = 10000000
-N_stencil = 100000
-N_nbody = 10000
+
 
 ##
 # File modification functions
@@ -30,25 +28,19 @@ N_nbody = 10000
 
 def modify_pxpyzpm_aos_manual(ib, ia):
     """
-    ASSUMES that line 41 and 48 in aos_manual.cpp are empty and that members x,y,z,M are on line 44
-    ASSUMES that all other benchmark instantiations are commented out
+    ASSUMES that line 40 contains all the data members of Particle
     """
     # Read the file
     with open("aos_manual.cpp", "r") as f:
         lines = f.readlines()
 
-    # Replace line 48 (index 47) with new content
-    if ib == 0:
-        lines[40] = f"\n"
-    else:
-        lines[40] = f"\tdouble before[{ib}];\n"
-
-    if ia == 0:
-        lines[47] = f"\n"
-    else:
-        lines[47] = f"\tdouble after[{ia}];\n"
-
-    lines[80] = f"BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM_InvariantMass, Particle, Particle, std::integral_constant<size_t, {N_im}>)->Unit(benchmark::kMillisecond);\n"
+    # Replace line 41 (index 40) with new content
+    ib_defs = ia_defs = ""
+    for b in range(ib):
+        ib_defs += f"b{b}, "
+    for a in range(ia):
+        ia_defs += f", a{a}"
+    lines[40] = f"\tdouble {ib_defs}x, y, z, M{ia_defs};\n"
 
     # Write back to the file
     with open("aos_manual.cpp", "w") as f:
@@ -98,13 +90,6 @@ struct PxPyPzM {{
 }};
 """)
 
-    with open("soa_manual.cpp", "r") as f:
-        lines = f.readlines()
-        lines[465] = f"BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM_InvariantMass, PxPyPzM, PxPyPzM, std::integral_constant<size_t, {N_im}>)->Unit(benchmark::kMillisecond);\n"
-
-    with open("soa_manual.cpp", "w") as f:
-        f.writelines(lines)
-
     result = subprocess.run(["make", "soa_manual"], capture_output=True, text=True)
     print(result.stdout)
     print(result.stderr)
@@ -143,19 +128,13 @@ def modify_sstencil_aos_manual(ib, ia):
     with open("aos_manual.cpp", "r") as f:
         lines = f.readlines()
 
-    # Replace line 48 (index 47) with new content
-    if ib == 0:
-        ib_line = f"double "
-    else:
-        ib_line = f"double before[{ib}], "
-
-    if ia == 0:
-        ia_line = f";\n"
-    else:
-        ia_line = f", after[{ia}];\n"
-
-    lines[35] = f"    {ib_line}src, dst, rhs{ia_line}"
-    lines[80] = f"BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM_stencil, Sstencil, std::integral_constant<size_t, {N_stencil}>)->Unit(benchmark::kMillisecond);\n"
+    # Replace line 36 (index 35) with new content
+    ib_defs = ia_defs = ""
+    for b in range(ib):
+        ib_defs += f"b{b}, "
+    for a in range(ia):
+        ia_defs += f", a{a}"
+    lines[35] = f"\tdouble {ib_defs}src, dst, rhs{ia_defs};\n"
 
     # Write back to the file
     with open("aos_manual.cpp", "w") as f:
@@ -204,12 +183,6 @@ struct Sstencil {{
 }};
 """)
 
-    with open("soa_manual.cpp", "r") as f:
-        lines = f.readlines()
-        lines[465] = f"BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM_stencil, Sstencil, std::integral_constant<size_t, {N_stencil}>)->Unit(benchmark::kMillisecond);\n"
-    with open("soa_manual.cpp", "w") as f:
-        f.writelines(lines)
-
     result = subprocess.run(["make", "soa_manual"], capture_output=True, text=True)
     print(result.stdout)
     print(result.stderr)
@@ -222,19 +195,14 @@ def modify_nbody_aos_manual(ib, ia):
     with open("aos_manual.cpp", "r") as f:
         lines = f.readlines()
 
-    # Replace line 48 (index 47) with new content
-    if ib == 0:
-        ib_line = f"float "
-    else:
-        ib_line = f"float before[{ib}], "
+    # Replace line 32 (index 31) with new content
+    ib_defs = ia_defs = ""
+    for b in range(ib):
+        ib_defs += f"b{b}, "
+    for a in range(ia):
+        ia_defs += f", a{a}"
 
-    if ia == 0:
-        ia_line = f";\n"
-    else:
-        ia_line = f", after[{ia}];\n"
-
-    lines[31] = f"    {ib_line}x, y, z, vx, vy, vz{ia_line}"
-    lines[80] = f"BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM_nbody, Snbody, std::integral_constant<size_t, {N_nbody}>)->Unit(benchmark::kMillisecond);\n"
+    lines[31] = f"\tdouble {ib_defs}x, y, z, vx, vy, vz{ia_defs};\n"
 
     # Write back to the file
     with open("aos_manual.cpp", "w") as f:
@@ -289,12 +257,6 @@ struct Snbody {{
 }};
 """)
 
-    with open("soa_manual.cpp", "r") as f:
-        lines = f.readlines()
-        lines[465] = f"BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM_nbody, Snbody, std::integral_constant<size_t, {N_nbody}>)->Unit(benchmark::kMillisecond);\n"
-    with open("soa_manual.cpp", "w") as f:
-        f.writelines(lines)
-
     result = subprocess.run(["make", "soa_manual"], capture_output=True, text=True)
     print(result.stdout)
     print(result.stderr)
@@ -303,58 +265,73 @@ struct Snbody {{
 # Helper functions
 ##
 
-def get_results(exe, events):
-    def run_exe(exe, events):
-        cmd = [
-            "likwid-pin",
-            "-C",
-            "0",
-            "perf",
-            "stat",
-            "-C",
-            "0",
-            "-e",
-            ",".join(events),
-            "-r",
-            "5",
-            f"./{exe}",
-            "--benchmark_format=csv",
+def get_results(events, filter):
+    def run_exe(events, filter):
+        p = []
+        for c, exe in enumerate(["aos_manual", "soa_manual"]):
+            cmd = [
+                "likwid-pin",
+                "-C",
+                str(c),
+                "perf",
+                "stat",
+                "-C",
+                str(c),
+                "-e",
+                ",".join(events),
+                "-r",
+                "5",
+                f"./{exe}",
+                "--benchmark_format=csv",
+                f"--benchmark_filter={filter}",
+            ]
+            p.append(subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+
+        aos_result = p[0].communicate()
+        soa_result = p[1].communicate()
+        # print(aos_result[1].decode())
+        # print(soa_result[1].decode())
+        # print(aos_result[0].decode())
+        # print(soa_result[0].decode())
+        return aos_result, soa_result
+
+    def process_df(stdout):
+        selected_lines = [
+            stdout.splitlines()[i] for i in [0, 1, 3, 5, 7]
         ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        # print(result.stdout)
-        print(result.stderr)
-        return result
+        df = pd.read_csv(StringIO("\n".join(selected_lines)))
+        df_mean = df.mean(numeric_only=True)
+        df_std = df.std(numeric_only=True)
+        return df_mean, df_std
+
+    def process_perfctrs(stderr, n_ctrs):
+        lines = stderr.splitlines()
+        perf_line_idx = next((i for i, line in enumerate(lines) if "Performance counter stats" in line), -1)
+        perf_ctrs = [
+            l.replace(",", "").split()
+            for l in lines[perf_line_idx + 2 : perf_line_idx + n_ctrs + 2]
+        ]
+        return perf_ctrs
 
     # Max number of supported hardware counters is 7
-    result = run_exe(exe, events[:7])
-    selected_lines = [
-        result.stdout.splitlines()[i] for i in [0, 1, 3, 5, 7]
-    ]
-    df = pd.read_csv(StringIO("\n".join(selected_lines)))
-    df_mean = df.mean(numeric_only=True)
-    df_std = df.std(numeric_only=True)
+    aos_result, soa_result = run_exe(events[:7], filter)
 
-    lines = result.stderr.splitlines()
-    perf_line_idx = next((i for i, line in enumerate(lines) if "Performance counter stats" in line), -1,)
-    perf_ctrs = [
-        l.replace(",", "").split()
-        for l in lines[perf_line_idx + 2 : perf_line_idx + 9]
-    ]
+    df_mean_aos, df_std_aos = process_df(aos_result[0].decode())
+    perf_ctrs_aos = process_perfctrs(aos_result[1].decode(), 7)
+
+    df_mean_soa, df_std_soa = process_df(soa_result[0].decode())
+    perf_ctrs_soa = process_perfctrs(soa_result[1].decode(), 7)
 
     # If more than 7 hardware counters, run multiple times
     for ie in range(7, len(events), 7):
         n_ctrs = min(7, len(events) - ie)
-        result = run_exe(exe, events[ie : ie + n_ctrs])
-        lines = result.stderr.splitlines()
-        perf_line_idx = next((i for i, line in enumerate(lines) if "Performance counter stats" in line), -1,)
-        perf_ctrs.extend(
-            l.replace(",", "").split()
-            for l in lines[perf_line_idx + 2 : perf_line_idx + n_ctrs + 2]
-        )
+        aos_result, soa_result = run_exe(events[ie : ie + n_ctrs], filter)
+        perf_ctrs_aos = process_perfctrs(aos_result[1].decode(), n_ctrs)
+        perf_ctrs_soa = process_perfctrs(soa_result[1].decode(), n_ctrs)
+        perf_ctrs_aos.extend(perf_ctrs_aos)
+        perf_ctrs_soa.extend(perf_ctrs_soa)
 
-    print(perf_ctrs)
-    print(df_mean)
-    return df_mean, df_std, perf_ctrs
+    return ('aos_manual', df_mean_aos, df_std_aos, perf_ctrs_aos), ('soa_manual', df_mean_soa, df_std_soa, perf_ctrs_soa)
 
 ###
 # Experiment functions
@@ -381,7 +358,7 @@ def experiment_stride(output_file, app="im", layout="aos"):
         with open(output_file, "w") as f:
             f.write(header)
 
-    stride_list = range(1, 33)
+    stride_list = range(0, 65)
     for stride in stride_list:
         if app == "im":
             modify_stride_invariantmass(exe, stride)
@@ -401,9 +378,7 @@ def experiment_stride(output_file, app="im", layout="aos"):
                 )
             )
 
-def experiment_nmembers(output_file, app="im", layout="aos"):
-    exe = "aos_manual" if layout == "aos" else "soa_manual"
-
+def experiment_nmembers(output_file, app="im"):
     before_list = range(0, 25)
     after_list = range(0, 25)
 
@@ -418,35 +393,39 @@ def experiment_nmembers(output_file, app="im", layout="aos"):
 
     for ib, ia in product(before_list, after_list):
         if app == "im":
-            modify_pxpyzpm_aos_manual(ib, ia) if layout == "aos" else modify_pxpyzpm_soa_manual(ib, ia)
+            modify_pxpyzpm_aos_manual(ib, ia)
+            modify_pxpyzpm_soa_manual(ib, ia)
+            filter = "BM_InvariantMass"
         elif app == "stcl":
-            modify_sstencil_aos_manual(ib, ia) if layout == "aos" else modify_sstencil_soa_manual(ib, ia)
+            modify_sstencil_aos_manual(ib, ia)
+            modify_sstencil_soa_manual(ib, ia)
+            filter = "BM_Stencil"
         elif app == "nbody":
-            modify_nbody_aos_manual(ib, ia) if layout == "aos" else modify_nbody_soa_manual(ib, ia)
+            modify_nbody_aos_manual(ib, ia)
+            modify_nbody_soa_manual(ib, ia)
+            filter = "BM_nbody"
         else:
             raise ValueError(f"Unknown app: {app}")
 
-        df_mean, df_std, perf_ctrs = get_results(exe, events)
+        aos_results, soa_results = get_results(events, filter)
 
-        with open(output_file, "a") as f:
-            f.write(
-                "{},{},{},{},{},{}\n".format(
-                    exe,
-                    ib,
-                    ia,
-                    ",".join([c[0] for c in perf_ctrs]),
-                    df_mean["real_time"],
-                    df_std["real_time"],
+        for exe, df_mean, df_std, perf_ctrs in [aos_results, soa_results]:
+            with open(output_file, "a") as f:
+                f.write(
+                    "{},{},{},{},{},{}\n".format(
+                        exe,
+                        ib,
+                        ia,
+                        ",".join([c[0] for c in perf_ctrs]),
+                        df_mean["real_time"],
+                        df_std["real_time"],
+                    )
                 )
-            )
 
 
 if __name__ == "__main__":
-    # experiment_nmembers("perf_output_nmembers_im_aos.csv", "im", "aos")
-    experiment_nmembers("perf_output_nmembers_im_soa.csv", "im", "soa")
+    experiment_nmembers("perf_output_nmembers_im.csv", "im")
+    experiment_nmembers("perf_output_nmembers_im.csv", "stcl")
+    experiment_nmembers("perf_output_nmembers_im.csv", "nbody")
     # experiment_stride("perf_output_stride_im_aos.csv", "im", "aos")
     # experiment_stride("perf_output_stride_im_soa.csv", "im", "soa")
-    # experiment_nmembers_stencil("perf_output_nmembers_stcl_aos.csv", "stcl", "aos")
-    # experiment_nmembers_stencil("perf_output_nmembers_stcl_soa.csv", "stcl", "soa")
-    # experiment_nmembers_nbody("perf_output_nmembers_nbody_aos.csv", "nbody", "aos")
-    # experiment_nmembers_nbody("perf_output_nmembers_nbody_soa.csv", "nbody", "soa")
