@@ -4,7 +4,6 @@ import pandas as pd
 from io import StringIO
 import os
 from itertools import product
-from multiprocessing import Process
 import numpy as np
 
 events = [
@@ -325,10 +324,10 @@ def get_results(events, filter):
     for ie in range(7, len(events), 7):
         n_ctrs = min(7, len(events) - ie)
         aos_result, soa_result = run_exe(events[ie : ie + n_ctrs], filter)
-        perf_ctrs_aos = process_perfctrs(aos_result[1].decode(), n_ctrs)
-        perf_ctrs_soa = process_perfctrs(soa_result[1].decode(), n_ctrs)
-        perf_ctrs_aos.extend(perf_ctrs_aos)
-        perf_ctrs_soa.extend(perf_ctrs_soa)
+        new_perf_ctrs_aos = process_perfctrs(aos_result[1].decode(), n_ctrs)
+        new_perf_ctrs_soa = process_perfctrs(soa_result[1].decode(), n_ctrs)
+        perf_ctrs_aos.extend(new_perf_ctrs_aos)
+        perf_ctrs_soa.extend(new_perf_ctrs_soa)
 
     return ('aos_manual', df_mean_aos, df_std_aos, perf_ctrs_aos), ('soa_manual', df_mean_soa, df_std_soa, perf_ctrs_soa)
 
@@ -361,7 +360,7 @@ def experiment_stride(output_file, app="im"):
         with open(output_file, "w") as f:
             f.write(header)
 
-    stride_list = range(0, 65)
+    stride_list = range(1, 65)
     for stride in stride_list:
         if app == "im":
             modify_stride_invariantmass(stride)
@@ -397,6 +396,7 @@ def experiment_nmembers(output_file, app="im"):
 
     for ib, ia in product(before_list, after_list):
         if app == "im":
+            modify_stride_invariantmass(1)
             modify_pxpyzpm_aos_manual(ib, ia)
             modify_pxpyzpm_soa_manual(ib, ia)
             filter = "BM_InvariantMass"
@@ -429,6 +429,6 @@ def experiment_nmembers(output_file, app="im"):
 
 if __name__ == "__main__":
     experiment_nmembers("perf_output_nmembers_im.csv", "im")
+    experiment_stride("perf_output_stride_im.csv", "im")
     experiment_nmembers("perf_output_nmembers_stcl.csv", "stcl")
     experiment_nmembers("perf_output_nmembers_nbody.csv", "nbody")
-    experiment_stride("perf_output_stride_im.csv", "im")
