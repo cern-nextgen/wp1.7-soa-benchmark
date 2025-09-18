@@ -150,64 +150,69 @@ derived_values = {
 }
 
 
-def plot_nmembers_heatmaps(df, layout, app, scaled=False):
-    plt.figure(figsize=(30, 17))
-    for i, (k, v) in enumerate(zip(values.keys(), values.values())):
-        plt.subplot(4, 5, i + 1)
-        pivot = df.pivot(index="before", columns="after", values=k)
-        plt.imshow(pivot, cmap=v["colormap"], aspect="auto", origin="lower")
-        plt.colorbar(label=v["label"])
-        plt.xlabel(r"Number of double data members $\bf{after}$")
-        plt.ylabel(r"Number of double data members $\bf{before}$")
-        plt.title(f"{v['label']}")
-        plt.xticks(np.arange(len(pivot.columns)), pivot.columns)
-        plt.yticks(np.arange(len(pivot.index)), pivot.index)
-        if scaled and "ymax" in v and app in v["ymax"]:
-            plt.clim([0, v["ymax"][app]])
-        else:
-            plt.clim(vmin=0)
-        plt.tight_layout()
+def plot_nmembers_heatmaps(df, app, scaled=False):
+    for layout in ["aos", "soa"]:
+        df_layout = df[df["version"] == f"{layout}_manual"].copy()
+        plt.figure(figsize=(30, 17))
 
-    for i, (k, v) in enumerate(zip(derived_values.keys(), derived_values.values())):
-        plt.subplot(4, 5, i + 16)
-        df[k] = v["formula"](df)
-        pivot = df.pivot(index="before", columns="after", values=k)
-        plt.imshow(pivot, cmap=v["colormap"], aspect="auto", origin="lower")
-        plt.colorbar(label=v["label"])
-        plt.xlabel(r"Number of double data members $\bf{after}$")
-        plt.ylabel(r"Number of double data members $\bf{before}$")
-        plt.title(f"{v['label']}")
-        plt.xticks(np.arange(len(pivot.columns)), pivot.columns)
-        plt.yticks(np.arange(len(pivot.index)), pivot.index)
-        if scaled:
-            if "ymax" in v and app in v["ymax"]:
-                plt.clim(0, v["ymax"][app])
+        for i, (k, v) in enumerate(zip(values.keys(), values.values())):
+            plt.subplot(4, 5, i + 1)
+            pivot = df_layout.pivot(index="before", columns="after", values=k)
+            plt.imshow(pivot, cmap=v["colormap"], aspect="auto", origin="lower")
+            plt.colorbar(label=v["label"])
+            plt.xlabel(r"Number of double data members $\bf{after}$")
+            plt.ylabel(r"Number of double data members $\bf{before}$")
+            plt.title(f"{v['label']}")
+            plt.xticks(np.arange(len(pivot.columns)), pivot.columns)
+            plt.yticks(np.arange(len(pivot.index)), pivot.index)
+            if scaled and "ymax" in v and app in v["ymax"]:
+                plt.clim([0, v["ymax"][app]])
             else:
-                plt.clim(0, 1)
-        else:
-            plt.clim(vmin=0)
-        plt.tight_layout()
+                plt.clim(vmin=0)
+            plt.tight_layout()
 
-    plt.savefig(f"images/heatmap_{layout}_nmembers_{app}{'_scaled' if scaled else ''}.png", bbox_inches="tight")
-    plt.close()
+        for i, (k, v) in enumerate(zip(derived_values.keys(), derived_values.values())):
+            plt.subplot(4, 5, i + 16)
+            df_layout[k] = v["formula"](df_layout)
+            pivot = df_layout.pivot(index="before", columns="after", values=k)
+            plt.imshow(pivot, cmap=v["colormap"], aspect="auto", origin="lower")
+            plt.colorbar(label=v["label"])
+            plt.xlabel(r"Number of double data members $\bf{after}$")
+            plt.ylabel(r"Number of double data members $\bf{before}$")
+            plt.title(f"{v['label']}")
+            plt.xticks(np.arange(len(pivot.columns)), pivot.columns)
+            plt.yticks(np.arange(len(pivot.index)), pivot.index)
+            if scaled:
+                if "ymax" in v and app in v["ymax"]:
+                    plt.clim(0, v["ymax"][app])
+                else:
+                    plt.clim(0, 1)
+            else:
+                plt.clim(vmin=0)
+            plt.tight_layout()
+
+        plt.savefig(f"images/heatmap_{layout}_nmembers_{app}{'_scaled' if scaled else ''}.png", bbox_inches="tight")
+        plt.close()
 
 
 def plot_stride_lines(app):
     plt.figure(figsize=(25, 15))
     plt.suptitle(f"Invariant Mass with different Loop Strides", y=1.02, fontsize=16)
 
-    for layout in ["aos", "soa"]:
-        suffix = f"{app}_{layout}"
-        if not os.path.exists(f"perf_output_{suffix}.csv"):
-            print(f"File perf_output_{suffix}.csv does not exist. Skipping...")
-            continue
+    suffix = f"{app}"
+    if not os.path.exists(f"perf_output_{suffix}.csv"):
+        print(f"File perf_output_{suffix}.csv does not exist. Skipping...")
+        return
 
-        with open(f"perf_output_{suffix}.csv", "r") as f:
-            df = pd.read_csv(f)
+    with open(f"perf_output_{suffix}.csv", "r") as f:
+        df = pd.read_csv(f)
+
+    for layout in ["aos", "soa"]:
+        df_layout = df[df["version"] == f"{layout}_manual"].copy()
 
         for i, (k, v) in enumerate(zip(values.keys(), values.values())):
             plt.subplot(4, 5, i + 1)
-            plt.plot(df["stride"], df[k], marker="o", label=layout.upper())
+            plt.plot(df_layout["stride"], df_layout[k], marker="o", label=layout.upper())
             plt.xlabel("Loop stride")
             plt.ylabel(v["label"])
             plt.legend()
@@ -215,9 +220,9 @@ def plot_stride_lines(app):
 
         # derived values
         for i, (k, v) in enumerate(zip(derived_values.keys(), derived_values.values())):
-            df[k] = v["formula"](df)
+            df_layout[k] = v["formula"](df_layout)
             plt.subplot(4, 5, i + 16)
-            plt.plot(df["stride"], df[k], marker="o", label=layout.upper())
+            plt.plot(df_layout["stride"], df_layout[k], marker="o", label=layout.upper())
             plt.xlabel("Loop stride")
             plt.ylabel(v["label"])
             plt.legend()
@@ -231,17 +236,16 @@ def plot_stride_lines(app):
 
 if __name__ == "__main__":
     for app in ["stcl", "im", "nbody"]:
-        for layout in ["aos", "soa"]:
-            for scaled in [False, True]:
-                suffix = f"nmembers_{app}_{layout}"
-                if not os.path.exists(f"perf_output_{suffix}.csv"):
-                    print(f"File perf_output_{suffix}.csv does not exist. Skipping...")
-                    continue
+        for scaled in [False, True]:
+            suffix = f"nmembers_{app}"
+            if not os.path.exists(f"perf_output_{suffix}.csv"):
+                print(f"File perf_output_{suffix}.csv does not exist. Skipping...")
+                continue
 
-                with open(f"perf_output_{suffix}.csv", "r") as f:
-                    df = pd.read_csv(f)
+            with open(f"perf_output_{suffix}.csv", "r") as f:
+                df = pd.read_csv(f)
 
-                plot_nmembers_heatmaps(df, layout, app, scaled)
+            plot_nmembers_heatmaps(df, app, scaled)
 
     app = "stride_im"
     plot_stride_lines(app)

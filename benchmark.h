@@ -35,7 +35,7 @@ constexpr std::size_t N_Large[] = {10000, 100000, 1000000, 10000000, 100000000};
 constexpr size_t Alignment = 128;
 
 constexpr size_t N_im = 10000000;
-constexpr size_t N_stencil = 100000;
+constexpr size_t N_stencil = 10000000;
 constexpr size_t N_nbody = 10000;
 
 // clang-format off
@@ -612,7 +612,7 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State &state)
     }
 
     std::vector<double> results(n);
-    size_t stride = 64;
+    size_t stride = 11;
     for (auto _ : state) {
 #pragma clang loop vectorize(assume_safety)
         for (size_t start = 0; start < stride; ++start) {
