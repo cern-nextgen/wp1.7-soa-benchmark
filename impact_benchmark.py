@@ -7,17 +7,20 @@ from itertools import product
 import numpy as np
 
 events = [
+    "instructions",
     "fp_arith_inst_retired.scalar",
     "fp_arith_inst_retired.vector",
-    "cache-references",
-    "cache-misses",
-    "alignment-faults",
+    "cpu-cycles",
+    "L1-icache-load-misses",
+    "L1-dcache-loads",
+    "L1-dcache-load-misses",
+    "cycle_activity.stalls_l1d_miss",
+    "cache-misses", # l2 misses
+    "mem_inst_retired.all_loads",
     "branch-misses",
     "branch-instructions",
-    "bus-cycles",
-    "cpu-cycles",
-    "major-faults",
-    "minor-faults",
+    "frontend_retired.latency_ge_1",
+    "resource_stalls.any",
 ]
 
 ##
@@ -352,7 +355,7 @@ def experiment_stride(output_file, app="im"):
         raise ValueError(f"Unknown app: {app}")
 
     header = (
-        "version,stride,{},runtime_mean,runtime_stddev\n".format(
+        "version,stride,runtime_mean,runtime_stddev,{}\n".format(
             ",".join(events)
         )
     )
@@ -375,9 +378,9 @@ def experiment_stride(output_file, app="im"):
                     "{},{},{},{},{}\n".format(
                         exe,
                         stride,
-                        ",".join([c[0] for c in perf_ctrs]),
                         df_mean["real_time"],
                         df_std["real_time"],
+                        ",".join([c[0] for c in perf_ctrs]),
                     )
                 )
 
@@ -386,7 +389,7 @@ def experiment_nmembers(output_file, app="im"):
     after_list = range(0, 25)
 
     header = (
-        "version,before,after,{},runtime_mean,runtime_stddev\n".format(
+        "version,before,after,runtime_mean,runtime_stddev,{}\n".format(
             ",".join(events)
         )
     )
@@ -420,9 +423,9 @@ def experiment_nmembers(output_file, app="im"):
                         exe,
                         ib,
                         ia,
-                        ",".join([c[0] for c in perf_ctrs]),
                         df_mean["real_time"],
                         df_std["real_time"],
+                        ",".join([c[0] for c in perf_ctrs]),
                     )
                 )
 
