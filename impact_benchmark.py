@@ -429,9 +429,48 @@ def experiment_nmembers(output_file, app="im"):
                     )
                 )
 
+def experiment_nmembers_stride(output_file, app="im"):
+    before_list = range(0, 17)
+    after_list = range(0, 17)
+    stride_list = range(1, 17)
 
+    header = (
+        "version,before,after,stride,runtime_mean,runtime_stddev,{}\n".format(
+            ",".join(events)
+        )
+    )
+    if not os.path.exists(output_file):
+        with open(output_file, "w") as f:
+            f.write(header)
+
+    for ib, ia, stride in product(before_list, after_list, stride_list):
+        if app == "im":
+            modify_stride_invariantmass(stride)
+            modify_pxpyzpm_aos_manual(ib, ia)
+            modify_pxpyzpm_soa_manual(ib, ia)
+            filter = "BM_InvariantMass"
+        else:
+            raise ValueError(f"App not supported: {app}")
+
+        aos_results, soa_results = get_results(events, filter)
+
+        for exe, df_mean, df_std, perf_ctrs in [aos_results, soa_results]:
+            with open(output_file, "a") as f:
+                f.write(
+                    "{},{},{},{},{},{},{}\n".format(
+                        exe,
+                        ib,
+                        ia,
+                        stride,
+                        df_mean["real_time"],
+                        df_std["real_time"],
+                        ",".join([c[0] for c in perf_ctrs]),
+                    )
+                )
+                
 if __name__ == "__main__":
-    experiment_nmembers("perf_output_nmembers_im.csv", "im")
-    experiment_stride("perf_output_stride_im.csv", "im")
-    experiment_nmembers("perf_output_nmembers_stcl.csv", "stcl")
-    experiment_nmembers("perf_output_nmembers_nbody.csv", "nbody")
+    # experiment_nmembers("perf_output_nmembers_im.csv", "im")
+    # experiment_stride("perf_output_stride_im.csv", "im")
+    # experiment_nmembers("perf_output_nmembers_stcl.csv", "stcl")
+    # experiment_nmembers("perf_output_nmembers_nbody.csv", "nbody")
+    experiment_nmembers_stride("perf_output_nmembers_stride_im.csv", "im")
