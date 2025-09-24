@@ -110,7 +110,7 @@ def modify_stride_invariantmass(stride):
         lines = f.readlines()
 
     # Replace line 94 (index 93) with new content
-    lines[614] = f"    size_t stride = {stride};\n"
+    lines[615] = f"    size_t stride = {stride};\n"
 
     # Write back to the file
     with open("benchmark.h", "w") as f:
@@ -467,7 +467,7 @@ def experiment_nmembers_stride(output_file, app="im"):
                         ",".join([c[0] for c in perf_ctrs]),
                     )
                 )
-                
+
 if __name__ == "__main__":
     # experiment_nmembers("perf_output_nmembers_im.csv", "im")
     # experiment_stride("perf_output_stride_im.csv", "im")

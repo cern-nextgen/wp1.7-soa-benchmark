@@ -609,10 +609,11 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State &state)
         MEMBER_ACCESS(v2, x, i) = rand_double();
         MEMBER_ACCESS(v2, y, i) = rand_double();
         MEMBER_ACCESS(v2, z, i) = rand_double();
+        MEMBER_ACCESS(v2, M, i) = rand_double();
     }
 
     std::vector<double> results(n);
-    size_t stride = 11;
+    size_t stride = 5;
     for (auto _ : state) {
 #pragma clang loop vectorize(assume_safety)
         for (size_t start = 0; start < stride; ++start) {
