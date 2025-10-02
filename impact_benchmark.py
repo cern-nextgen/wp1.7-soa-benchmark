@@ -15,7 +15,7 @@ events = [
     "L1-dcache-loads",
     "L1-dcache-load-misses",
     "cycle_activity.stalls_l1d_miss",
-    "cache-misses", # l2 misses
+    "cache-misses",  # l2 misses
     "mem_inst_retired.all_loads",
     "branch-misses",
     "branch-instructions",
@@ -23,9 +23,15 @@ events = [
     "resource_stalls.any",
 ]
 
+precompiled_dir = "/data/soa-benchmark-results/251002/bin"
+N_im = 10000000
+N_stencil = 10000000
+N_nbody = 10000
+
 ##
 # File modification functions
 ##
+
 
 def modify_pxpyzpm_aos_manual(ib, ia):
     """
@@ -47,9 +53,6 @@ def modify_pxpyzpm_aos_manual(ib, ia):
     with open("aos_manual.cpp", "w") as f:
         f.writelines(lines)
 
-    result = subprocess.run(["make", "aos_manual"], capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
 
 def modify_pxpyzpm_soa_manual(ib, ia):
     """
@@ -58,17 +61,21 @@ def modify_pxpyzpm_soa_manual(ib, ia):
     ib_defs = "\tdouble" if ib > 0 else ""
     ib_cstrct = ""
     for b in range(ib):
-        ib_defs += f"{',' if b > 0 else ''} *__restrict__ b{b}{';' if b == ib-1 else ''}"
+        ib_defs += (
+            f"{',' if b > 0 else ''} *__restrict__ b{b}{';' if b == ib-1 else ''}"
+        )
         ib_cstrct += f"\t\tb{b} = reinterpret_cast<double *__restrict__>(buf + offset);\n\t\toffset += align_size(n * sizeof(double));\n"
     ia_defs = "\tdouble" if ia > 0 else ""
     ia_cstrct = ""
     for b in range(ia):
-        ia_defs += f"{',' if b > 0 else ''} *__restrict__ a{b}{';' if b == ia-1 else ''}"
+        ia_defs += (
+            f"{',' if b > 0 else ''} *__restrict__ a{b}{';' if b == ia-1 else ''}"
+        )
         ia_cstrct += f"\t\ta{b} = reinterpret_cast<double *__restrict__>(buf + offset);\n\t\toffset += align_size(n * sizeof(double));\n"
 
     with open("pxpypzm.h", "w") as f:
         f.write(
-f"""
+            f"""
 struct PxPyPzM {{
 {ib_defs}
     double *__restrict__ x, *__restrict__ y, *__restrict__ z, *__restrict__ M;
@@ -89,11 +96,8 @@ struct PxPyPzM {{
 {ia_cstrct}
     }}
 }};
-""")
-
-    result = subprocess.run(["make", "soa_manual"], capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
+"""
+        )
 
 
 def modify_stride_invariantmass(stride):
@@ -116,10 +120,6 @@ def modify_stride_invariantmass(stride):
     with open("benchmark.h", "w") as f:
         f.writelines(lines)
 
-    # Recompile the executable
-    result = subprocess.run(["make", "aos_manual", "soa_manual"], capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
 
 def modify_sstencil_aos_manual(ib, ia):
     """
@@ -141,10 +141,6 @@ def modify_sstencil_aos_manual(ib, ia):
     with open("aos_manual.cpp", "w") as f:
         f.writelines(lines)
 
-    result = subprocess.run(["make", "aos_manual"], capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
-
 
 def modify_sstencil_soa_manual(ib, ia):
     """
@@ -153,17 +149,21 @@ def modify_sstencil_soa_manual(ib, ia):
     ib_defs = "\tdouble" if ib > 0 else ""
     ib_cstrct = ""
     for b in range(ib):
-        ib_defs += f"{',' if b > 0 else ''} *__restrict__  b{b}{';' if b == ib-1 else ''}"
+        ib_defs += (
+            f"{',' if b > 0 else ''} *__restrict__  b{b}{';' if b == ib-1 else ''}"
+        )
         ib_cstrct += f"\t\tb{b} = reinterpret_cast<double *__restrict__>(buf + offset);\n\t\toffset += align_size(n * sizeof(double));\n"
     ia_defs = "\tdouble" if ia > 0 else ""
     ia_cstrct = ""
     for b in range(ia):
-        ia_defs += f"{',' if b > 0 else ''} *__restrict__  a{b}{';' if b == ia-1 else ''}"
+        ia_defs += (
+            f"{',' if b > 0 else ''} *__restrict__  a{b}{';' if b == ia-1 else ''}"
+        )
         ia_cstrct += f"\t\ta{b} = reinterpret_cast<double *__restrict__>(buf + offset);\n\t\toffset += align_size(n * sizeof(double));\n"
 
     with open("sstencil.h", "w") as f:
         f.write(
-f"""
+            f"""
 struct Sstencil {{
 {ib_defs}
     double *__restrict__ src, *__restrict__ dst, *__restrict__ rhs;
@@ -182,11 +182,9 @@ struct Sstencil {{
 {ia_cstrct}
     }}
 }};
-""")
+"""
+        )
 
-    result = subprocess.run(["make", "soa_manual"], capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
 
 def modify_nbody_aos_manual(ib, ia):
     """
@@ -209,9 +207,6 @@ def modify_nbody_aos_manual(ib, ia):
     with open("aos_manual.cpp", "w") as f:
         f.writelines(lines)
 
-    result = subprocess.run(["make", "aos_manual"], capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
 
 def modify_nbody_soa_manual(ib, ia):
     """
@@ -220,17 +215,21 @@ def modify_nbody_soa_manual(ib, ia):
     ib_defs = "\tfloat" if ib > 0 else ""
     ib_cstrct = ""
     for b in range(ib):
-        ib_defs += f"{',' if b > 0 else ''} *__restrict__  b{b}{';' if b == ib-1 else ''}"
+        ib_defs += (
+            f"{',' if b > 0 else ''} *__restrict__  b{b}{';' if b == ib-1 else ''}"
+        )
         ib_cstrct += f"\t\tb{b} = reinterpret_cast<float *__restrict__>(buf + offset);\n\t\toffset += align_size(n * sizeof(float));\n"
     ia_defs = "\tfloat" if ia > 0 else ""
     ia_cstrct = ""
     for b in range(ia):
-        ia_defs += f"{',' if b > 0 else ''} *__restrict__  a{b}{';' if b == ia-1 else ''}"
+        ia_defs += (
+            f"{',' if b > 0 else ''} *__restrict__  a{b}{';' if b == ia-1 else ''}"
+        )
         ia_cstrct += f"\t\ta{b} = reinterpret_cast<float *__restrict__>(buf + offset);\n\t\toffset += align_size(n * sizeof(float));\n"
 
     with open("snbody.h", "w") as f:
         f.write(
-f"""
+            f"""
 struct Snbody {{
 {ib_defs}
     float *__restrict__ x, *__restrict__ y, *__restrict__ z;
@@ -256,20 +255,36 @@ struct Snbody {{
 {ia_cstrct}
     }}
 }};
-""")
+"""
+        )
 
-    result = subprocess.run(["make", "soa_manual"], capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
+
+def modify_N(app, N):
+    with open("benchmark.h", "r") as f:
+        lines = f.readlines()
+
+    if app == "im":
+        lines[36] = f"constexpr size_t N_im = {N};\n"
+    elif app == "stcl":
+        lines[37] = f"constexpr size_t N_stencil = {N};\n"
+    elif app == "nbody":
+        lines[38] = f"constexpr size_t N_nbody = {N};\n"
+    else:
+        raise ValueError(f"Unknown app: {app}")
+
+    with open("benchmark.h", "w") as f:
+        f.writelines(lines)
+
 
 ###
 # Helper functions
 ##
 
-def get_results(events, filter):
-    def run_exe(events, filter):
+
+def get_results(events, filter, exe=["aos_manual", "soa_manual"]):
+    def run_exe(events, filter, exe):
         p = []
-        for c, exe in enumerate(["aos_manual", "soa_manual"]):
+        for c, exe in enumerate(exe):
             cmd = [
                 "likwid-pin",
                 "-C",
@@ -286,7 +301,9 @@ def get_results(events, filter):
                 "--benchmark_format=csv",
                 f"--benchmark_filter={filter}",
             ]
-            p.append(subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+            p.append(
+                subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            )
 
         aos_result = p[0].communicate()
         soa_result = p[1].communicate()
@@ -297,9 +314,7 @@ def get_results(events, filter):
         return aos_result, soa_result
 
     def process_df(stdout):
-        selected_lines = [
-            stdout.splitlines()[i] for i in [0, 1, 3, 5, 7]
-        ]
+        selected_lines = [stdout.splitlines()[i] for i in [0, 1, 3, 5, 7]]
         df = pd.read_csv(StringIO("\n".join(selected_lines)))
         df_mean = df.mean(numeric_only=True)
         df_std = df.std(numeric_only=True)
@@ -307,7 +322,10 @@ def get_results(events, filter):
 
     def process_perfctrs(stderr, n_ctrs):
         lines = stderr.splitlines()
-        perf_line_idx = next((i for i, line in enumerate(lines) if "Performance counter stats" in line), -1)
+        perf_line_idx = next(
+            (i for i, line in enumerate(lines) if "Performance counter stats" in line),
+            -1,
+        )
         perf_ctrs = [
             l.replace(",", "").split()
             for l in lines[perf_line_idx + 2 : perf_line_idx + n_ctrs + 2]
@@ -315,7 +333,7 @@ def get_results(events, filter):
         return perf_ctrs
 
     # Max number of supported hardware counters is 7
-    aos_result, soa_result = run_exe(events[:7], filter)
+    aos_result, soa_result = run_exe(events[:7], filter, exe)
 
     df_mean_aos, df_std_aos = process_df(aos_result[0].decode())
     perf_ctrs_aos = process_perfctrs(aos_result[1].decode(), 7)
@@ -326,51 +344,141 @@ def get_results(events, filter):
     # If more than 7 hardware counters, run multiple times
     for ie in range(7, len(events), 7):
         n_ctrs = min(7, len(events) - ie)
-        aos_result, soa_result = run_exe(events[ie : ie + n_ctrs], filter)
+        aos_result, soa_result = run_exe(events[ie : ie + n_ctrs], filter, exe)
         new_perf_ctrs_aos = process_perfctrs(aos_result[1].decode(), n_ctrs)
         new_perf_ctrs_soa = process_perfctrs(soa_result[1].decode(), n_ctrs)
         perf_ctrs_aos.extend(new_perf_ctrs_aos)
         perf_ctrs_soa.extend(new_perf_ctrs_soa)
 
-    return ('aos_manual', df_mean_aos, df_std_aos, perf_ctrs_aos), ('soa_manual', df_mean_soa, df_std_soa, perf_ctrs_soa)
+    return ("aos_manual", df_mean_aos, df_std_aos, perf_ctrs_aos), (
+        "soa_manual",
+        df_mean_soa,
+        df_std_soa,
+        perf_ctrs_soa,
+    )
+
+
+###
+
+
+def modify_stride(app, stride):
+    if app == "im":
+        modify_pxpyzpm_aos_manual(0, 0)
+        modify_pxpyzpm_soa_manual(0, 0)
+        modify_stride_invariantmass(stride)
+    else:
+        f"Stride experiment is only implemented for invariant mass."
+
+    # Recompile the executables
+    result = subprocess.run(
+        ["make", "aos_manual", "soa_manual"], capture_output=True, text=True
+    )
+    print(result.stdout)
+    print(result.stderr)
+
+
+def modify_nmembers(app, ib, ia):
+    if app == "im":
+        modify_stride_invariantmass(1)
+        modify_pxpyzpm_aos_manual(ib, ia)
+        modify_pxpyzpm_soa_manual(ib, ia)
+    elif app == "stcl":
+        modify_sstencil_aos_manual(ib, ia)
+        modify_sstencil_soa_manual(ib, ia)
+    elif app == "nbody":
+        modify_nbody_aos_manual(ib, ia)
+        modify_nbody_soa_manual(ib, ia)
+    else:
+        raise ValueError(f"Unknown app: {app}")
+
+    # Recompile the executables
+    result = subprocess.run(
+        ["make", "aos_manual", "soa_manual"], capture_output=True, text=True
+    )
+    print(result.stdout)
+    print(result.stderr)
+
+
+def modify_nmembers_stride(app, ib, ia, stride):
+    if app == "im":
+        modify_stride_invariantmass(stride)
+        modify_pxpyzpm_aos_manual(ib, ia)
+        modify_pxpyzpm_soa_manual(ib, ia)
+    else:
+        raise ValueError(f"App not supported: {app}")
+
+    # Recompile the executables
+    result = subprocess.run(
+        ["make", "aos_manual", "soa_manual"], capture_output=True, text=True
+    )
+    print(result.stdout)
+    print(result.stderr)
+
+
+def get_filter(app):
+    if app == "im":
+        filter = "BM_InvariantMass"
+        modify_N("im", N_im)
+    elif app == "stcl":
+        filter = "BM_stencil"
+    elif app == "nbody":
+        filter = "BM_nbody"
+    else:
+        raise ValueError(f"Unknown app: {app}")
+    return filter
+
 
 ###
 # Experiment functions
 ##
 
-def experiment_stride(output_file, app="im"):
-    if app == "im":
-        modify_pxpyzpm_aos_manual(0, 0)
-        modify_pxpyzpm_soa_manual(0, 0)
-        filter = "BM_InvariantMass"
-    elif app == "stcl":
-        modify_sstencil_aos_manual(0, 0)
-        modify_sstencil_soa_manual(0, 0)
-        filter = "BM_stencil"
-    elif app == "nbody":
-        modify_nbody_aos_manual(0, 0)
-        modify_nbody_soa_manual(0, 0)
-        filter = "BM_nbody"
-    else:
-        raise ValueError(f"Unknown app: {app}")
 
-    header = (
-        "version,stride,runtime_mean,runtime_stddev,{}\n".format(
-            ",".join(events)
-        )
-    )
+def experiment_stride(output_file, app="im", precompiled=False, wrap=True):
+    header = "version,stride,runtime_mean,runtime_stddev,{}\n".format(",".join(events))
     if not os.path.exists(output_file):
         with open(output_file, "w") as f:
             f.write(header)
 
+    filter = get_filter(app) # also sets N_im
+
     stride_list = range(1, 65)
     for stride in stride_list:
-        if app == "im":
-            modify_stride_invariantmass(stride)
+        if precompiled:
+            aos_results, soa_results = get_results(
+                events,
+                filter,
+                exe=[
+                    os.path.join(precompiled_dir, f"aos_manual_0_0_{stride}"),
+                    os.path.join(precompiled_dir, f"soa_manual_0_0_{stride}"),
+                ],
+            )
         else:
-            raise ValueError(f"Stride experiment is only implemented for invariant mass.")
+            # WARNING: assumes app = im
+            if not wrap:
+                modify_N("im", N_im * stride)
 
-        aos_results, soa_results = get_results(events, filter)
+            modify_stride(app, stride)
+
+            subprocess.run(
+                [
+                    "cp",
+                    "aos_manual",
+                    os.path.join(precompiled_dir, f"aos_manual_0_0_{stride}"),
+                ],
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                [
+                    "cp",
+                    "soa_manual",
+                    os.path.join(precompiled_dir, f"soa_manual_0_0_{stride}"),
+                ],
+                capture_output=True,
+                text=True,
+            )
+
+            aos_results, soa_results = get_results(events, filter)
 
         for exe, df_mean, df_std, perf_ctrs in [aos_results, soa_results]:
             with open(output_file, "a") as f:
@@ -384,37 +492,52 @@ def experiment_stride(output_file, app="im"):
                     )
                 )
 
-def experiment_nmembers(output_file, app="im"):
+
+def experiment_nmembers(output_file, app="im", precompiled=False):
     before_list = range(0, 25)
     after_list = range(0, 25)
+    filter = get_filter(app)
 
-    header = (
-        "version,before,after,runtime_mean,runtime_stddev,{}\n".format(
-            ",".join(events)
-        )
+    header = "version,before,after,runtime_mean,runtime_stddev,{}\n".format(
+        ",".join(events)
     )
     if not os.path.exists(output_file):
         with open(output_file, "w") as f:
             f.write(header)
 
     for ib, ia in product(before_list, after_list):
-        if app == "im":
-            modify_stride_invariantmass(1)
-            modify_pxpyzpm_aos_manual(ib, ia)
-            modify_pxpyzpm_soa_manual(ib, ia)
-            filter = "BM_InvariantMass"
-        elif app == "stcl":
-            modify_sstencil_aos_manual(ib, ia)
-            modify_sstencil_soa_manual(ib, ia)
-            filter = "BM_stencil"
-        elif app == "nbody":
-            modify_nbody_aos_manual(ib, ia)
-            modify_nbody_soa_manual(ib, ia)
-            filter = "BM_nbody"
+        if precompiled:
+            aos_results, soa_results = get_results(
+                events,
+                filter,
+                exe=[
+                    os.path.join(precompiled_dir, f"aos_manual_{ib}_{ia}_1"),
+                    os.path.join(precompiled_dir, f"soa_manual_{ib}_{ia}_1"),
+                ],
+            )
         else:
-            raise ValueError(f"Unknown app: {app}")
+            modify_nmembers(app, ib, ia)
 
-        aos_results, soa_results = get_results(events, filter)
+            subprocess.run(
+                [
+                    "cp",
+                    "aos_manual",
+                    os.path.join(precompiled_dir, f"aos_manual_{ib}_{ia}_1"),
+                ],
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                [
+                    "cp",
+                    "soa_manual",
+                    os.path.join(precompiled_dir, f"soa_manual_{ib}_{ia}_1"),
+                ],
+                capture_output=True,
+                text=True,
+            )
+
+            aos_results, soa_results = get_results(events, filter)
 
         for exe, df_mean, df_std, perf_ctrs in [aos_results, soa_results]:
             with open(output_file, "a") as f:
@@ -429,30 +552,62 @@ def experiment_nmembers(output_file, app="im"):
                     )
                 )
 
-def experiment_nmembers_stride(output_file, app="im"):
+
+def experiment_nmembers_stride(output_file, app="im", precompiled=False):
     before_list = range(0, 17)
     after_list = range(0, 17)
     stride_list = range(1, 17)
+    filter = get_filter(app)
 
-    header = (
-        "version,before,after,stride,runtime_mean,runtime_stddev,{}\n".format(
-            ",".join(events)
-        )
+    header = "version,before,after,stride,runtime_mean,runtime_stddev,{}\n".format(
+        ",".join(events)
     )
     if not os.path.exists(output_file):
         with open(output_file, "w") as f:
             f.write(header)
 
-    for ib, ia, stride in product(before_list, after_list, stride_list):
-        if app == "im":
-            modify_stride_invariantmass(stride)
-            modify_pxpyzpm_aos_manual(ib, ia)
-            modify_pxpyzpm_soa_manual(ib, ia)
-            filter = "BM_InvariantMass"
-        else:
-            raise ValueError(f"App not supported: {app}")
+    # Divide the total combinations into 4 roughly equal chunks for parallel processing
+    all_combinations = list(product(before_list, after_list, stride_list))
+    n_chunks = 4
+    chunk_size = (len(all_combinations) + n_chunks - 1) // n_chunks  # ceil division
 
-        aos_results, soa_results = get_results(events, filter)
+    # Get the chunk index from environment variable or default to 0
+    chunk_idx = 0
+    chunk = all_combinations[chunk_idx * chunk_size : (chunk_idx + 1) * chunk_size]
+
+    for ib, ia, stride in chunk:
+        if precompiled:
+            aos_results, soa_results = get_results(
+                events,
+                filter,
+                exe=[
+                    os.path.join(precompiled_dir, f"aos_manual_{ib}_{ia}_{stride}"),
+                    os.path.join(precompiled_dir, f"soa_manual_{ib}_{ia}_{stride}"),
+                ],
+            )
+        else:
+            modify_nmembers_stride(app, ib, ia, stride)
+
+            subprocess.run(
+                [
+                    "cp",
+                    "aos_manual",
+                    os.path.join(precompiled_dir, f"aos_manual_{ib}_{ia}_{stride}"),
+                ],
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                [
+                    "cp",
+                    "soa_manual",
+                    os.path.join(precompiled_dir, f"soa_manual_{ib}_{ia}_{stride}"),
+                ],
+                capture_output=True,
+                text=True,
+            )
+
+            aos_results, soa_results = get_results(events, filter)
 
         for exe, df_mean, df_std, perf_ctrs in [aos_results, soa_results]:
             with open(output_file, "a") as f:
@@ -469,8 +624,8 @@ def experiment_nmembers_stride(output_file, app="im"):
                 )
 
 if __name__ == "__main__":
-    # experiment_nmembers("perf_output_nmembers_im.csv", "im")
-    # experiment_stride("perf_output_stride_im.csv", "im")
+    # experiment_nmembers("perf_output_nmembers_im.csv", "im", True)
+    experiment_stride("perf_output_stride_im.csv", "im", precompiled=False, wrap=False)
     # experiment_nmembers("perf_output_nmembers_stcl.csv", "stcl")
     # experiment_nmembers("perf_output_nmembers_nbody.csv", "nbody")
-    experiment_nmembers_stride("perf_output_nmembers_stride_im.csv", "im")
+    # experiment_nmembers_stride("perf_output_nmembers_stride_im.csv", "im")
