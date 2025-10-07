@@ -6,6 +6,7 @@ from io import StringIO
 import os
 from itertools import product
 import numpy as np
+from datetime import datetime
 
 events = [
     "instructions",
@@ -28,6 +29,8 @@ precompiled_dir = "/data/soa-benchmark-results/251007/bin"
 N_im = 10000000
 N_stencil = 10000000
 N_nbody = 10000
+
+run_datetime = datetime.now().strftime("%y%m%d_%H%M")
 
 ##
 # File modification functions
@@ -293,6 +296,17 @@ def modify_N(app, N):
 ##
 
 
+def log(msg, exe=["aos_manual", "soa_manual"]):
+    for x in exe:
+        with open(f"{run_datetime}_{x}.log", "a") as f:
+            f.write(msg)
+
+
+def compile(exe):
+    result = subprocess.run(["make", exe], capture_output=True, text=True)
+    log(result.stdout + "\n" + result.stderr, [exe])
+
+
 def get_results(events, filter, exe=["aos_manual", "soa_manual"]):
     def run_exe(events, filter, exe):
         p = []
@@ -318,10 +332,15 @@ def get_results(events, filter, exe=["aos_manual", "soa_manual"]):
             )
         aos_result = p[0].communicate()
         soa_result = p[1].communicate()
-        # print(aos_result[1].decode())
-        # print(soa_result[1].decode())
-        # print(aos_result[0].decode())
-        # print(soa_result[0].decode())
+
+        with open(f"{run_datetime}_aos_manual.log", "a") as f_aos:
+            f_aos.write(aos_result[0].decode())
+            f_aos.write(aos_result[1].decode())
+
+        with open(f"{run_datetime}_soa_manual.log", "a") as f_soa:
+            f_soa.write(soa_result[0].decode())
+            f_soa.write(soa_result[1].decode())
+
         return aos_result, soa_result
 
     def process_df(stdout):
@@ -372,21 +391,19 @@ def get_results(events, filter, exe=["aos_manual", "soa_manual"]):
 ###
 
 
-def modify_stride(app, stride, wrap=False):
+def modify_stride(app, stride, compile_now, wrap):
     if app == "im":
         modify_stride_invariantmass(stride, wrap)
     else:
-        f"Stride experiment is only implemented for invariant mass."
+        raise ValueError(f"Stride experiment is only implemented for invariant mass.")
 
     # Recompile the executables
-    result = subprocess.run(
-        ["make", "aos_manual", "soa_manual"], capture_output=True, text=True
-    )
-    print(result.stdout)
-    print(result.stderr)
+    if compile_now:
+        compile("aos_manual")
+        compile("soa_manual")
 
 
-def modify_nmembers(app, ib, ia):
+def modify_nmembers(app, ib, ia, compile_now):
     if app == "im":
         modify_pxpyzpm_aos_manual(ib, ia)
         modify_pxpyzpm_soa_manual(ib, ia)
@@ -399,15 +416,12 @@ def modify_nmembers(app, ib, ia):
     else:
         raise ValueError(f"Unknown app: {app}")
 
-    # Recompile the executables
-    result = subprocess.run(
-        ["make", "aos_manual", "soa_manual"], capture_output=True, text=True
-    )
-    print(result.stdout)
-    print(result.stderr)
+    if compile_now:
+        compile("aos_manual")
+        compile("soa_manual")
 
 
-def modify_nmembers_stride(app, ib, ia, stride):
+def modify_nmembers_stride(app, ib, ia, stride, compile_now):
     if app == "im":
         modify_stride_invariantmass(stride)
         modify_pxpyzpm_aos_manual(ib, ia)
@@ -415,12 +429,9 @@ def modify_nmembers_stride(app, ib, ia, stride):
     else:
         raise ValueError(f"App not supported: {app}")
 
-    # Recompile the executables
-    result = subprocess.run(
-        ["make", "aos_manual", "soa_manual"], capture_output=True, text=True
-    )
-    print(result.stdout)
-    print(result.stderr)
+    if compile_now:
+        compile("aos_manual")
+        compile("soa_manual")
 
 
 def get_filter(app):
@@ -441,7 +452,7 @@ def get_filter(app):
 ##
 
 
-def experiment_stride(output_file, app="im", precompiled=False, wrap=True):
+def experiment_stride(output_file, app, precompiled, wrap):
     header = "version,stride,runtime_mean,runtime_stddev,{}\n".format(",".join(events))
     if not os.path.exists(output_file):
         with open(output_file, "w") as f:
@@ -455,7 +466,7 @@ def experiment_stride(output_file, app="im", precompiled=False, wrap=True):
     stride_list = range(1, 25)
     for stride in stride_list:
         if precompiled:
-            print(f"Using precompiled binaries for stride {stride}")
+            log(f"Using precompiled binaries for {app} with stride {stride} and wrap {wrap}")
             aos_results, soa_results = get_results(
                 events,
                 filter,
@@ -465,8 +476,10 @@ def experiment_stride(output_file, app="im", precompiled=False, wrap=True):
                 ],
             )
         else:
+            log(f"Run {app} with stride {stride} and wrap {wrap}")
+
             # WARNING: assumes app = im
-            modify_stride(app, stride, wrap)
+            modify_stride(app, stride, compile_now=True, wrap=wrap)
 
             subprocess.run(
                 [
@@ -502,7 +515,7 @@ def experiment_stride(output_file, app="im", precompiled=False, wrap=True):
                 )
 
 
-def experiment_nmembers(output_file, app="im", precompiled=False):
+def experiment_nmembers(output_file, app, precompiled):
     before_list = range(0, 25)
     after_list = range(0, 25)
     filter = get_filter(app)
@@ -519,6 +532,8 @@ def experiment_nmembers(output_file, app="im", precompiled=False):
 
     for ib, ia in product(before_list, after_list):
         if precompiled:
+            log(f"Using precompiled binaries for {app} with {ib} before and {ia} after")
+
             aos_results, soa_results = get_results(
                 events,
                 filter,
@@ -528,7 +543,9 @@ def experiment_nmembers(output_file, app="im", precompiled=False):
                 ],
             )
         else:
-            modify_nmembers(app, ib, ia)
+            log(f"Run {app} with {ib} before and {ia} after")
+
+            modify_nmembers(app, ib, ia, compile_now=True)
 
             subprocess.run(
                 [
@@ -589,6 +606,10 @@ def experiment_nmembers_stride(output_file, app="im", precompiled=False):
 
     for ib, ia, stride in chunk:
         if precompiled:
+            log(
+                f"Using precompiled binaries for {app} with {ib} before, {ia} after, and stride {stride}"
+            )
+
             aos_results, soa_results = get_results(
                 events,
                 filter,
@@ -598,7 +619,8 @@ def experiment_nmembers_stride(output_file, app="im", precompiled=False):
                 ],
             )
         else:
-            modify_nmembers_stride(app, ib, ia, stride)
+            log(f"Run {app} with {ib} before, {ia} after, and stride {stride}")
+            modify_nmembers_stride(app, ib, ia, stride, compile_now=True)
 
             subprocess.run(
                 [
@@ -636,9 +658,39 @@ def experiment_nmembers_stride(output_file, app="im", precompiled=False):
                 )
 
 
+def generate_bin(apps, before_list, after_list, stride_list):
+    for ib, ia, stride in product(before_list, after_list, stride_list):
+        print(f"Generate bin for {ib} before, {ia} after, and stride {stride}")
+        for app in apps:
+            if app == "im": modify_stride(app, stride, compile_now=False, wrap=False)
+            modify_nmembers(app, ib, ia, compile_now=True)
+
+        subprocess.run(
+            [
+                "cp",
+                "aos_manual",
+                os.path.join(precompiled_dir, f"aos_manual_{ib}_{ia}_{stride}"),
+            ],
+            capture_output=True,
+            text=True,
+        )
+        subprocess.run(
+            [
+                "cp",
+                "soa_manual",
+                os.path.join(precompiled_dir, f"soa_manual_{ib}_{ia}_{stride}"),
+            ],
+            capture_output=True,
+            text=True,
+        )
+
+
 if __name__ == "__main__":
     # experiment_nmembers("perf_output_nmembers_im.csv", "im", True)
     experiment_stride("perf_output_stride_im.csv", "im", precompiled=False, wrap=False)
     # experiment_nmembers("perf_output_nmembers_stcl.csv", "stcl")
     # experiment_nmembers("perf_output_nmembers_nbody.csv", "nbody")
     # experiment_nmembers_stride("perf_output_nmembers_stride_im.csv", "im")
+
+    # generate_bin(["nbody", "stcl", "im"], range(0, 25), range(0, 25), [1])
+    # generate_bin(["im"], [0], [0], range(1, 38))
