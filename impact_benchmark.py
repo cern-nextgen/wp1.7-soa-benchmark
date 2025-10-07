@@ -1,5 +1,6 @@
 import multiprocessing
 import subprocess
+from matplotlib import lines
 import pandas as pd
 from io import StringIO
 import os
@@ -23,7 +24,7 @@ events = [
     "resource_stalls.any",
 ]
 
-precompiled_dir = "/data/soa-benchmark-results/251002/bin"
+precompiled_dir = "/data/soa-benchmark-results/251007/bin"
 N_im = 10000000
 N_stencil = 10000000
 N_nbody = 10000
@@ -100,7 +101,7 @@ struct PxPyPzM {{
         )
 
 
-def modify_stride_invariantmass(stride):
+def modify_stride_invariantmass(stride, wrap=True):
     """
     ASSUMES that lines 612-616 in benchmark.h are as follows:
         size_t stride = 1;
@@ -110,11 +111,22 @@ def modify_stride_invariantmass(stride):
                 for (size_t i = start; i < n; i += stride) {
     ASSUMES that the benchmark is instantiated in the exe through resetting the nmembers
     """
+    modify_N("im", N_im) if wrap else modify_N("im", N_im * stride)
+
     with open("benchmark.h", "r") as f:
         lines = f.readlines()
 
     # Replace line 94 (index 93) with new content
     lines[615] = f"    size_t stride = {stride};\n"
+
+    if wrap:
+        lines[618] = (
+            "                for (size_t start = 0; start < stride; ++start) { for (size_t i = start; i < n; i += stride) {\n"
+        )
+        lines[662] = "    }}\n"
+    else:
+        lines[618] = "        for (size_t i = 0; i < n; i += stride) {\n"
+        lines[662] = "    }\n"
 
     # Write back to the file
     with open("benchmark.h", "w") as f:
@@ -297,14 +309,13 @@ def get_results(events, filter, exe=["aos_manual", "soa_manual"]):
                 ",".join(events),
                 "-r",
                 "5",
-                f"./{exe}",
+                f"/{exe}",
                 "--benchmark_format=csv",
                 f"--benchmark_filter={filter}",
             ]
             p.append(
                 subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             )
-
         aos_result = p[0].communicate()
         soa_result = p[1].communicate()
         # print(aos_result[1].decode())
@@ -361,11 +372,9 @@ def get_results(events, filter, exe=["aos_manual", "soa_manual"]):
 ###
 
 
-def modify_stride(app, stride):
+def modify_stride(app, stride, wrap=False):
     if app == "im":
-        modify_pxpyzpm_aos_manual(0, 0)
-        modify_pxpyzpm_soa_manual(0, 0)
-        modify_stride_invariantmass(stride)
+        modify_stride_invariantmass(stride, wrap)
     else:
         f"Stride experiment is only implemented for invariant mass."
 
@@ -379,7 +388,6 @@ def modify_stride(app, stride):
 
 def modify_nmembers(app, ib, ia):
     if app == "im":
-        modify_stride_invariantmass(1)
         modify_pxpyzpm_aos_manual(ib, ia)
         modify_pxpyzpm_soa_manual(ib, ia)
     elif app == "stcl":
@@ -439,11 +447,15 @@ def experiment_stride(output_file, app="im", precompiled=False, wrap=True):
         with open(output_file, "w") as f:
             f.write(header)
 
-    filter = get_filter(app) # also sets N_im
+    filter = get_filter(app)  # also sets N_im
 
-    stride_list = range(1, 65)
+    modify_pxpyzpm_aos_manual(0, 0)
+    modify_pxpyzpm_soa_manual(0, 0)
+
+    stride_list = range(1, 25)
     for stride in stride_list:
         if precompiled:
+            print(f"Using precompiled binaries for stride {stride}")
             aos_results, soa_results = get_results(
                 events,
                 filter,
@@ -454,10 +466,7 @@ def experiment_stride(output_file, app="im", precompiled=False, wrap=True):
             )
         else:
             # WARNING: assumes app = im
-            if not wrap:
-                modify_N("im", N_im * stride)
-
-            modify_stride(app, stride)
+            modify_stride(app, stride, wrap)
 
             subprocess.run(
                 [
@@ -497,6 +506,9 @@ def experiment_nmembers(output_file, app="im", precompiled=False):
     before_list = range(0, 25)
     after_list = range(0, 25)
     filter = get_filter(app)
+
+    if app == "im":
+        modify_stride_invariantmass(1)
 
     header = "version,before,after,runtime_mean,runtime_stddev,{}\n".format(
         ",".join(events)
@@ -622,6 +634,7 @@ def experiment_nmembers_stride(output_file, app="im", precompiled=False):
                         ",".join([c[0] for c in perf_ctrs]),
                     )
                 )
+
 
 if __name__ == "__main__":
     # experiment_nmembers("perf_output_nmembers_im.csv", "im", True)

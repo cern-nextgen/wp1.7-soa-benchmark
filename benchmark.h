@@ -34,7 +34,7 @@ constexpr std::size_t N[] = {10, 100, 1000, 10000, 100000};
 constexpr std::size_t N_Large[] = {10000, 100000, 1000000, 10000000, 100000000};
 constexpr size_t Alignment = 128;
 
-constexpr size_t N_im = 10000000;
+constexpr size_t N_im = 240000000;
 constexpr size_t N_stencil = 10000000;
 constexpr size_t N_nbody = 10000;
 
@@ -613,11 +613,10 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State &state)
     }
 
     std::vector<double> results(n);
-    size_t stride = 5;
+    size_t stride = 24;
     for (auto _ : state) {
 #pragma clang loop vectorize(assume_safety)
-        for (size_t start = 0; start < stride; ++start) {
-            for (size_t i = start; i < n; i += stride) {
+        for (size_t i = 0; i < n; i += stride) {
                 // Numerically stable computation of Invariant Masses
                 const auto p1_sq = MEMBER_ACCESS(v1, x, i) * MEMBER_ACCESS(v1, x, i) +
                                    MEMBER_ACCESS(v1, y, i) * MEMBER_ACCESS(v1, y, i) +
@@ -662,8 +661,8 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State &state)
 
                 results[i] = std::sqrt(m1_sq + m2_sq + y * z);
             }
-        }
-    }
+
+}
 
     for (size_t i = 0; i < n; i++) {
         benchmark::DoNotOptimize(results[i]);
