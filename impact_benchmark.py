@@ -7,23 +7,42 @@ import os
 from itertools import product
 import numpy as np
 from datetime import datetime
+import platform
 
-events = [
-    "instructions",
-    "fp_arith_inst_retired.scalar",
-    "fp_arith_inst_retired.vector",
-    "cpu-cycles",
-    "L1-icache-load-misses",
-    "L1-dcache-loads",
-    "L1-dcache-load-misses",
-    "cycle_activity.stalls_l1d_miss",
-    "cache-misses",  # l2 misses
-    "mem_inst_retired.all_loads",
-    "branch-misses",
-    "branch-instructions",
-    "frontend_retired.latency_ge_1",
-    "resource_stalls.any",
-]
+if "amd" in platform.machine().lower():
+    events = [
+        "instructions",
+        "fp_ops_retired_by_type.scalar_all",
+        "fp_ops_retired_by_type.vector_all",
+        "cpu-cycles",
+        "L1-icache-load-misses",
+        "L1-dcache-loads",
+        "L1-dcache-load-misses",
+        "cache-misses",
+        "ls_dispatch.ld_st_dispatch", # Number of memory load-store operations dispatched to the load-store
+        "ex_no_retire.load_not_complete", # Cycles with no retire while the oldest op is waiting for load data
+        "branch-misses",
+        "branch-instructions",
+        "stalled-cycles-frontend",
+        "de_no_dispatch_per_slot.backend_stalls",
+    ]
+else:
+    events = [
+        "instructions",
+        "fp_arith_inst_retired.scalar",
+        "fp_arith_inst_retired.vector",
+        "cpu-cycles",
+        "L1-icache-load-misses",
+        "L1-dcache-loads",
+        "L1-dcache-load-misses",
+        "cache-misses",  # l2 misses
+        "mem_inst_retired.any",
+        "cycle_activity.stalls_mem_any",
+        "branch-misses",
+        "branch-instructions",
+        "frontend_retired.latency_ge_1",
+        "resource_stalls.any",
+    ]
 
 precompiled_dir = "/data/soa-benchmark-results/251007/bin"
 N_im = 10000000
@@ -663,7 +682,10 @@ def generate_bin(apps, before_list, after_list, stride_list):
         print(f"Generate bin for {ib} before, {ia} after, and stride {stride}")
         for app in apps:
             if app == "im": modify_stride(app, stride, compile_now=False, wrap=False)
-            modify_nmembers(app, ib, ia, compile_now=True)
+            modify_nmembers(app, ib, ia, compile_now=False)
+
+        compile("aos_manual")
+        compile("soa_manual")
 
         subprocess.run(
             [
@@ -687,7 +709,7 @@ def generate_bin(apps, before_list, after_list, stride_list):
 
 if __name__ == "__main__":
     # experiment_nmembers("perf_output_nmembers_im.csv", "im", True)
-    experiment_stride("perf_output_stride_im.csv", "im", precompiled=False, wrap=False)
+    experiment_stride("perf_output_stride_im.csv", "im", precompiled=True, wrap=False)
     # experiment_nmembers("perf_output_nmembers_stcl.csv", "stcl")
     # experiment_nmembers("perf_output_nmembers_nbody.csv", "nbody")
     # experiment_nmembers_stride("perf_output_nmembers_stride_im.csv", "im")
