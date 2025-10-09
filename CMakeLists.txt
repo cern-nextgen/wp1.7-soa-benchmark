@@ -52,6 +52,10 @@ if (NOT CXX_FORMAT_SUPPORT)
     add_compile_definitions(USE_FMTLIB_POLYFILL)
 endif()
 
+add_benchmark_executable(aos_boost aos_boost.cpp)
+target_include_directories(aos_boost PUBLIC boost)
+target_link_libraries(aos_boost Boost::boost)
+
 add_benchmark_executable(soa_wrapper soa_wrapper.cpp)
 target_include_directories(soa_wrapper PUBLIC wrapper)
 

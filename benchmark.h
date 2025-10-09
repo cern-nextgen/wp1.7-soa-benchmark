@@ -6,7 +6,9 @@
 #include <benchmark/benchmark.h>
 
 /* AoS-like access (except for the baseline) */
-#ifdef SOA_BOOST
+#ifdef AOS_BOOST
+#define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ[INDEX].MEMBER()
+#elif defined(SOA_BOOST)
 #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ[INDEX].MEMBER()
 #elif defined(SOA_MANUAL)
 #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ.MEMBER[INDEX]
