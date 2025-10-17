@@ -348,6 +348,7 @@ def get_results(events, filter, exe=["aos_manual", "soa_manual"]):
             p.append(
                 subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             )
+            log(" ".join(cmd), ["aos_manual"] if c == 0 else ["soa_manual"])
         aos_result = p[0].communicate()
         soa_result = p[1].communicate()
 
