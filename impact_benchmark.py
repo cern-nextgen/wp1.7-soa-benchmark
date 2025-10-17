@@ -44,7 +44,6 @@ else:
         "resource_stalls.any",
     ]
 
-precompiled_dir = "/data/soa-benchmark-results/251009/bin"
 N_im = 10000000
 N_stencil = 10000000
 N_nbody = 10000
@@ -568,9 +567,9 @@ def experiment_nmembers_stride(output_file, app, precompiled, wrap):
     if app != "im":
         raise ValueError(f"App not supported: {app}")
 
-    before_list = range(0, 17)
-    after_list = range(0, 17)
-    stride_list = range(1, 17)
+    before_list = range(9, 17)
+    after_list = range(9, 17)
+    stride_list = range(9, 17)
     filter = get_filter(app)
 
     header = "version,before,after,stride,runtime_mean,runtime_stddev,{}\n".format(
@@ -582,7 +581,7 @@ def experiment_nmembers_stride(output_file, app, precompiled, wrap):
 
     # Divide the total combinations into 4 roughly equal chunks for parallel processing
     all_combinations = list(product(before_list, after_list, stride_list))
-    n_chunks = 4
+    n_chunks = 1
     chunk_size = (len(all_combinations) + n_chunks - 1) // n_chunks  # ceil division
 
     # Get the chunk index from environment variable or default to 0
@@ -653,15 +652,17 @@ def generate_bin(apps, before_list, after_list, stride_list):
             text=True,
         )
 
+precompiled_dir = "/data/soa-benchmark-results/251017/bin"
 
 if __name__ == "__main__":
     # experiment_nmembers("perf_output_nmembers_im.csv", "im", precompiled=True)
     # experiment_stride("perf_output_stride_im.csv", "im", precompiled=True, wrap=False)
     # experiment_nmembers("perf_output_nmembers_stcl.csv", "stcl", precompiled=True)
     # experiment_nmembers("perf_output_nmembers_nbody.csv", "nbody", precompiled=True)
-    # experiment_nmembers_stride("perf_output_nmembers_stride_im.csv", "im", precompiled=True)
+    # experiment_nmembers_stride("perf_output_nmembers_stride_im.csv", "im", precompiled=True, wrap=False)
 
-    # generate_bin(["nbody", "stcl", "im"], range(0, 25), range(0, 25), [1])
-    # generate_bin(["im"], [0], [0], range(1, 38))
+    generate_bin(["nbody", "stcl", "im"], range(0, 25), range(0, 25), [1])
+    generate_bin(["im"], [0], [0], range(2, 38))
     generate_bin(["im"], range(17), range(17), range(1, 17))
+    # generate_bin(["im"], [0], [0], range(1, 38))
 
