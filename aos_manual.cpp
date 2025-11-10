@@ -1,53 +1,17 @@
 #define AOS_MANUAL
 
-#include <Eigen/Core>
-
 #include "benchmark.h"
 
-struct S2 {
-    int x0, x1;
-};
-
-struct S10 {
-    float x0, x1;
-    double x2, x3;
-    int x4, x5;
-    Eigen::Vector3d x6, x7;
-    Eigen::Matrix3d x8, x9;
-};
-
-struct S32 {
-    float x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x26, x27, x28, x29, x30, x31;
-};
-
-struct S64 {
-    float x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12;
-    double x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25;
-    int x26, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38;
-    Eigen::Vector3d x39, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50;
-    Eigen::Matrix3d x51, x52, x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63;
-};
-
 struct Snbody {
-	double x, y, z, vx, vy, vz, a0, a1;
+	double b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17, b18, b19, b20, b21, b22, b23, x, y, z, vx, vy, vz, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23;
 };
 
 struct Sstencil {
-	double src, dst, rhs, a0;
+	double b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17, b18, b19, b20, b21, b22, b23, src, dst, rhs, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23;
 };
 
 struct Particle {
-    // unused members
 	double x, y, z, M;
-
-    // unused members
-    // double fX, fY, fZ, fM;
-
-    // position covariance 3x3 matrix
-    // double momcovmatrix[9];    // momentum covariance 3x3 matrix
-    // double posmomcovmatrix[12]; // position-momentum covariance 4x3 matrix
-    // double measuredMass;
-    // double measuredMassErr;
 };
 
 /// Register Benchmarks ///
@@ -58,13 +22,6 @@ class Fixture1 : public benchmark::Fixture {
     S t[n];
 };
 
-// INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2, N_Large);
-// INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2, N);
-// INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10, N);
-// INSTANTIATE_BENCHMARKS_F1(BM_CPUStrided, S32, N_Large);
-// INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64, N);
-// INSTANTIATE_BENCHMARKS_F1(BM_nbody, Snbody, N);
-// INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencil, N_Large);
 
 template <typename S1, typename S2, typename N>
 class Fixture2 : public benchmark::Fixture {
@@ -73,8 +30,6 @@ class Fixture2 : public benchmark::Fixture {
     S1 t1[n];
     S2 t2[n];
 };
-
-// INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, Particle, Particle, N_Large);
 
 BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM_nbody, Snbody, std::integral_constant<size_t, N_nbody>)->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, BM_stencil, Sstencil, std::integral_constant<size_t, N_stencil>)->Unit(benchmark::kMillisecond);

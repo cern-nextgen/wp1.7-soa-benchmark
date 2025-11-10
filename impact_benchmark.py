@@ -57,19 +57,19 @@ run_datetime = datetime.now().strftime("%y%m%d_%H%M")
 
 def modify_pxpyzpm_aos_manual(ib, ia):
     """
-    ASSUMES that line 40 contains all the data members of Particle
+    ASSUMES that line 14 contains all the data members of Particle
     """
     # Read the file
     with open("aos_manual.cpp", "r") as f:
         lines = f.readlines()
 
-    # Replace line 41 (index 40) with new content
+    # Replace line 14 (index 13) with new content
     ib_defs = ia_defs = ""
     for b in range(ib):
         ib_defs += f"b{b}, "
     for a in range(ia):
         ia_defs += f", a{a}"
-    lines[40] = f"\tdouble {ib_defs}x, y, z, M{ia_defs};\n"
+    lines[13] = f"\tdouble {ib_defs}x, y, z, M{ia_defs};\n"
 
     # Write back to the file
     with open("aos_manual.cpp", "w") as f:
@@ -124,7 +124,7 @@ struct PxPyPzM {{
 
 def modify_stride_invariantmass(stride, wrap):
     """
-    ASSUMES that lines 612-616 in benchmark.h are as follows:
+    ASSUMES that lines 207-210 in benchmark.h are as follows:
         size_t stride = 1;
         for (auto _ : state) {
             #pragma clang loop vectorize(assume_safety)
@@ -137,17 +137,17 @@ def modify_stride_invariantmass(stride, wrap):
     with open("benchmark.h", "r") as f:
         lines = f.readlines()
 
-    # Replace line 94 (index 93) with new content
-    lines[615] = f"    size_t stride = {stride};\n"
+    # Replace line 206 (index 205) with new content
+    lines[206] = f"    size_t stride = {stride};\n"
 
     if wrap:
-        lines[618] = (
+        lines[209] = (
             "                for (size_t start = 0; start < stride; ++start) { for (size_t i = start; i < n; i += stride) {\n"
         )
-        lines[662] = "    }}\n"
+        lines[253] = "    }}\n"
     else:
-        lines[618] = "        for (size_t i = 0; i < n; i += stride) {\n"
-        lines[662] = "    }\n"
+        lines[209] = "        for (size_t i = 0; i < n; i += stride) {\n"
+        lines[253] = "    }\n"
 
     # Write back to the file
     with open("benchmark.h", "w") as f:
@@ -156,19 +156,19 @@ def modify_stride_invariantmass(stride, wrap):
 
 def modify_sstencil_aos_manual(ib, ia):
     """
-    ASSUMES that line 36 contains all the data members of Sstencil
+    ASSUMES that line 10 contains all the data members of Sstencil
     """
     # Read the file
     with open("aos_manual.cpp", "r") as f:
         lines = f.readlines()
 
-    # Replace line 36 (index 35) with new content
+    # Replace line 10 (index 9) with new content
     ib_defs = ia_defs = ""
     for b in range(ib):
         ib_defs += f"b{b}, "
     for a in range(ia):
         ia_defs += f", a{a}"
-    lines[35] = f"\tdouble {ib_defs}src, dst, rhs{ia_defs};\n"
+    lines[9] = f"\tdouble {ib_defs}src, dst, rhs{ia_defs};\n"
 
     # Write back to the file
     with open("aos_manual.cpp", "w") as f:
@@ -221,20 +221,20 @@ struct Sstencil {{
 
 def modify_nbody_aos_manual(ib, ia):
     """
-    ASSUMES that line 32 contains all the data members of Snbody
+    ASSUMES that line 6 contains all the data members of Snbody
     """
     # Read the file
     with open("aos_manual.cpp", "r") as f:
         lines = f.readlines()
 
-    # Replace line 32 (index 31) with new content
+    # Replace line 6 (index 5) with new content
     ib_defs = ia_defs = ""
     for b in range(ib):
         ib_defs += f"b{b}, "
     for a in range(ia):
         ia_defs += f", a{a}"
 
-    lines[31] = f"\tdouble {ib_defs}x, y, z, vx, vy, vz{ia_defs};\n"
+    lines[5] = f"\tdouble {ib_defs}x, y, z, vx, vy, vz{ia_defs};\n"
 
     # Write back to the file
     with open("aos_manual.cpp", "w") as f:
@@ -293,15 +293,21 @@ struct Snbody {{
 
 
 def modify_N(app, N):
+    """
+    ASSUMES that lines 22-24 in benchmark.h are as follows:
+    constexpr size_t N_im = 10000000;
+    constexpr size_t N_stencil = 10000000;
+    constexpr size_t N_nbody = 10000;
+    """
     with open("benchmark.h", "r") as f:
         lines = f.readlines()
 
     if app == "im":
-        lines[36] = f"constexpr size_t N_im = {N};\n"
+        lines[21] = f"constexpr size_t N_im = {N};\n"
     elif app == "stcl":
-        lines[37] = f"constexpr size_t N_stencil = {N};\n"
+        lines[22] = f"constexpr size_t N_stencil = {N};\n"
     elif app == "nbody":
-        lines[38] = f"constexpr size_t N_nbody = {N};\n"
+        lines[23] = f"constexpr size_t N_nbody = {N};\n"
     else:
         raise ValueError(f"Unknown app: {app}")
 
@@ -341,7 +347,7 @@ def get_results(events, filter, exe=["aos_manual", "soa_manual"]):
                 ",".join(events),
                 "-r",
                 "5",
-                f"/{exe}",
+                f"./{exe}",
                 "--benchmark_format=csv",
                 f"--benchmark_filter={filter}",
             ]
@@ -482,7 +488,7 @@ def experiment_stride(output_file, app, precompiled, wrap):
     modify_pxpyzpm_aos_manual(0, 0)
     modify_pxpyzpm_soa_manual(0, 0)
 
-    stride_list = range(25, 30)
+    stride_list = range(1, 17)
     for stride in stride_list:
         if precompiled:
             log(
@@ -523,7 +529,7 @@ def experiment_nmembers(output_file, app, precompiled):
     filter = get_filter(app)
 
     if app == "im":
-        modify_stride_invariantmass(1)
+        modify_stride_invariantmass(1, wrap=False)
 
     header = "version,before,after,runtime_mean,runtime_stddev,{}\n".format(
         ",".join(events)
@@ -568,9 +574,9 @@ def experiment_nmembers_stride(output_file, app, precompiled, wrap):
     if app != "im":
         raise ValueError(f"App not supported: {app}")
 
-    before_list = range(9, 17)
-    after_list = range(9, 17)
-    stride_list = range(9, 17)
+    before_list = range(0, 17)
+    after_list = range(0, 17)
+    stride_list = range(0, 17)
     filter = get_filter(app)
 
     header = "version,before,after,stride,runtime_mean,runtime_stddev,{}\n".format(
@@ -656,14 +662,16 @@ def generate_bin(apps, before_list, after_list, stride_list):
 precompiled_dir = "/data/soa-benchmark-results/251017/bin"
 
 if __name__ == "__main__":
-    # experiment_nmembers("perf_output_nmembers_im.csv", "im", precompiled=True)
+    experiment_nmembers("perf_output_nmembers_im.csv", "im", precompiled=False)
+    experiment_stride("perf_output_stride_im.csv", "im", precompiled=False, wrap=False)
+
     # experiment_stride("perf_output_stride_im.csv", "im", precompiled=True, wrap=False)
     # experiment_nmembers("perf_output_nmembers_stcl.csv", "stcl", precompiled=True)
     # experiment_nmembers("perf_output_nmembers_nbody.csv", "nbody", precompiled=True)
     # experiment_nmembers_stride("perf_output_nmembers_stride_im.csv", "im", precompiled=True, wrap=False)
 
-    generate_bin(["nbody", "stcl", "im"], range(0, 25), range(0, 25), [1])
-    generate_bin(["im"], [0], [0], range(2, 38))
-    generate_bin(["im"], range(17), range(17), range(1, 17))
+    # generate_bin(["nbody", "stcl", "im"], range(0, 25), range(0, 25), [1])
+    # generate_bin(["im"], [0], [0], range(2, 38))
+    # generate_bin(["im"], range(17), range(17), range(1, 17))
     # generate_bin(["im"], [0], [0], range(1, 38))
 
