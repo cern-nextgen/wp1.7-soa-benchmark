@@ -471,62 +471,62 @@ def plot_stride_x(df, app, output_dir, x):
 formats = ["png", "pdf"]
 
 if __name__ == "__main__":
-    inputs = [
-        # "251008/ngt",
-        # "251007/ngt",
-        # "251001/ngt",
-        # "250929/ngt",
-        # "250926/ngt",
-        # "251013/ngt",
+    # inputs = [
+    #     # "251008/ngt",
+    #     # "251007/ngt",
+    #     # "251001/ngt",
+    #     # "250929/ngt",
+    #     # "250926/ngt",
+    #     # "251013/ngt",
 
-        "251007/local",
-        # "251001/local",
-        # "250919/local",
-        # "251013/local",
+    #     "251007/local",
+    #     # "251001/local",
+    #     # "250919/local",
+    #     # "251013/local",
+    # ]
+
+    # for input_dir in [f"/data/soa-benchmark-results/{i}" for i in inputs]:
+    input_dir = sys.argv[1]
+    output_dir = input_dir
+
+    nmembers_files = [
+        f
+        for f in glob.glob(os.path.join(input_dir, "*nmembers*.csv"))
+        if "nmembers_stride" not in os.path.basename(f)
     ]
+    for nm_file in nmembers_files:
+        print(f"Processing file: {nm_file}")
+        app = os.path.splitext(os.path.basename(nm_file))[0].split("perf_output_")[1]
+        for scaled in [False, True]:
+            plot_nmembers_heatmaps(
+                pd.read_csv(nm_file),
+                app,
+                scaled=scaled,
+                output_dir=output_dir,
+            )
 
-    for input_dir in [f"/data/soa-benchmark-results/{i}" for i in inputs]:
-        output_dir = input_dir
+    stride_files = [
+        f
+        for f in glob.glob(os.path.join(input_dir, "*stride*im*.csv"))
+        if "nmembers_stride" not in os.path.basename(f)
+    ]
+    for s_file in stride_files:
+        print(f"Processing file: {s_file}")
+        app = os.path.splitext(os.path.basename(s_file))[0].split("perf_output_")[1]
+        plot_stride_lines(pd.read_csv(s_file), app, output_dir=output_dir)
+        plot_stride_x(pd.read_csv(s_file), app, output_dir=output_dir, x="fp_arith_inst_retired.vector")
 
-        nmembers_files = [
-            f
-            for f in glob.glob(os.path.join(input_dir, "*nmembers*.csv"))
-            if "nmembers_stride" not in os.path.basename(f)
-        ]
-        for nm_file in nmembers_files:
-            print(f"Processing file: {nm_file}")
-            app = os.path.splitext(os.path.basename(nm_file))[0].split("perf_output_")[1]
-            for scaled in [False, True]:
-                plot_nmembers_heatmaps(
-                    pd.read_csv(nm_file),
-                    app,
-                    scaled=scaled,
-                    output_dir=output_dir,
-                )
-
-        stride_files = [
-            f
-            for f in glob.glob(os.path.join(input_dir, "*stride*im*.csv"))
-            if "nmembers_stride" not in os.path.basename(f)
-        ]
-        for s_file in stride_files:
-            print(f"Processing file: {s_file}")
-            app = os.path.splitext(os.path.basename(s_file))[0].split("perf_output_")[1]
-            plot_stride_lines(pd.read_csv(s_file), app, output_dir=output_dir)
-            plot_stride_x(pd.read_csv(s_file), app, output_dir=output_dir, x="fp_arith_inst_retired.vector")
-
-        nmembers_stride_files = [
-            f
-            for f in glob.glob(os.path.join(input_dir, "*nmembers_stride*.csv"))
-        ]
-        for nms_file in nmembers_stride_files:
-            print(f"Processing file: {nms_file}")
-            app = os.path.splitext(os.path.basename(nms_file))[0].split("perf_output_")[1]
-            for scaled in [False, True]:
-                plot_nmembers_stride(
-                    pd.read_csv(nms_file),
-                    app,
-                    scaled=scaled,
-                    output_dir=output_dir,
-                )
-                
+    nmembers_stride_files = [
+        f
+        for f in glob.glob(os.path.join(input_dir, "*nmembers_stride*.csv"))
+    ]
+    for nms_file in nmembers_stride_files:
+        print(f"Processing file: {nms_file}")
+        app = os.path.splitext(os.path.basename(nms_file))[0].split("perf_output_")[1]
+        for scaled in [False, True]:
+            plot_nmembers_stride(
+                pd.read_csv(nms_file),
+                app,
+                scaled=scaled,
+                output_dir=output_dir,
+            )
