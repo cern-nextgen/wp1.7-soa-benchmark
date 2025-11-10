@@ -39,25 +39,6 @@ constexpr size_t N_nbody = 10000;
     BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, BM, Type1, Type2, std::integral_constant<size_t, N[4]>)->Unit(benchmark::kMillisecond);
 // clang-format on
 
-template <typename T>
-static std::string ToString(const T &obj)
-{
-    std::stringstream ss;
-    ss << obj;
-    return ss.str();
-}
-
-// Helper function to check the result
-template <typename Expected, typename Actual>
-void CheckResult(benchmark::State &state, const Expected &expected, const Actual &actual,
-                 const std::string &member_name)
-{
-    if (expected != actual) {
-        state.SkipWithError(
-            std::format("Wrong result in {}: expected {}, got {}", member_name, ToString(expected), ToString(actual)));
-    }
-}
-
 template <typename S, typename N>
 class Fixture1; // Forward Declaration
 
