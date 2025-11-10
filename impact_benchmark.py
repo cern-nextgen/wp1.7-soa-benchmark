@@ -124,7 +124,7 @@ struct PxPyPzM {{
 
 def modify_stride_invariantmass(stride, wrap):
     """
-    ASSUMES that lines 207-210 in benchmark.h are as follows:
+    ASSUMES that lines 188-190 in benchmark.h are as follows:
         size_t stride = 1;
         for (auto _ : state) {
             #pragma clang loop vectorize(assume_safety)
@@ -137,17 +137,17 @@ def modify_stride_invariantmass(stride, wrap):
     with open("benchmark.h", "r") as f:
         lines = f.readlines()
 
-    # Replace line 206 (index 205) with new content
-    lines[206] = f"    size_t stride = {stride};\n"
+    # Replace line 188 (index 187) with new content
+    lines[187] = f"    size_t stride = {stride};\n"
 
     if wrap:
-        lines[209] = (
+        lines[189] = (
             "                for (size_t start = 0; start < stride; ++start) { for (size_t i = start; i < n; i += stride) {\n"
         )
-        lines[253] = "    }}\n"
+        lines[233] = "    }}\n"
     else:
-        lines[209] = "        for (size_t i = 0; i < n; i += stride) {\n"
-        lines[253] = "    }\n"
+        lines[189] = "        for (size_t i = 0; i < n; i += stride) {\n"
+        lines[233] = "    }\n"
 
     # Write back to the file
     with open("benchmark.h", "w") as f:
