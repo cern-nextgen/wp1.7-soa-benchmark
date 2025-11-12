@@ -4,7 +4,20 @@
 #include <benchmark/benchmark.h>
 #include <math.h>
 #include <sstream>
-#include <format>
+
+// This block enables to compile the code with and without the likwid header in place
+#ifdef LIKWID_PERFMON
+#include <likwid-marker.h>
+#else
+#define LIKWID_MARKER_INIT
+#define LIKWID_MARKER_THREADINIT
+#define LIKWID_MARKER_SWITCH
+#define LIKWID_MARKER_REGISTER(regionTag)
+#define LIKWID_MARKER_START(regionTag)
+#define LIKWID_MARKER_STOP(regionTag)
+#define LIKWID_MARKER_CLOSE
+#define LIKWID_MARKER_GET(regionTag, nevents, events, time, count)
+#endif
 
 /* AoS-like access (except for the baseline) */
 #ifdef SOA_BOOST
@@ -186,6 +199,9 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State &state)
 
     std::vector<double> results(n);
     size_t stride = 1;
+    LIKWID_MARKER_INIT;
+    LIKWID_MARKER_REGISTER("InvariantMass");
+    LIKWID_MARKER_START("InvariantMass");
     for (auto _ : state) {
 #pragma clang loop vectorize(assume_safety)
         for (size_t i = 0; i < n; i += stride) {
@@ -234,6 +250,8 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State &state)
                 results[i] = std::sqrt(m1_sq + m2_sq + y * z);
     }
     }
+    LIKWID_MARKER_STOP("InvariantMass");
+    LIKWID_MARKER_CLOSE;
 
     for (size_t i = 0; i < n; i++) {
         benchmark::DoNotOptimize(results[i]);

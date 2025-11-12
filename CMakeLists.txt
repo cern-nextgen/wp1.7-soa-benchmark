@@ -13,6 +13,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 find_package(benchmark REQUIRED)
+find_package(likwid CONFIG REQUIRED COMPONENTS marker)
 
 include(CheckIncludeFileCXX)
 check_include_file_cxx("format" CXX_FORMAT_SUPPORT)
@@ -23,5 +24,8 @@ if (NOT CXX_FORMAT_SUPPORT)
 endif()
 
 link_libraries(benchmark::benchmark)
+link_libraries(likwid::likwid)
+include_directories(${LIKWID_INCLUDE_DIRS}) # if not set in likwid-config.cmake
+
 add_executable(soa_manual soa_manual.cpp)
 add_executable(aos_manual aos_manual.cpp)
