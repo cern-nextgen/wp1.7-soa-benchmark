@@ -256,6 +256,7 @@ derived_metrics = {
     },
 }
 
+
 def get_available_derived_metrics(df):
     """
     Check which derived metrics can be computed with the available columns in the dataframe.
@@ -270,6 +271,7 @@ def get_available_derived_metrics(df):
             # If it fails, skip this metric
             continue
     return available_metrics
+
 
 def get_grid_size(n_rmetrics, n_dmetrics):
     """
@@ -286,237 +288,140 @@ def get_grid_size(n_rmetrics, n_dmetrics):
     return rows_r + rows_d, max(cols_r, cols_d), rows_r, cols_r
 
 
-def plot_nmembers_heatmaps(df, app, scaled, output_dir):
+################
+#   Heatmaps   #
+################
+
+
+def plot_metric_results(
+    df, plot_func, plot_type, app, scaled, output_dir, split_layouts
+):
     """
-    Plot heatmaps of various metrics against number of padding data members before and after for both AOS
-    and SOA layouts.
+    Plot the results for different metrics in a grid.
+
+    df: DataFrame containing the results
+    plot_func: Function to plot each subplot
+    plot_type: Type of plot (used for naming output files)
+    app: Application shortname (used for naming output files)
+    scaled: Whether to scale the color maps to the max observed between both layouts
+    output_dir: Directory to save the output plots
+    split_layouts: Whether to create separate figures for AOS and SOA layouts
     """
     avail_dmetrics = get_available_derived_metrics(df)
+    avail_rmetrics = {k: v for k, v in metrics.items() if k in df.columns}
 
-    n_rmetrics = len([k for k in metrics.keys() if k in df.columns])
+    n_rmetrics = len(avail_rmetrics)
     n_dmetrics = len(avail_dmetrics)
-    n_metrics = n_rmetrics + n_dmetrics
     rows, cols, rows_r, cols_r = get_grid_size(n_rmetrics, n_dmetrics)
     rgrid_size = rows_r * cols
     print(
         f"Plotting {n_rmetrics} raw metrics and {n_dmetrics} derived metrics in {rows} rows and {cols} columns"
     )
 
-    ymax = np.zeros((2, n_metrics))
-    imgs = []
-    figs = []
     for il, layout in enumerate(["aos", "soa"]):
         df_layout = df[df["version"] == f"{layout}_manual"].copy()
-        figs.append([layout, plt.figure(figsize=(30, 17))])
-        ims = []
+
+        if split_layouts or il == 0:
+            plt.figure(figsize=(30, 17))
 
         # Add subplots for raw metrics
-        for k in metrics.keys():
-            if k not in df_layout.columns:
-                continue
-
-            v = metrics[k]
-            i = len(ims)
-
-            plt.subplot(rows, cols, (i // cols_r) * cols + (i % cols_r) + 1)
-            pivot = df_layout.pivot(index="before", columns="after", values=k)
-            ims.append(
-                plt.imshow(pivot, cmap=v["colormap"], aspect="auto", origin="lower")
-            )
-            plt.colorbar(label=v["label"])
-            plt.xlabel(r"Number of double data members $\bf{after}$")
-            plt.ylabel(r"Number of double data members $\bf{before}$")
-            plt.title(f"{v['label']}")
-            plt.xticks(np.arange(len(pivot.columns)), pivot.columns)
-            plt.yticks(np.arange(len(pivot.index)), pivot.index)
-            if v["ymax"]:
-                ymax[il][i] = np.max(pivot.values)
-            plt.tight_layout()
+        for i, m in enumerate(avail_rmetrics.keys()):
+            v = avail_rmetrics[m]
+            ax = plt.subplot(rows, cols, (i // cols_r) * cols + (i % cols_r) + 1)
+            plot_func(ax, df_layout, layout, m, v, ymax=df[m].max() if scaled else None)
 
         # Add subplots for derived metrics
-        for i, (k, v) in enumerate(zip(avail_dmetrics.keys(), avail_dmetrics.values())):
-            plt.subplot(rows, cols, i + rgrid_size + 1)
-            df_layout[k] = v["formula"](df_layout)
-            pivot = df_layout.pivot(index="before", columns="after", values=k)
-            ims.append(
-                plt.imshow(pivot, cmap=v["colormap"], aspect="auto", origin="lower")
-            )
-            plt.colorbar(label=v["label"])
-            plt.xlabel(r"Number of double data members $\bf{after}$")
-            plt.ylabel(r"Number of double data members $\bf{before}$")
-            plt.title(
-                f"{v['label']}"
-                if not k == "arithmetic-intensity"
-                else v["label"](df_layout)
-            )
-            plt.xticks(np.arange(len(pivot.columns)), pivot.columns)
-            plt.yticks(np.arange(len(pivot.index)), pivot.index)
-            if "ymax" in v:
-                ymax[il][i + n_rmetrics] = v["ymax"]
-            plt.tight_layout()
+        for i, (m, v) in enumerate(zip(avail_dmetrics.keys(), avail_dmetrics.values())):
+            ax = plt.subplot(rows, cols, i + rgrid_size + 1)
+            df_layout[m] = v["formula"](df_layout)
+            plot_func(ax, df_layout, layout, m, v, ymax=v["ymax"])
 
-        imgs.append(ims)
+        if split_layouts:
+            for fmt in formats:
+                plt.savefig(
+                    f"{output_dir}/{plot_type}_{layout}_{app}{'_scaled' if scaled else ''}.{fmt}",
+                    bbox_inches="tight",
+                )
 
-    # Adjust colorbar limits to max observed value across both layouts for each metric
-    for ims_l in imgs:
-        for ia, im in enumerate(ims_l):
-            max_val = np.max(ymax[:, ia])
-            im.set_clim(0, max_val) if scaled and max_val > 0 else im.set_clim(vmin=0)
-
-    # Save figures for both layouts
-    for layout, fig in figs:
+    # Save figure that contains results for both layouts in each subplot
+    if not split_layouts:
         for fmt in formats:
-            fig.savefig(
-                f"{output_dir}/heatmap_{layout}_{app}{'_scaled' if scaled else ''}.{fmt}",
+            plt.savefig(
+                f"{output_dir}/{plot_type}_{app}{'_scaled' if scaled else ''}.{fmt}",
                 bbox_inches="tight",
             )
-        plt.close(fig)
+
+
+def plot_nmembers_heatmaps(df, app, scaled, output_dir):
+    """
+    Plot heatmaps of various metrics against number of padding data members before and after for both AOS
+    and SOA layouts.
+    """
+
+    def plot_func(ax, df, _, metric, v, ymax=None):
+        pivot = df.pivot(index="before", columns="after", values=metric)
+        hm = plt.imshow(pivot, cmap=v["colormap"], aspect="auto", origin="lower")
+        plt.colorbar(hm)
+        hm.set_clim(0, ymax) if scaled and ymax else hm.set_clim(vmin=0)
+        ax.set_xlabel(r"Number of double data members $\bf{after}$")
+        ax.set_ylabel(r"Number of double data members $\bf{before}$")
+        ax.set_title(f"{v['label']}")
+        ax.set_xticks(np.arange(len(pivot.columns)), labels=pivot.columns)
+        ax.set_yticks(np.arange(len(pivot.index)), labels=pivot.index)
+
+    plot_metric_results(
+        df, plot_func, "heatmap", app, scaled, output_dir, split_layouts=True
+    )
 
 
 def plot_stride_lines(df, app, output_dir):
     """
     Plot line charts of various metrics against loop stride for both AOS and SOA layouts.
     """
-    plt.figure(figsize=(25, 15))
-    plt.suptitle(f"Invariant Mass with different Loop Strides", y=1.02, fontsize=16)
 
-    avail_dmetrics = get_available_derived_metrics(df)
+    def plot_func(ax, df, layout, metric, v, ymax=None):
+        ax.plot(df["stride"], df[metric], marker="o", label=layout.upper())
 
-    n_rmetrics = len([k for k in metrics.keys() if k in df.columns])
-    n_dmetrics = len(avail_dmetrics)
-    rows, cols, rows_r, cols_r = get_grid_size(n_rmetrics, n_dmetrics)
-    rgrid_size = rows_r * cols
-    print(
-        f"Plotting {n_rmetrics} raw metrics and {n_dmetrics} derived metrics in {rows} rows and {cols} columns"
+        if v["label"] == "Mean Runtime (ms)":
+            ax.set_yscale("symlog")
+
+        ax.set_xlabel("Loop stride")
+        ax.set_ylabel(v["label"])
+        ax.legend()
+        ax.set_ylim(bottom=0, top=ymax)
+
+    plot_metric_results(
+        df,
+        plot_func,
+        "lines",
+        app,
+        scaled=False,
+        output_dir=output_dir,
+        split_layouts=False,
     )
 
-    for layout in ["aos", "soa"]:
-        df_layout = df[df["version"] == f"{layout}_manual"].copy()
-
-        # Plot subplots for raw metrics
-        i = 0
-        for k in metrics.keys():
-            if k not in df_layout.columns:
-                continue
-
-            v = metrics[k]
-            plt.subplot(rows, cols, (i // cols_r) * cols + (i % cols_r) + 1)
-            plt.plot(
-                df_layout["stride"], df_layout[k], marker="o", label=layout.upper()
-            )
-
-            if v["label"] == "Mean Runtime (ms)":
-                plt.yscale("symlog")
-
-            plt.xlabel("Loop stride")
-            plt.ylabel(v["label"])
-            plt.legend()
-            if layout == "soa":
-                plt.ylim(bottom=0, top=None)
-            i += 1
-
-        # Plot subplots for derived metrics
-        for i, (k, v) in enumerate(zip(avail_dmetrics.keys(), avail_dmetrics.values())):
-            df_layout[k] = v["formula"](df_layout)
-            plt.subplot(rows, cols, i + rgrid_size + 1)
-            plt.plot(
-                df_layout["stride"], df_layout[k], marker="o", label=layout.upper()
-            )
-            plt.xlabel("Loop stride")
-            plt.ylabel(
-                f"{v['label']}"
-                if not k == "arithmetic-intensity"
-                else v["label"](df_layout)
-            )
-            plt.legend()
-            plt.ylim(bottom=0, top=v.get("ymax", None))
-
-    plt.tight_layout()
-    for fmt in formats:
-        plt.savefig(f"{output_dir}/lines_{app}.{fmt}", bbox_inches="tight")
-    plt.close()
 
 def plot_nmembers_stride(df, app, scaled, output_dir):
     """
     Plot heatmaps of various metrics against number of padding members and loop stride for both AOS and SOA layouts.
     """
-    avail_dmetrics = get_available_derived_metrics(df)
 
-    n_rmetrics = len([k for k in metrics.keys() if k in df.columns])
-    n_dmetrics = len(avail_dmetrics)
-    n_metrics = n_rmetrics + n_dmetrics
-    rows, cols, rows_r, cols_r = get_grid_size(n_rmetrics, n_dmetrics)
-    rgrid_size = rows_r * cols
-    print(
-        f"Plotting {n_rmetrics} raw metrics and {n_dmetrics} derived metrics in {rows} rows and {cols} columns"
+    def plot_func(ax, df, _, metric, v, ymax=None):
+        df_layout = df[df["after"] == 0]
+        pivot = df_layout.pivot(index="before", columns="stride", values=metric)
+        hm = plt.imshow(pivot, cmap=v["colormap"], aspect="auto", origin="lower")
+        plt.colorbar(hm)
+        hm.set_clim(0, ymax) if scaled and ymax else hm.set_clim(vmin=0)
+        ax.set_xlabel(r"Number of double padding data members")
+        ax.set_ylabel(r"Loop stride")
+        ax.set_title(f"{v['label']}")
+        ax.set_xticks(np.arange(len(pivot.columns)), pivot.columns)
+        ax.set_yticks(np.arange(len(pivot.index)), pivot.index)
+
+    plot_metric_results(
+        df, plot_func, "heatmap", app, scaled, output_dir, split_layouts=True
     )
 
-    ymax = np.zeros((2, n_metrics))
-    imgs = []
-    figs = []
-    for il, layout in enumerate(["aos", "soa"]):
-        df_layout = df[df["version"] == f"{layout}_manual"].copy()
-        df_layout = df_layout[df_layout["after"] == 0]
-        figs.append([layout, plt.figure(figsize=(30, 17))])
-
-        ims = []
-        for k in metrics.keys():
-            if k not in df_layout.columns:
-                continue
-
-            v = metrics[k]
-            i = len(ims)
-
-            plt.subplot(rows, cols, (i // cols_r) * cols + (i % cols_r) + 1)
-            pivot = df_layout.pivot(index="before", columns="stride", values=k)
-            ims.append(
-                plt.imshow(pivot, cmap=v["colormap"], aspect="auto", origin="lower")
-            )
-            plt.colorbar(label=v["label"])
-            plt.xlabel(r"Number of double padding data members")
-            plt.ylabel(r"Loop stride")
-            plt.title(f"{v['label']}")
-            plt.xticks(np.arange(len(pivot.columns)), pivot.columns)
-            plt.yticks(np.arange(len(pivot.index)), pivot.index)
-            if v["ymax"]:
-                ymax[il][i] = np.max(pivot.values)
-            plt.tight_layout()
-
-        for i, (k, v) in enumerate(zip(avail_dmetrics.keys(), avail_dmetrics.values())):
-            plt.subplot(rows, cols, i + rgrid_size + 1)
-            df_layout[k] = v["formula"](df_layout)
-            pivot = df_layout.pivot(index="before", columns="stride", values=k)
-            ims.append(
-                plt.imshow(pivot, cmap=v["colormap"], aspect="auto", origin="lower")
-            )
-            plt.colorbar(label=v["label"])
-            plt.xlabel(r"Number of double padding data members")
-            plt.ylabel(r"Loop stride")
-            plt.title(
-                f"{v['label']}"
-                if not k == "arithmetic-intensity"
-                else v["label"](df_layout)
-            )
-            plt.xticks(np.arange(len(pivot.columns)), pivot.columns)
-            plt.yticks(np.arange(len(pivot.index)), pivot.index)
-            if "ymax" in v:
-                ymax[il][i + n_metrics] = v["ymax"]
-            plt.tight_layout()
-
-        imgs.append(ims)
-
-    for ims_l in imgs:
-        for ia, im in enumerate(ims_l):
-            max_val = np.max(ymax[:, ia])
-            im.set_clim(0, max_val) if scaled and max_val > 0 else im.set_clim(vmin=0)
-
-    for layout, fig in figs:
-        for fmt in formats:
-            fig.savefig(
-                f"{output_dir}/heatmap_{layout}_{app}{'_scaled' if scaled else ''}.{fmt}",
-                bbox_inches="tight",
-            )
-        plt.close(fig)
 
 def plot_stride_x(df, app, output_dir, x):
     """
@@ -545,6 +450,7 @@ def plot_stride_x(df, app, output_dir, x):
         plt.savefig(f"{output_dir}/vector_instr_lines_{app}.{fmt}", bbox_inches="tight")
     plt.close()
 
+
 formats = ["pdf"]
 
 if __name__ == "__main__":
@@ -558,7 +464,9 @@ if __name__ == "__main__":
     ]
     for nm_file in nmembers_files:
         print(f"Processing file: {nm_file}")
-        app = os.path.splitext(os.path.basename(nm_file))[0].split("perf_output_")[1]
+        app = os.path.splitext(os.path.basename(nm_file))[0].split("perf_output_")[
+            1
+        ]
         for scaled in [True]:
             plot_nmembers_heatmaps(
                 pd.read_csv(nm_file),
@@ -578,12 +486,13 @@ if __name__ == "__main__":
         plot_stride_lines(pd.read_csv(s_file), app, output_dir=output_dir)
 
     nmembers_stride_files = [
-        f
-        for f in glob.glob(os.path.join(input_dir, "*nmembers_stride*.csv"))
+        f for f in glob.glob(os.path.join(input_dir, "*nmembers_stride*.csv"))
     ]
     for nms_file in nmembers_stride_files:
         print(f"Processing file: {nms_file}")
-        app = os.path.splitext(os.path.basename(nms_file))[0].split("perf_output_")[1]
+        app = os.path.splitext(os.path.basename(nms_file))[0].split("perf_output_")[
+            1
+        ]
         for scaled in [False, True]:
             plot_nmembers_stride(
                 pd.read_csv(nms_file),
