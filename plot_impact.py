@@ -5,7 +5,7 @@ import pandas as pd
 import glob
 import sys
 
-values = {
+metrics = {
     "runtime_mean": {
         "label": "Mean Runtime (ms)",
         "colormap": "RdYlGn_r",
@@ -46,112 +46,112 @@ values = {
         "colormap": "RdYlGn_r",
         "ymax": True,
     },
-    "L1-dcache-loads": {
-        "label": "L1 Data Cache Loads",
-        "colormap": "Blues",
-        "ymax": True,
-    },
-    "L1-dcache-load-misses": {
-        "label": "L1 Data Cache Load Misses",
-        "colormap": "RdYlGn_r",
-        "ymax": True,
-    },
-    "cache-references": {
-        "label": "L2 Cache References",
-        "colormap": "Blues",
-        "ymax": True,
-    },
-    "cache-misses": {"label": "L2 Cache Misses", "colormap": "RdYlGn_r", "ymax": True},
-    "mem_inst_retired.all_loads": {
-        "label": "Memory Loads Retired",
-        "colormap": "Blues",
-        "ymax": True,
-    },
-    "mem_inst_retired.any": {
-        "label": "Retired Memory Instructions",
-        "colormap": "Blues",
-        "ymax": True,
-    },
-    "ls_dispatch.ld_dispatch": {
-        "label": "Dispatched Load Operations",
-        "colormap": "Blues",
-        "ymax": True,
-    },
-    "ls_dispatch.ld_st_dispatch": {
-        "label": "Dispatched Load-Store Operations",
-        "colormap": "Blues",
-        "ymax": True,
-    },
-    "alignment-faults": {
-        "label": "Alignment Faults",
-        "colormap": "RdYlGn_r",
-        "ymax": True,
-    },
-    "branch-misses": {
-        "label": "Branch Misses",
-        "colormap": "RdYlGn_r",
-        "ymax": True,
-    },
-    "branch-instructions": {
-        "label": "Branch Instructions",
-        "colormap": "Blues",
-        "ymax": True,
-    },
-    "bus-cycles": {
-        "label": "Bus Cycles",
-        "colormap": "Blues",
-        "ymax": True,
-    },
-    "cpu-cycles": {
-        "label": "CPU Cycles",
-        "colormap": "Blues",
-        "ymax": True,
-    },
-    "cycle_activity.stalls_l1d_miss": {
-        "label": "Cycles Stalled on L1D Miss",
-        "colormap": "RdYlGn_r",
-        "ymax": True,
-    },
-    "cycle_activity.stalls_mem_any": {
-        "label": "Cycles Stalled on Memory Access",
-        "colormap": "RdYlGn_r",
-        "ymax": True,
-    },
-    "ex_no_retire.load_not_complete": {
-        "label": "Cycles Stalled on Load Not Complete",
-        "colormap": "RdYlGn_r",
-        "ymax": True,
-    },
-    "major-faults": {
-        "label": "Major Faults",
-        "colormap": "RdYlGn_r",
-        "ymax": True,
-    },
-    "minor-faults": {
-        "label": "Minor Faults",
-        "colormap": "RdYlGn_r",
-        "ymax": True,
-    },
-    "frontend_retired.latency_ge_1": {
-        "label": "Retired Instructions with Frontend Latency >= 1",
-        "colormap": "RdYlGn_r",
-        "ymax": True,
-    },
-    "stalled-cycles-frontend": {
-        "label": "Stalled Cycles Frontend",
-        "colormap": "RdYlGn_r",
-        "ymax": True,
-    },
-    "resource_stalls.any": {
-        "label": "Resource Stalls",
-        "colormap": "RdYlGn_r",
-        "ymax": True,
-    },
-    "de_no_dispatch_per_slot.backend_stalls": {
-        "label": "Backend Stalls",
-        "colormap": "RdYlGn_r",
-        "ymax": True,
-    },
+    # "L1-dcache-loads": {
+    #     "label": "L1 Data Cache Loads",
+    #     "colormap": "Blues",
+    #     "ymax": True,
+    # },
+    # "L1-dcache-load-misses": {
+    #     "label": "L1 Data Cache Load Misses",
+    #     "colormap": "RdYlGn_r",
+    #     "ymax": True,
+    # },
+    # "cache-references": {
+    #     "label": "L2 Cache References",
+    #     "colormap": "Blues",
+    #     "ymax": True,
+    # },
+    # "cache-misses": {"label": "L2 Cache Misses", "colormap": "RdYlGn_r", "ymax": True},
+    # "mem_inst_retired.all_loads": {
+    #     "label": "Memory Loads Retired",
+    #     "colormap": "Blues",
+    #     "ymax": True,
+    # },
+    # "mem_inst_retired.any": {
+    #     "label": "Retired Memory Instructions",
+    #     "colormap": "Blues",
+    #     "ymax": True,
+    # },
+    # "ls_dispatch.ld_dispatch": {
+    #     "label": "Dispatched Load Operations",
+    #     "colormap": "Blues",
+    #     "ymax": True,
+    # },
+    # "ls_dispatch.ld_st_dispatch": {
+    #     "label": "Dispatched Load-Store Operations",
+    #     "colormap": "Blues",
+    #     "ymax": True,
+    # },
+    # "alignment-faults": {
+    #     "label": "Alignment Faults",
+    #     "colormap": "RdYlGn_r",
+    #     "ymax": True,
+    # },
+    # "branch-misses": {
+    #     "label": "Branch Misses",
+    #     "colormap": "RdYlGn_r",
+    #     "ymax": True,
+    # },
+    # "branch-instructions": {
+    #     "label": "Branch Instructions",
+    #     "colormap": "Blues",
+    #     "ymax": True,
+    # },
+    # "bus-cycles": {
+    #     "label": "Bus Cycles",
+    #     "colormap": "Blues",
+    #     "ymax": True,
+    # },
+    # "cpu-cycles": {
+    #     "label": "CPU Cycles",
+    #     "colormap": "Blues",
+    #     "ymax": True,
+    # },
+    # "cycle_activity.stalls_l1d_miss": {
+    #     "label": "Cycles Stalled on L1D Miss",
+    #     "colormap": "RdYlGn_r",
+    #     "ymax": True,
+    # },
+    # "cycle_activity.stalls_mem_any": {
+    #     "label": "Cycles Stalled on Memory Access",
+    #     "colormap": "RdYlGn_r",
+    #     "ymax": True,
+    # },
+    # "ex_no_retire.load_not_complete": {
+    #     "label": "Cycles Stalled on Load Not Complete",
+    #     "colormap": "RdYlGn_r",
+    #     "ymax": True,
+    # },
+    # "major-faults": {
+    #     "label": "Major Faults",
+    #     "colormap": "RdYlGn_r",
+    #     "ymax": True,
+    # },
+    # "minor-faults": {
+    #     "label": "Minor Faults",
+    #     "colormap": "RdYlGn_r",
+    #     "ymax": True,
+    # },
+    # "frontend_retired.latency_ge_1": {
+    #     "label": "Retired Instructions with Frontend Latency >= 1",
+    #     "colormap": "RdYlGn_r",
+    #     "ymax": True,
+    # },
+    # "stalled-cycles-frontend": {
+    #     "label": "Stalled Cycles Frontend",
+    #     "colormap": "RdYlGn_r",
+    #     "ymax": True,
+    # },
+    # "resource_stalls.any": {
+    #     "label": "Resource Stalls",
+    #     "colormap": "RdYlGn_r",
+    #     "ymax": True,
+    # },
+    # "de_no_dispatch_per_slot.backend_stalls": {
+    #     "label": "Backend Stalls",
+    #     "colormap": "RdYlGn_r",
+    #     "ymax": True,
+    # },
 }
 
 
@@ -183,44 +183,47 @@ def instructions_per_cycle(df):
         raise ValueError("No suitable columns for instructions per cycle")
 
 
-def arithmetic_intensity(df):
-    if "fp_arith_inst_retired.vector" in df and "fp_arith_inst_retired.scalar" in df:
-        arith = df["fp_arith_inst_retired.vector"] + df["fp_arith_inst_retired.scalar"]
-    elif (
-        "fp_ops_retired_by_type.vector_all" in df
-        and "fp_ops_retired_by_type.scalar_all" in df
-    ):
-        arith = (
-            df["fp_ops_retired_by_type.vector_all"]
-            + df["fp_ops_retired_by_type.scalar_all"]
-        )
-    else:
-        raise ValueError("No suitable columns for arithmetic intensity", df.columns)
+# def arithmetic_intensity(df):
+#     """
+#     FIXME: Don't think this is right
+#     """
+#     if "fp_arith_inst_retired.vector" in df and "fp_arith_inst_retired.scalar" in df:
+#         arith = df["fp_arith_inst_retired.vector"] + df["fp_arith_inst_retired.scalar"]
+#     elif (
+#         "fp_ops_retired_by_type.vector_all" in df
+#         and "fp_ops_retired_by_type.scalar_all" in df
+#     ):
+#         arith = (
+#             df["fp_ops_retired_by_type.vector_all"]
+#             + df["fp_ops_retired_by_type.scalar_all"]
+#         )
+#     else:
+#         raise ValueError("No suitable columns for arithmetic intensity", df.columns)
 
-    if "mem_inst_retired.all_loads" in df:
-        mem = df["mem_inst_retired.all_loads"]
-    elif "mem_inst_retired.any" in df:
-        mem = df["mem_inst_retired.any"]
-    elif "ls_dispatch.ld_dispatch" in df:
-        mem = df["ls_dispatch.ld_dispatch"]
-    elif "ls_dispatch.ld_st_dispatch" in df:
-        mem = df["ls_dispatch.ld_st_dispatch"]
-    else:
-        raise ValueError("No suitable columns for memory operations", df.columns)
+#     if "mem_inst_retired.all_loads" in df:
+#         mem = df["mem_inst_retired.all_loads"]
+#     elif "mem_inst_retired.any" in df:
+#         mem = df["mem_inst_retired.any"]
+#     elif "ls_dispatch.ld_dispatch" in df:
+#         mem = df["ls_dispatch.ld_dispatch"]
+#     elif "ls_dispatch.ld_st_dispatch" in df:
+#         mem = df["ls_dispatch.ld_st_dispatch"]
+#     else:
+#         raise ValueError("No suitable columns for memory operations", df.columns)
 
-    return arith / mem
-
-
-def arithmetic_intensity_label(df):
-    if "mem_inst_retired.all_loads" in df or "ls_dispatch.ld_dispatch" in df:
-        return "Arithmetic Intensity (FLOP/Mem Loads)"
-    elif "mem_inst_retired.any" in df or "ls_dispatch.ld_st_dispatch" in df:
-        return "Arithmetic Intensity (FLOP/Mem Instructions)"
-    else:
-        raise ValueError("No suitable columns for AI label", df.columns)
+#     return arith / mem
 
 
-derived_values = {
+# def arithmetic_intensity_label(df):
+#     if "mem_inst_retired.all_loads" in df or "ls_dispatch.ld_dispatch" in df:
+#         return "Arithmetic Intensity (FLOP/Mem Loads)"
+#     elif "mem_inst_retired.any" in df or "ls_dispatch.ld_st_dispatch" in df:
+#         return "Arithmetic Intensity (FLOP/Mem Instructions)"
+#     else:
+#         raise ValueError("No suitable columns for AI label", df.columns)
+
+
+derived_metrics = {
     "l1-cache-ratio": {
         "label": "L1D Cache Miss Ratio",
         "colormap": "RdYlGn_r",
@@ -233,12 +236,12 @@ derived_values = {
     #     "formula": lambda df: vector_utilization(df),
     #     "ymax": 1,
     # },
-    "arithmetic-intensity": {
-        "label": lambda df: arithmetic_intensity_label(df),
-        "colormap": "RdYlGn",
-        "formula": lambda df: arithmetic_intensity(df),
-        # "ymax": 1,
-    },
+    # "arithmetic-intensity": {
+    #     "label": lambda df: arithmetic_intensity_label(df),
+    #     "colormap": "RdYlGn",
+    #     "formula": lambda df: arithmetic_intensity(df),
+    #     # "ymax": 1,
+    # },
     "branch-miss-ratio": {
         "label": "Branch Miss Ratio",
         "colormap": "RdYlGn_r",
@@ -253,26 +256,69 @@ derived_values = {
     },
 }
 
+def get_available_derived_metrics(df):
+    """
+    Check which derived metrics can be computed with the available columns in the dataframe.
+    """
+    available_metrics = {}
+    for k, v in derived_metrics.items():
+        try:
+            # Try to compute the derived metric to see if it works
+            _ = v["formula"](df)
+            available_metrics[k] = v
+        except ValueError:
+            # If it fails, skip this metric
+            continue
+    return available_metrics
+
+def get_grid_size(n_rmetrics, n_dmetrics):
+    """
+    Determine the number of rows and columns for subplots based on the number of raw + derived metrics.
+    """
+    # Required dimensions to fit raw metrics
+    rows_r = int(np.floor(np.log2(n_rmetrics))) + (n_rmetrics < 2)
+    cols_r = int(np.ceil(n_rmetrics / rows_r))
+
+    # Put all derived metrics in a single row
+    rows_d = 1
+    cols_d = n_dmetrics
+
+    return rows_r + rows_d, max(cols_r, cols_d), rows_r, cols_r
+
+
 def plot_nmembers_heatmaps(df, app, scaled, output_dir):
-    n_values = len(df.columns) - 3
-    rows = max(1, int(np.ceil(np.log2(n_values)) + 1))
-    cols = max(len(derived_values), int(np.floor(np.log2(n_values))))
+    """
+    Plot heatmaps of various metrics against number of padding data members before and after for both AOS
+    and SOA layouts.
+    """
+    avail_dmetrics = get_available_derived_metrics(df)
+
+    n_rmetrics = len([k for k in metrics.keys() if k in df.columns])
+    n_dmetrics = len(avail_dmetrics)
+    n_metrics = n_rmetrics + n_dmetrics
+    rows, cols, rows_r, cols_r = get_grid_size(n_rmetrics, n_dmetrics)
+    rgrid_size = rows_r * cols
     print(
-        f"Plotting {n_values + len(derived_values)} values in {rows} rows and {cols} columns"
+        f"Plotting {n_rmetrics} raw metrics and {n_dmetrics} derived metrics in {rows} rows and {cols} columns"
     )
 
-    ymax = np.zeros((2, n_values + len(derived_values)))
+    ymax = np.zeros((2, n_metrics))
     imgs = []
     figs = []
     for il, layout in enumerate(["aos", "soa"]):
         df_layout = df[df["version"] == f"{layout}_manual"].copy()
         figs.append([layout, plt.figure(figsize=(30, 17))])
-
         ims = []
-        for i, k in enumerate(df.columns[3:]):
-            v = values[k]
 
-            plt.subplot(rows, cols, i + 1)
+        # Add subplots for raw metrics
+        for k in metrics.keys():
+            if k not in df_layout.columns:
+                continue
+
+            v = metrics[k]
+            i = len(ims)
+
+            plt.subplot(rows, cols, (i // cols_r) * cols + (i % cols_r) + 1)
             pivot = df_layout.pivot(index="before", columns="after", values=k)
             ims.append(
                 plt.imshow(pivot, cmap=v["colormap"], aspect="auto", origin="lower")
@@ -287,8 +333,9 @@ def plot_nmembers_heatmaps(df, app, scaled, output_dir):
                 ymax[il][i] = np.max(pivot.values)
             plt.tight_layout()
 
-        for i, (k, v) in enumerate(zip(derived_values.keys(), derived_values.values())):
-            plt.subplot(rows, cols, i + 17)
+        # Add subplots for derived metrics
+        for i, (k, v) in enumerate(zip(avail_dmetrics.keys(), avail_dmetrics.values())):
+            plt.subplot(rows, cols, i + rgrid_size + 1)
             df_layout[k] = v["formula"](df_layout)
             pivot = df_layout.pivot(index="before", columns="after", values=k)
             ims.append(
@@ -305,16 +352,18 @@ def plot_nmembers_heatmaps(df, app, scaled, output_dir):
             plt.xticks(np.arange(len(pivot.columns)), pivot.columns)
             plt.yticks(np.arange(len(pivot.index)), pivot.index)
             if "ymax" in v:
-                ymax[il][i + n_values] = v["ymax"]
+                ymax[il][i + n_rmetrics] = v["ymax"]
             plt.tight_layout()
 
         imgs.append(ims)
 
+    # Adjust colorbar limits to max observed value across both layouts for each metric
     for ims_l in imgs:
         for ia, im in enumerate(ims_l):
             max_val = np.max(ymax[:, ia])
             im.set_clim(0, max_val) if scaled and max_val > 0 else im.set_clim(vmin=0)
 
+    # Save figures for both layouts
     for layout, fig in figs:
         for fmt in formats:
             fig.savefig(
@@ -325,20 +374,33 @@ def plot_nmembers_heatmaps(df, app, scaled, output_dir):
 
 
 def plot_stride_lines(df, app, output_dir):
+    """
+    Plot line charts of various metrics against loop stride for both AOS and SOA layouts.
+    """
     plt.figure(figsize=(25, 15))
     plt.suptitle(f"Invariant Mass with different Loop Strides", y=1.02, fontsize=16)
+
+    avail_dmetrics = get_available_derived_metrics(df)
+
+    n_rmetrics = len([k for k in metrics.keys() if k in df.columns])
+    n_dmetrics = len(avail_dmetrics)
+    rows, cols, rows_r, cols_r = get_grid_size(n_rmetrics, n_dmetrics)
+    rgrid_size = rows_r * cols
+    print(
+        f"Plotting {n_rmetrics} raw metrics and {n_dmetrics} derived metrics in {rows} rows and {cols} columns"
+    )
 
     for layout in ["aos", "soa"]:
         df_layout = df[df["version"] == f"{layout}_manual"].copy()
 
-        n_values = len(df.columns) - 2
-        rows = max(1, int(np.ceil(np.log2(n_values)) + 1))
-        cols = max(len(derived_values), int(np.floor(np.log2(n_values))))
+        # Plot subplots for raw metrics
+        i = 0
+        for k in metrics.keys():
+            if k not in df_layout.columns:
+                continue
 
-        for i, k in enumerate(df.columns[2:]):
-            v = values[k]
-
-            plt.subplot(rows, cols, i + 1)
+            v = metrics[k]
+            plt.subplot(rows, cols, (i // cols_r) * cols + (i % cols_r) + 1)
             plt.plot(
                 df_layout["stride"], df_layout[k], marker="o", label=layout.upper()
             )
@@ -351,11 +413,12 @@ def plot_stride_lines(df, app, output_dir):
             plt.legend()
             if layout == "soa":
                 plt.ylim(bottom=0, top=None)
+            i += 1
 
-        # derived values
-        for i, (k, v) in enumerate(zip(derived_values.keys(), derived_values.values())):
+        # Plot subplots for derived metrics
+        for i, (k, v) in enumerate(zip(avail_dmetrics.keys(), avail_dmetrics.values())):
             df_layout[k] = v["formula"](df_layout)
-            plt.subplot(rows, cols, i + 17)
+            plt.subplot(rows, cols, i + rgrid_size + 1)
             plt.plot(
                 df_layout["stride"], df_layout[k], marker="o", label=layout.upper()
             )
@@ -374,14 +437,21 @@ def plot_stride_lines(df, app, output_dir):
     plt.close()
 
 def plot_nmembers_stride(df, app, scaled, output_dir):
-    n_values = len(df.columns) - 4
-    rows = max(1, int(np.ceil(np.log2(n_values)) + 1))
-    cols = max(len(derived_values), int(np.floor(np.log2(n_values))))
+    """
+    Plot heatmaps of various metrics against number of padding members and loop stride for both AOS and SOA layouts.
+    """
+    avail_dmetrics = get_available_derived_metrics(df)
+
+    n_rmetrics = len([k for k in metrics.keys() if k in df.columns])
+    n_dmetrics = len(avail_dmetrics)
+    n_metrics = n_rmetrics + n_dmetrics
+    rows, cols, rows_r, cols_r = get_grid_size(n_rmetrics, n_dmetrics)
+    rgrid_size = rows_r * cols
     print(
-        f"Plotting {n_values + len(derived_values)} values in {rows} rows and {cols} columns"
+        f"Plotting {n_rmetrics} raw metrics and {n_dmetrics} derived metrics in {rows} rows and {cols} columns"
     )
 
-    ymax = np.zeros((2, n_values + len(derived_values)))
+    ymax = np.zeros((2, n_metrics))
     imgs = []
     figs = []
     for il, layout in enumerate(["aos", "soa"]):
@@ -390,10 +460,14 @@ def plot_nmembers_stride(df, app, scaled, output_dir):
         figs.append([layout, plt.figure(figsize=(30, 17))])
 
         ims = []
-        for i, k in enumerate(df.columns[4:]):
-            v = values[k]
+        for k in metrics.keys():
+            if k not in df_layout.columns:
+                continue
 
-            plt.subplot(rows, cols, i + 1)
+            v = metrics[k]
+            i = len(ims)
+
+            plt.subplot(rows, cols, (i // cols_r) * cols + (i % cols_r) + 1)
             pivot = df_layout.pivot(index="before", columns="stride", values=k)
             ims.append(
                 plt.imshow(pivot, cmap=v["colormap"], aspect="auto", origin="lower")
@@ -408,8 +482,8 @@ def plot_nmembers_stride(df, app, scaled, output_dir):
                 ymax[il][i] = np.max(pivot.values)
             plt.tight_layout()
 
-        for i, (k, v) in enumerate(zip(derived_values.keys(), derived_values.values())):
-            plt.subplot(rows, cols, i + 17)
+        for i, (k, v) in enumerate(zip(avail_dmetrics.keys(), avail_dmetrics.values())):
+            plt.subplot(rows, cols, i + rgrid_size + 1)
             df_layout[k] = v["formula"](df_layout)
             pivot = df_layout.pivot(index="before", columns="stride", values=k)
             ims.append(
@@ -426,7 +500,7 @@ def plot_nmembers_stride(df, app, scaled, output_dir):
             plt.xticks(np.arange(len(pivot.columns)), pivot.columns)
             plt.yticks(np.arange(len(pivot.index)), pivot.index)
             if "ymax" in v:
-                ymax[il][i + n_values] = v["ymax"]
+                ymax[il][i + n_metrics] = v["ymax"]
             plt.tight_layout()
 
         imgs.append(ims)
@@ -445,6 +519,9 @@ def plot_nmembers_stride(df, app, scaled, output_dir):
         plt.close(fig)
 
 def plot_stride_x(df, app, output_dir, x):
+    """
+    Plot a specific metric x against loop stride for both AOS and SOA layouts.
+    """
     plt.figure(figsize=(6, 4))
 
     for layout in ["aos", "soa"]:
@@ -460,7 +537,7 @@ def plot_stride_x(df, app, output_dir, x):
     # plt.yscale("symlog")
     plt.xlabel("Loop stride")
     # plt.ylabel("Mean Runtime (ms)")
-    plt.ylabel(values[x]["label"])
+    plt.ylabel(metrics[x]["label"])
     plt.title(f"Invariant Mass Number of Arithmetic Vector Instructions vs Loop Stride")
     plt.legend()
     plt.tight_layout()
@@ -468,24 +545,9 @@ def plot_stride_x(df, app, output_dir, x):
         plt.savefig(f"{output_dir}/vector_instr_lines_{app}.{fmt}", bbox_inches="tight")
     plt.close()
 
-formats = ["png", "pdf"]
+formats = ["pdf"]
 
 if __name__ == "__main__":
-    # inputs = [
-    #     # "251008/ngt",
-    #     # "251007/ngt",
-    #     # "251001/ngt",
-    #     # "250929/ngt",
-    #     # "250926/ngt",
-    #     # "251013/ngt",
-
-    #     "251007/local",
-    #     # "251001/local",
-    #     # "250919/local",
-    #     # "251013/local",
-    # ]
-
-    # for input_dir in [f"/data/soa-benchmark-results/{i}" for i in inputs]:
     input_dir = sys.argv[1]
     output_dir = input_dir
 
@@ -497,7 +559,7 @@ if __name__ == "__main__":
     for nm_file in nmembers_files:
         print(f"Processing file: {nm_file}")
         app = os.path.splitext(os.path.basename(nm_file))[0].split("perf_output_")[1]
-        for scaled in [False, True]:
+        for scaled in [True]:
             plot_nmembers_heatmaps(
                 pd.read_csv(nm_file),
                 app,
@@ -514,7 +576,6 @@ if __name__ == "__main__":
         print(f"Processing file: {s_file}")
         app = os.path.splitext(os.path.basename(s_file))[0].split("perf_output_")[1]
         plot_stride_lines(pd.read_csv(s_file), app, output_dir=output_dir)
-        plot_stride_x(pd.read_csv(s_file), app, output_dir=output_dir, x="fp_arith_inst_retired.vector")
 
     nmembers_stride_files = [
         f
