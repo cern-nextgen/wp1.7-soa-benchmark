@@ -29,6 +29,17 @@
 // #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ.MEMBER[INDEX]
 // #endif
 
+#ifdef USE_FMTLIB_POLYFILL
+// std::format polyfill using fmtlib
+#define FMT_HEADER_ONLY
+#include <fmt/format.h>
+namespace std {
+using fmt::format;
+}
+#else
+#include <format>
+#endif
+
 using Vector3D = Eigen::Vector3d;
 using Matrix3D = Eigen::Matrix3d;
 

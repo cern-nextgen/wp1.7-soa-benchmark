@@ -2,8 +2,11 @@ cmake_minimum_required(VERSION 3.13)
 
 project(SoABenchmark)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+message(STATUS "Set ENABLE_EDG or ENABLE_CLANG_P2996 to ON to enable additional benchmarks that require \
+EDG or Clang P2996 reflection compiler support")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -Rpass-analysis=loop-vectorize -Rpass=loop-vectorize \
@@ -44,6 +47,11 @@ find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
 link_libraries(benchmark::benchmark Eigen3::Eigen)
 
+if (ENABLE_CLANG_P2996)
+    add_compile_options(-freflection-latest -stdlib=libc++)
+    add_link_options(-stdlib=libc++)
+endif()
+
 include(CheckIncludeFileCXX)
 check_include_file_cxx("format" CXX_FORMAT_SUPPORT)
 if (NOT CXX_FORMAT_SUPPORT)
@@ -67,6 +75,4 @@ add_benchmark_executable(soa_manual soa_manual.cpp)
 
 add_benchmark_executable(aos_manual aos_manual.cpp)
 
-if (ENABLE_EDG)
-    add_subdirectory(refl)
-endif()
+add_subdirectory(refl)
