@@ -1,0 +1,49 @@
+name: run benchmark with soa_refl
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'p2996_refl'
+      - 'main'
+
+jobs:
+  soa-benchmark:
+    runs-on: cern-nextgen-h100
+    container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark-refl:latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: rebuild google benchmark with libc++
+        run: |
+          cd /root/benchmark/build
+          cmake . -DBENCHMARK_DOWNLOAD_DEPENDENCIES=on -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_C_FLAGS="-stdlib=libc++"
+          cmake --build . -j $(nproc)
+          cd /root/soa-benchmark
+      - name: build and compile
+        run: |
+          cmake -DENABLE_CLANG_P2996=ON -B ${{github.workspace}}
+          cmake --build ${{github.workspace}} --verbose
+        env:
+          CXX: /root/clang-p2996/build/bin/clang++
+          CC: /root/clang-p2996/build/bin/clang
+      - name: run benchmarks
+        run: |
+          python3 run_benchmarks.py ${{github.workspace}} refl/soa_versions_with_clang_p2996.csv
+          python3 plot_benchmarks.py ${{github.workspace}} refl/soa_versions_with_clang_p2996.csv
+          echo "Files in Workspace Directory:"
+          ls -l ${{github.workspace}}
+      - name: collect artifacts
+        run: |
+          mkdir soa-benchmark-results
+          mv ${{github.workspace}}/*.png  soa-benchmark-results/
+          mv ${{github.workspace}}/*.json soa-benchmark-results/
+          mv ${{github.workspace}}/refl/*.json soa-benchmark-results/
+          echo "Files in Results Directory:"
+          ls -l soa-benchmark-results
+      - name: upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: soa-benchmark-results-${{ github.sha }}
+          path: soa-benchmark-results

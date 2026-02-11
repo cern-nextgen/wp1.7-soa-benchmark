@@ -1,0 +1,6 @@
+version,label
+soa_boost,Preprocessor Macros SoA
+soa_wrapper,Template Metaprogramming SoA
+refl/soa_wrapper_refl,Template Metaprogramming SoA with Reflection
+aos_manual,AoS
+soa_manual,Manual SoA
