@@ -17,12 +17,12 @@ jobs:
           submodules: 'recursive'
       - name: rebuild google benchmark with libc++
         run: |
-          cd /root/benchmark/build
+          cd ${{github.workspace}}/benchmark/build
           cmake . -DBENCHMARK_DOWNLOAD_DEPENDENCIES=on -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_C_FLAGS="-stdlib=libc++"
           cmake --build . -j $(nproc)
-          cd /root/soa-benchmark
       - name: build and compile
         run: |
+          ls
           cmake -DENABLE_CLANG_P2996=ON -B ${{github.workspace}}
           cmake --build ${{github.workspace}} --verbose
         env:
