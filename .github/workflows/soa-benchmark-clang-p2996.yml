@@ -19,8 +19,6 @@ jobs:
         run: |
           echo "Checking contents of ../../externals"
           ls -l ../../externals
-          echo "Checking contents of ../../temp"
-          ls -l ../../temp
           echo "Checking contents of /root"
           ls -l /root
       - name: build and compile
