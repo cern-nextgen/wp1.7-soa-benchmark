@@ -19,6 +19,7 @@ jobs:
         run: |
           cd /root/benchmark
           rm -rf build
+          cmake -E make_directory "build"
           cmake -E chdir "build" cmake -DBENCHMARK_DOWNLOAD_DEPENDENCIES=on -DCMAKE_BUILD_TYPE=Release ../ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_C_FLAGS="-stdlib=libc++"
           cmake --build "build" --config Release
           cmake -E chdir "build" ctest --build-config Release
