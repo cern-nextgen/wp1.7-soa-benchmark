@@ -10,18 +10,23 @@ on:
 jobs:
   soa-benchmark:
     runs-on: cern-nextgen-h100
-    container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark-refl:latest
+    container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark:latest
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
+      - name: print current directory
+        run: |
+          echo "Current Directory: $(pwd)"
+          echo "Contents of Current Directory:"
+          ls -l
       - name: build and compile
         run: |
           cmake -DENABLE_CLANG_P2996=ON -B ${{github.workspace}}
           cmake --build ${{github.workspace}} --verbose
-        env:
-          CXX: /root/clang-p2996/build/bin/clang++
-          CC: /root/clang-p2996/build/bin/clang
+        # env:
+        #   CXX: /root/clang-p2996/build/bin/clang++
+        #   CC: /root/clang-p2996/build/bin/clang
       - name: run benchmarks
         run: |
           python3 run_benchmarks.py ${{github.workspace}} refl/soa_versions_with_clang_p2996.csv
