@@ -22,10 +22,13 @@ jobs:
           cmake --build "build" --config Release
           cmake -E chdir "build" ctest --build-config Release
           cmake --build "build" --config Release --target install
+        env:
+          CXX: clang++
+          CC: clang
       - name: build and compile
         run: |
           cmake -DENABLE_CLANG_P2996=ON -DCMAKE_CXX_COMPILER=/root/clang-p2996/build/bin/clang++ -DCMAKE_C_COMPILER=/root/clang-p2996/build/bin/clang -B ${{github.workspace}}
-          cmake --build ${{github.workspace}} --verbose
+          cmake --build ${{github.workspace}} --verbose -j$(nproc)
       - name: run benchmarks
         run: |
           python3 run_benchmarks.py ${{github.workspace}} refl/soa_versions_with_clang_p2996.csv
