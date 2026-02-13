@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 'p2996_refl'
-      - 'main'
+      - "p2996_refl"
+      - "main"
 
 jobs:
   soa-benchmark:
@@ -14,20 +14,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
       - name: print current directory
         run: |
-          echo "Checking contents of ../../externals"
-          ls -l ../../externals
-          echo "Checking contents of /root"
-          ls -l /root
+          cd /root/benchmark
+          ls -l
       - name: build and compile
         run: |
-          cmake -DENABLE_CLANG_P2996=ON -B ${{github.workspace}}
+          cmake -DENABLE_CLANG_P2996=ON -DCMAKE_CXX_COMPILER=/root/clang-p2996/build/bin/clang++ -DCMAKE_C_COMPILER=/root/clang-p2996/build/bin/clang -B ${{github.workspace}}
           cmake --build ${{github.workspace}} --verbose
-        # env:
-        #   CXX: /root/clang-p2996/build/bin/clang++
-        #   CC: /root/clang-p2996/build/bin/clang
       - name: run benchmarks
         run: |
           python3 run_benchmarks.py ${{github.workspace}} refl/soa_versions_with_clang_p2996.csv
