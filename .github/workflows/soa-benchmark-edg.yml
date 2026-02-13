@@ -1,4 +1,4 @@
-name: run benchmark with soa_refl
+name: run benchmark with EDG
 
 on:
   workflow_dispatch:

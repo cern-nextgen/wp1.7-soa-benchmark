@@ -1,4 +1,4 @@
-name: run benchmark with soa_refl
+name: run benchmark with Clang P2996
 
 on:
   workflow_dispatch:
@@ -20,13 +20,13 @@ jobs:
           cd /root/benchmark
           rm -rf build
           cmake -E make_directory "build"
-          cmake -E chdir "build" cmake -DBENCHMARK_DOWNLOAD_DEPENDENCIES=on -DCMAKE_BUILD_TYPE=Release ../ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_C_FLAGS="-stdlib=libc++"
+          cmake -E chdir "build" cmake -DBENCHMARK_DOWNLOAD_DEPENDENCIES=on -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_C_FLAGS="-stdlib=libc++" ../
           cmake --build "build" --config Release
           cmake -E chdir "build" ctest --build-config Release
           cmake --build "build" --config Release --target install
         env:
-          CXX: clang++
-          CC: clang
+          CXX: /usr/bin/clang++
+          CC: /usr/bin/clang
       - name: build and compile
         run: |
           cmake -DENABLE_CLANG_P2996=ON -DCMAKE_CXX_COMPILER=/root/clang-p2996/build/bin/clang++ -DCMAKE_C_COMPILER=/root/clang-p2996/build/bin/clang -B ${{github.workspace}}
