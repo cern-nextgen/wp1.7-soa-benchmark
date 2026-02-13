@@ -47,7 +47,7 @@ find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
 link_libraries(benchmark::benchmark Eigen3::Eigen)
 
-meassage(STATUS "Location of benchmark library: ${benchmark_DIR}")
+message(STATUS "Location of benchmark library: ${benchmark_DIR}")
 
 if (ENABLE_CLANG_P2996)
     add_compile_options(-freflection-latest -stdlib=libc++)

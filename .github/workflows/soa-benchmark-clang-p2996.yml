@@ -17,10 +17,12 @@ jobs:
           submodules: 'recursive'
       - name: print current directory
         run: |
-          echo "Current Directory: $(pwd)"
-          echo "Contents of Current Directory:"
-          ls -l ../../
-          ls -l /
+          echo "Checking contents of ../../externals"
+          ls -l ../../externals
+          echo "Checking contents of ../../temp"
+          ls -l ../../temp
+          echo "Checking contents of /root"
+          ls -l /root
       - name: build and compile
         run: |
           cmake -DENABLE_CLANG_P2996=ON -B ${{github.workspace}}
