@@ -19,7 +19,7 @@ jobs:
         run: |
           echo "Current Directory: $(pwd)"
           echo "Contents of Current Directory:"
-          ls -l
+          ls -l ../
       - name: build and compile
         run: |
           cmake -DENABLE_CLANG_P2996=ON -B ${{github.workspace}}
