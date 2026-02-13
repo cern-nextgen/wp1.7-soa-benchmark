@@ -19,9 +19,6 @@ jobs:
         run: |
           ls ${{github.workspace}}
           ls /
-          # cd ${{github.workspace}}/benchmark/build
-          # cmake . -DBENCHMARK_DOWNLOAD_DEPENDENCIES=on -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_C_FLAGS="-stdlib=libc++"
-          # cmake --build . -j $(nproc)
       - name: build and compile
         run: |
           cmake -DENABLE_CLANG_P2996=ON -B ${{github.workspace}}
