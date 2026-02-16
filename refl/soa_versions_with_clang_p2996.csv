@@ -1,5 +1,4 @@
 version,label
-refl/struct_spliter,SoA Wrapper
+refl/soa_struct_spliter,SoA Wrapper
 refl/soa_wrapper_refl,SoA Struct Splitter
-aos_manual,AoS
 soa_manual,Manual SoA
