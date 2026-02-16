@@ -7,6 +7,11 @@ on:
       - "p2996_refl"
       - "main"
 
+env:
+  CXX: /root/clang-p2996/build/bin/clang++
+  CC: /root/clang-p2996/build/bin/clang
+  LD_LIBRARY_PATH: /root/clang-p2996/build/lib/x86_64-unknown-linux-gnu/
+
 jobs:
   soa-benchmark:
     runs-on: cern-nextgen-h100
@@ -15,19 +20,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: "recursive"
+          ref: "p2996_refl"
       - name: rebuild google benchmark with libc++
         run: |
           dnf install -y libc++-devel
           cd /root/benchmark
           rm -rf build
           cmake -E make_directory "build"
-          cmake -E chdir "build" cmake -DBENCHMARK_DOWNLOAD_DEPENDENCIES=on -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_C_FLAGS="-stdlib=libc++" ../
+          cmake -E chdir "build" cmake -DBENCHMARK_ENABLE_ASSEMBLY_TESTS=off -DHAVE_STD_REGEX=on -DCMAKE_CXX_COMPILER=/root/clang-p2996/build/bin/clang++ -DBENCHMARK_DOWNLOAD_DEPENDENCIES=on -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_C_FLAGS="-stdlib=libc++" ../
           cmake --build "build" --config Release
           cmake -E chdir "build" ctest --build-config Release
           cmake --build "build" --config Release --target install
-        env:
-          CXX: /usr/bin/clang++
-          CC: /usr/bin/clang
       - name: build and compile
         run: |
           cmake -DENABLE_CLANG_P2996=ON -DCMAKE_CXX_COMPILER=/root/clang-p2996/build/bin/clang++ -DCMAKE_C_COMPILER=/root/clang-p2996/build/bin/clang -B ${{github.workspace}}
