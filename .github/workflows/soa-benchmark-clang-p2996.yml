@@ -23,7 +23,6 @@ jobs:
           ref: "p2996_refl"
       - name: rebuild google benchmark with libc++
         run: |
-          dnf install -y libc++-devel
           cd /root/benchmark
           rm -rf build
           cmake -E make_directory "build"
