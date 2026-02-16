@@ -1,6 +1,5 @@
 version,label
-soa_boost,Preprocessor Macros SoA
-soa_wrapper,Template Metaprogramming SoA
-refl/soa_wrapper_refl,Template Metaprogramming SoA with Reflection
+refl/struct_spliter,SoA Wrapper
+refl/soa_wrapper_refl,SoA Struct Splitter
 aos_manual,AoS
 soa_manual,Manual SoA
