@@ -33,7 +33,7 @@ jobs:
       - name: build and compile
         run: |
           cmake -DENABLE_CLANG_P2996=ON -DCMAKE_CXX_COMPILER=/root/clang-p2996/build/bin/clang++ -DCMAKE_C_COMPILER=/root/clang-p2996/build/bin/clang -B ${{github.workspace}}
-          cmake --build ${{github.workspace}} --verbose -j$(nproc)
+          cmake --build ${{github.workspace}} --verbose -j$(nproc) --target soa_manual soa_struct_splitter soa_token_injection
       - name: run benchmarks
         run: |
           python3 run_benchmarks.py ${{github.workspace}} refl/soa_versions_with_clang_p2996.csv
