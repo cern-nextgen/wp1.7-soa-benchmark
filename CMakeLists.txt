@@ -9,8 +9,7 @@ message(STATUS "Set ENABLE_EDG or ENABLE_CLANG_P2996 to ON to enable additional 
 EDG or Clang P2996 reflection compiler support")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -Rpass-analysis=loop-vectorize -Rpass=loop-vectorize \
--Rpass-missed=loop-vectorize -march=native -funroll-loops -ffast-math -funsafe-math-optimizations -ftime-report")
+    set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -march=native -funroll-loops -ffast-math -funsafe-math-optimizations -ftime-report -ftime-trace")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -fopt-info-vec-missed -march=native -funroll-loops -ffast-math -ftime-report")
 endif()
