@@ -36,8 +36,6 @@ jobs:
           cmake --build ${{github.workspace}} --verbose -j$(nproc) --target soa_manual soa_struct_splitter soa_wrapper_refl
       - name: run benchmarks
         run: |
-          ls -l ${{github.workspace}}
-          ls -l ${{github.workspace}}/refl
           python3 run_benchmarks.py ${{github.workspace}} refl/soa_versions_with_clang_p2996.csv
           python3 plot_benchmarks.py ${{github.workspace}} refl/soa_versions_with_clang_p2996.csv
           echo "Files in Workspace Directory:"
