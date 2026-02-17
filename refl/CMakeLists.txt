@@ -1,5 +1,6 @@
 if (ENABLE_EDG)
     add_benchmark_executable(soa_token_injection soa_token_injection.cpp)
+    target_include_directories(soa_token_injection PUBLIC reflmempp/edg/include reflmempp/edg/include/kokkos/include/mdspan )
 endif()
 
 if (ENABLE_CLANG_P2996)
