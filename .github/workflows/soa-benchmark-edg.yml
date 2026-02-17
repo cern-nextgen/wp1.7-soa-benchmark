@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - 'p2996_refl'
       - 'reflmempp'
       - 'main'
 
