@@ -9,14 +9,14 @@ struct S2 {
     int &x0, &x1;
 };
 
-template <auto Members>
+template <size_t... Is>
 struct SubS2;
 consteval
 {
     SplitStruct<S2, SubS2>(SplitOp({0}), SplitOp({1}));
 }
 
-using S2SoA = PartitionedContainerContiguous<S2, SubS2<SplitOp({0}).data()>, SubS2<SplitOp({1}).data()>>;
+using S2SoA = PartitionedContainerContiguous<S2, SubS2<0>, SubS2<1>>;
 
 struct S10 {
     float &x0, &x1;
@@ -26,7 +26,7 @@ struct S10 {
     Eigen::Matrix3d &x8, &x9;
 };
 
-template <auto Members>
+template <size_t... Is>
 struct SubS10;
 consteval
 {
@@ -34,17 +34,15 @@ consteval
                              SplitOp({6}), SplitOp({7}), SplitOp({8}), SplitOp({9}));
 }
 
-using S10SoA = PartitionedContainerContiguous<
-    S10, SubS10<SplitOp({0}).data()>, SubS10<SplitOp({1}).data()>, SubS10<SplitOp({2}).data()>,
-    SubS10<SplitOp({3}).data()>, SubS10<SplitOp({4}).data()>, SubS10<SplitOp({5}).data()>, SubS10<SplitOp({6}).data()>,
-    SubS10<SplitOp({7}).data()>, SubS10<SplitOp({8}).data()>, SubS10<SplitOp({9}).data()>>;
+using S10SoA = PartitionedContainerContiguous<S10, SubS10<0>, SubS10<1>, SubS10<2>, SubS10<3>, SubS10<4>, SubS10<5>,
+                                              SubS10<6>, SubS10<7>, SubS10<8>, SubS10<9>>;
 
 struct S32 {
     float &x0, &x1, &x2, &x3, &x4, &x5, &x6, &x7, &x8, &x9, &x10, &x11, &x12, &x13, &x14, &x15, &x16, &x17, &x18, &x19,
         &x20, &x21, &x22, &x23, &x24, &x25, &x26, &x27, &x28, &x29, &x30, &x31;
 };
 
-template <auto Members>
+template <size_t... Is>
 struct SubS32;
 consteval
 {
@@ -56,17 +54,12 @@ consteval
                              SplitOp({30}), SplitOp({31}));
 }
 
-using S32SoA = PartitionedContainerContiguous<
-    S32, SubS32<SplitOp({0}).data()>, SubS32<SplitOp({1}).data()>, SubS32<SplitOp({2}).data()>,
-    SubS32<SplitOp({3}).data()>, SubS32<SplitOp({4}).data()>, SubS32<SplitOp({5}).data()>, SubS32<SplitOp({6}).data()>,
-    SubS32<SplitOp({7}).data()>, SubS32<SplitOp({8}).data()>, SubS32<SplitOp({9}).data()>, SubS32<SplitOp({10}).data()>,
-    SubS32<SplitOp({11}).data()>, SubS32<SplitOp({12}).data()>, SubS32<SplitOp({13}).data()>,
-    SubS32<SplitOp({14}).data()>, SubS32<SplitOp({15}).data()>, SubS32<SplitOp({16}).data()>,
-    SubS32<SplitOp({17}).data()>, SubS32<SplitOp({18}).data()>, SubS32<SplitOp({19}).data()>,
-    SubS32<SplitOp({20}).data()>, SubS32<SplitOp({21}).data()>, SubS32<SplitOp({22}).data()>,
-    SubS32<SplitOp({23}).data()>, SubS32<SplitOp({24}).data()>, SubS32<SplitOp({25}).data()>,
-    SubS32<SplitOp({26}).data()>, SubS32<SplitOp({27}).data()>, SubS32<SplitOp({28}).data()>,
-    SubS32<SplitOp({29}).data()>, SubS32<SplitOp({30}).data()>, SubS32<SplitOp({31}).data()>>;
+using S32SoA =
+    PartitionedContainerContiguous<S32, SubS32<0>, SubS32<1>, SubS32<2>, SubS32<3>, SubS32<4>, SubS32<5>, SubS32<6>,
+                                   SubS32<7>, SubS32<8>, SubS32<9>, SubS32<10>, SubS32<11>, SubS32<12>, SubS32<13>,
+                                   SubS32<14>, SubS32<15>, SubS32<16>, SubS32<17>, SubS32<18>, SubS32<19>, SubS32<20>,
+                                   SubS32<21>, SubS32<22>, SubS32<23>, SubS32<24>, SubS32<25>, SubS32<26>, SubS32<27>,
+                                   SubS32<28>, SubS32<29>, SubS32<30>, SubS32<31>>;
 
 struct S64 {
     double &x0, &x1, &x2, &x3, &x4, &x5, &x6, &x7, &x8, &x9, &x10, &x11, &x12;
@@ -76,7 +69,7 @@ struct S64 {
     Eigen::Matrix3d &x51, &x52, &x53, &x54, &x55, &x56, &x57, &x58, &x59, &x60, &x61, &x62, &x63;
 };
 
-template <auto Members>
+template <size_t... Is>
 struct SubS64;
 consteval
 {
@@ -93,71 +86,53 @@ consteval
 }
 
 using S64SoA = PartitionedContainerContiguous<
-    S64, SubS64<SplitOp({0}).data()>, SubS64<SplitOp({1}).data()>, SubS64<SplitOp({2}).data()>,
-    SubS64<SplitOp({3}).data()>, SubS64<SplitOp({4}).data()>, SubS64<SplitOp({5}).data()>, SubS64<SplitOp({6}).data()>,
-    SubS64<SplitOp({7}).data()>, SubS64<SplitOp({8}).data()>, SubS64<SplitOp({9}).data()>, SubS64<SplitOp({10}).data()>,
-    SubS64<SplitOp({11}).data()>, SubS64<SplitOp({12}).data()>, SubS64<SplitOp({13}).data()>,
-    SubS64<SplitOp({14}).data()>, SubS64<SplitOp({15}).data()>, SubS64<SplitOp({16}).data()>,
-    SubS64<SplitOp({17}).data()>, SubS64<SplitOp({18}).data()>, SubS64<SplitOp({19}).data()>,
-    SubS64<SplitOp({20}).data()>, SubS64<SplitOp({21}).data()>, SubS64<SplitOp({22}).data()>,
-    SubS64<SplitOp({23}).data()>, SubS64<SplitOp({24}).data()>, SubS64<SplitOp({25}).data()>,
-    SubS64<SplitOp({26}).data()>, SubS64<SplitOp({27}).data()>, SubS64<SplitOp({28}).data()>,
-    SubS64<SplitOp({29}).data()>, SubS64<SplitOp({30}).data()>, SubS64<SplitOp({31}).data()>,
-    SubS64<SplitOp({32}).data()>, SubS64<SplitOp({33}).data()>, SubS64<SplitOp({34}).data()>,
-    SubS64<SplitOp({35}).data()>, SubS64<SplitOp({36}).data()>, SubS64<SplitOp({37}).data()>,
-    SubS64<SplitOp({38}).data()>, SubS64<SplitOp({39}).data()>, SubS64<SplitOp({40}).data()>,
-    SubS64<SplitOp({41}).data()>, SubS64<SplitOp({42}).data()>, SubS64<SplitOp({43}).data()>,
-    SubS64<SplitOp({44}).data()>, SubS64<SplitOp({45}).data()>, SubS64<SplitOp({46}).data()>,
-    SubS64<SplitOp({47}).data()>, SubS64<SplitOp({48}).data()>, SubS64<SplitOp({49}).data()>,
-    SubS64<SplitOp({50}).data()>, SubS64<SplitOp({51}).data()>, SubS64<SplitOp({52}).data()>,
-    SubS64<SplitOp({53}).data()>, SubS64<SplitOp({54}).data()>, SubS64<SplitOp({55}).data()>,
-    SubS64<SplitOp({56}).data()>, SubS64<SplitOp({57}).data()>, SubS64<SplitOp({58}).data()>,
-    SubS64<SplitOp({59}).data()>, SubS64<SplitOp({60}).data()>, SubS64<SplitOp({61}).data()>,
-    SubS64<SplitOp({62}).data()>, SubS64<SplitOp({63}).data()>>;
+    S64, SubS64<0>, SubS64<1>, SubS64<2>, SubS64<3>, SubS64<4>, SubS64<5>, SubS64<6>, SubS64<7>, SubS64<8>, SubS64<9>,
+    SubS64<0>, SubS64<1>, SubS64<2>, SubS64<3>, SubS64<4>, SubS64<5>, SubS64<6>, SubS64<7>, SubS64<8>, SubS64<9>,
+    SubS64<0>, SubS64<1>, SubS64<2>, SubS64<3>, SubS64<4>, SubS64<5>, SubS64<6>, SubS64<7>, SubS64<8>, SubS64<9>,
+    SubS64<0>, SubS64<1>, SubS64<2>, SubS64<3>, SubS64<4>, SubS64<5>, SubS64<6>, SubS64<7>, SubS64<8>, SubS64<9>,
+    SubS64<0>, SubS64<1>, SubS64<2>, SubS64<3>, SubS64<4>, SubS64<5>, SubS64<6>, SubS64<7>, SubS64<8>, SubS64<9>,
+    SubS64<0>, SubS64<1>, SubS64<2>, SubS64<3>, SubS64<4>, SubS64<5>, SubS64<6>, SubS64<7>, SubS64<8>, SubS64<9>,
+    SubS64<0>, SubS64<1>, SubS64<2>, SubS64<3>>;
 
 struct Snbody {
     float &x, &y, &z, &vx, &vy, &vz;
 };
 
-template <auto Members>
+template <size_t... Is>
 struct SubSnbody;
 consteval
 {
     SplitStruct<Snbody, SubSnbody>(SplitOp({0}), SplitOp({1}), SplitOp({2}), SplitOp({3}), SplitOp({4}), SplitOp({5}));
 }
 
-using SnbodySoA = PartitionedContainerContiguous<Snbody, SubSnbody<SplitOp({0}).data()>, SubSnbody<SplitOp({1}).data()>,
-                                                 SubSnbody<SplitOp({2}).data()>, SubSnbody<SplitOp({3}).data()>,
-                                                 SubSnbody<SplitOp({4}).data()>, SubSnbody<SplitOp({5}).data()>>;
+using SnbodySoA = PartitionedContainerContiguous<Snbody, SubSnbody<0>, SubSnbody<1>, SubSnbody<2>, SubSnbody<3>,
+                                                 SubSnbody<4>, SubSnbody<5>>;
 
 struct Sstencil {
     double &src, &dst, &rhs;
 };
 
-template <auto Members>
+template <size_t... Is>
 struct SubSstencil;
 consteval
 {
     SplitStruct<Sstencil, SubSstencil>(SplitOp({0}), SplitOp({1}), SplitOp({2}));
 }
 
-using SstencilSoA = PartitionedContainerContiguous<Sstencil, SubSstencil<SplitOp({0}).data()>,
-                                                   SubSstencil<SplitOp({1}).data()>, SubSstencil<SplitOp({2}).data()>>;
+using SstencilSoA = PartitionedContainerContiguous<Sstencil, SubSstencil<0>, SubSstencil<1>, SubSstencil<2>>;
 
 struct PxPyPzM {
     double &x, &y, &z, &M;
 };
 
-template <auto Members>
+template <size_t... Is>
 struct SubPxPyPzM;
 consteval
 {
     SplitStruct<PxPyPzM, SubPxPyPzM>(SplitOp({0}), SplitOp({1}), SplitOp({2}), SplitOp({3}));
 }
 
-using PxPyPzMSoA =
-    PartitionedContainerContiguous<PxPyPzM, SubPxPyPzM<SplitOp({0}).data()>, SubPxPyPzM<SplitOp({1}).data()>,
-                                   SubPxPyPzM<SplitOp({2}).data()>, SubPxPyPzM<SplitOp({3}).data()>>;
+using PxPyPzMSoA = PartitionedContainerContiguous<PxPyPzM, SubPxPyPzM<0>, SubPxPyPzM<1>, SubPxPyPzM<2>, SubPxPyPzM<3>>;
 
 /// Register Benchmarks ///
 template <typename SoA, typename N>
