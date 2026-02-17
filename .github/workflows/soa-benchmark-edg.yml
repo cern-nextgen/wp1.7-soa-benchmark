@@ -8,6 +8,10 @@ on:
       - 'reflmempp'
       - 'main'
 
+env:
+  CXX: /usr/bin/g++
+  CC: /usr/bin/gcc
+
 jobs:
   soa-benchmark:
     runs-on: cern-nextgen-h100
