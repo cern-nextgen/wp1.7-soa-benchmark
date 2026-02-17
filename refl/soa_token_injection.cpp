@@ -45,7 +45,7 @@ struct PxPyPzM {
 template <typename S, typename N>
 class Fixture1 : public benchmark::Fixture {
  public:
-    using SoA = rmpp::AoS2SoA<S, Alignment>;
+    using SoA = rmpp::Wrapper<S, Alignment>;
 
     std::byte *buffer;
     SoA t;
@@ -74,8 +74,8 @@ INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencil, N_Large);
 template <typename S1, typename S2, typename N>
 class Fixture2 : public benchmark::Fixture {
  public:
-    using SoA1 = rmpp::AoS2SoA<S1, Alignment>;
-    using SoA2 = rmpp::AoS2SoA<S2, Alignment>;
+    using SoA1 = rmpp::Wrapper<S1, Alignment>;
+    using SoA2 = rmpp::Wrapper<S2, Alignment>;
 
     void *buffer1, *buffer2;
     SoA1 t1;
