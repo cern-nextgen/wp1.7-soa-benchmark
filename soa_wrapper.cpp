@@ -1,22 +1,56 @@
-#include <span>
+#include <type_traits>
 
 #include "benchmark.h"
-#include "wrapper/factory.h"
-#include "wrapper/wrapper.h"
+#include "memlayout/wrapper.h"
 
 #include <Eigen/Core>
 
+template <class T>
+T* malloc_helper(std::size_t n) {
+    return reinterpret_cast<T*>(std::malloc(n * sizeof(T)));
+}
+
+struct mallocator {
+    std::size_t n;
+    template <class ...Args>
+    void operator()(Args*& ...args) const { ((args = malloc_helper<Args>(n)), ...); }
+};
+
+struct deallocator {
+    template <class ...Args>
+    void operator()(Args*& ...args) const { ((std::free(args), args = nullptr), ...); }
+};
+
+template <class ArrayType>
+void allocate(ArrayType& w, std::size_t n) {
+    if constexpr (ArrayType::layout_type == memlayout::Layout::aos) {
+        using value_type = std::remove_pointer<typename ArrayType::Data>::type;
+        w.data = malloc_helper<value_type>(n);
+    } else {    
+        w.apply(mallocator{n});
+    }
+}
+
+template <class ArrayType>
+void deallocate(ArrayType& w) {
+    if constexpr (ArrayType::layout_type == memlayout::Layout::aos) {
+        std::free(w.data);
+    } else {    
+        w.apply(deallocator{});
+    }
+};
+
 template <template <class> class F>
 struct S2 {
-    template<template <class> class F_new>
-    operator S2<F_new>() { return {x0, x1}; }
+    MEMLAYOUT_APPLY_UNARY(x0, x1)
+    MEMLAYOUT_APPLY_BINARY(S2, MEMLAYOUT_EXPAND(x0), MEMLAYOUT_EXPAND(x1))
     F<int> x0, x1;
 };
 
 template <template <class> class F>
 struct S10 {
-    template <template <class> class F_new>
-    operator S10<F_new>() { return {x0, x1, x2, x3, x4, x5, x6, x7, x8, x9}; }
+    MEMLAYOUT_APPLY_UNARY(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9)
+    MEMLAYOUT_APPLY_BINARY(S10, MEMLAYOUT_EXPAND(x0), MEMLAYOUT_EXPAND(x1), MEMLAYOUT_EXPAND(x2), MEMLAYOUT_EXPAND(x3), MEMLAYOUT_EXPAND(x4), MEMLAYOUT_EXPAND(x5), MEMLAYOUT_EXPAND(x6), MEMLAYOUT_EXPAND(x7), MEMLAYOUT_EXPAND(x8), MEMLAYOUT_EXPAND(x9))
     F<float> x0, x1;
     F<double> x2, x3;
     F<int> x4, x5;
@@ -26,27 +60,27 @@ struct S10 {
 
 template <template <class> class F>
 struct S32 {
-    template <template <class> class F_new>
-    operator S32<F_new>() {
-        return {x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12,
-        x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25,
-        x26, x27, x28, x29, x30, x31};
-    }
-    F<float> x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12,
-        x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25,
-        x26, x27, x28, x29, x30, x31;
+    MEMLAYOUT_APPLY_UNARY(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x26, x27, x28, x29, x30, x31)
+    MEMLAYOUT_APPLY_BINARY(S32, MEMLAYOUT_EXPAND(x0), MEMLAYOUT_EXPAND(x1), MEMLAYOUT_EXPAND(x2), MEMLAYOUT_EXPAND(x3), MEMLAYOUT_EXPAND(x4), MEMLAYOUT_EXPAND(x5), MEMLAYOUT_EXPAND(x6), MEMLAYOUT_EXPAND(x7), MEMLAYOUT_EXPAND(x8), MEMLAYOUT_EXPAND(x9), MEMLAYOUT_EXPAND(x10), MEMLAYOUT_EXPAND(x11), MEMLAYOUT_EXPAND(x12), MEMLAYOUT_EXPAND(x13), MEMLAYOUT_EXPAND(x14), MEMLAYOUT_EXPAND(x15), MEMLAYOUT_EXPAND(x16), MEMLAYOUT_EXPAND(x17), MEMLAYOUT_EXPAND(x18), MEMLAYOUT_EXPAND(x19), MEMLAYOUT_EXPAND(x20), MEMLAYOUT_EXPAND(x21), MEMLAYOUT_EXPAND(x22), MEMLAYOUT_EXPAND(x23), MEMLAYOUT_EXPAND(x24), MEMLAYOUT_EXPAND(x25), MEMLAYOUT_EXPAND(x26), MEMLAYOUT_EXPAND(x27), MEMLAYOUT_EXPAND(x28), MEMLAYOUT_EXPAND(x29), MEMLAYOUT_EXPAND(x30), MEMLAYOUT_EXPAND(x31))
+    F<float> x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x26, x27, x28, x29, x30, x31;
 };
 
 template <template <class> class F>
 struct S64 {
-    template <template <class> class F_new>
-    operator S64<F_new>() { return {
+    MEMLAYOUT_APPLY_UNARY(
         x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12,
         x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25,
         x26, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38,
         x39, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50,
         x51, x52, x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63
-    }; }
+    )
+    MEMLAYOUT_APPLY_BINARY(S64,
+        MEMLAYOUT_EXPAND(x0), MEMLAYOUT_EXPAND(x1), MEMLAYOUT_EXPAND(x2), MEMLAYOUT_EXPAND(x3), MEMLAYOUT_EXPAND(x4), MEMLAYOUT_EXPAND(x5), MEMLAYOUT_EXPAND(x6), MEMLAYOUT_EXPAND(x7), MEMLAYOUT_EXPAND(x8), MEMLAYOUT_EXPAND(x9), MEMLAYOUT_EXPAND(x10), MEMLAYOUT_EXPAND(x11), MEMLAYOUT_EXPAND(x12),
+        MEMLAYOUT_EXPAND(x13), MEMLAYOUT_EXPAND(x14), MEMLAYOUT_EXPAND(x15), MEMLAYOUT_EXPAND(x16), MEMLAYOUT_EXPAND(x17), MEMLAYOUT_EXPAND(x18), MEMLAYOUT_EXPAND(x19), MEMLAYOUT_EXPAND(x20), MEMLAYOUT_EXPAND(x21), MEMLAYOUT_EXPAND(x22), MEMLAYOUT_EXPAND(x23), MEMLAYOUT_EXPAND(x24), MEMLAYOUT_EXPAND(x25),
+        MEMLAYOUT_EXPAND(x26), MEMLAYOUT_EXPAND(x27), MEMLAYOUT_EXPAND(x28), MEMLAYOUT_EXPAND(x29), MEMLAYOUT_EXPAND(x30), MEMLAYOUT_EXPAND(x31), MEMLAYOUT_EXPAND(x32), MEMLAYOUT_EXPAND(x33), MEMLAYOUT_EXPAND(x34), MEMLAYOUT_EXPAND(x35), MEMLAYOUT_EXPAND(x36), MEMLAYOUT_EXPAND(x37), MEMLAYOUT_EXPAND(x38),
+        MEMLAYOUT_EXPAND(x39), MEMLAYOUT_EXPAND(x40), MEMLAYOUT_EXPAND(x41), MEMLAYOUT_EXPAND(x42), MEMLAYOUT_EXPAND(x43), MEMLAYOUT_EXPAND(x44), MEMLAYOUT_EXPAND(x45), MEMLAYOUT_EXPAND(x46), MEMLAYOUT_EXPAND(x47), MEMLAYOUT_EXPAND(x48), MEMLAYOUT_EXPAND(x49), MEMLAYOUT_EXPAND(x50),
+        MEMLAYOUT_EXPAND(x51), MEMLAYOUT_EXPAND(x52), MEMLAYOUT_EXPAND(x53), MEMLAYOUT_EXPAND(x54), MEMLAYOUT_EXPAND(x55), MEMLAYOUT_EXPAND(x56), MEMLAYOUT_EXPAND(x57), MEMLAYOUT_EXPAND(x58), MEMLAYOUT_EXPAND(x59), MEMLAYOUT_EXPAND(x60), MEMLAYOUT_EXPAND(x61), MEMLAYOUT_EXPAND(x62), MEMLAYOUT_EXPAND(x63)
+    )
     F<float> x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12;
     F<double> x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25;
     F<int> x26, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38;
@@ -56,97 +90,69 @@ struct S64 {
 
 template <template <class> class F>
 struct Snbody {
-    template<template <class> class F_new>
-    operator Snbody<F_new>() { return {x, y, z, vx, vy, vz}; }
+    MEMLAYOUT_APPLY_UNARY(x, y, z, vx, vy, vz)
+    MEMLAYOUT_APPLY_BINARY(Snbody, MEMLAYOUT_EXPAND(x), MEMLAYOUT_EXPAND(y), MEMLAYOUT_EXPAND(z), MEMLAYOUT_EXPAND(vx), MEMLAYOUT_EXPAND(vy), MEMLAYOUT_EXPAND(vz))
     F<float> x, y, z, vx, vy, vz;
 };
 
 template <template <class> class F>
 struct Sstencil {
-    template<template <class> class F_new>
-    operator Sstencil<F_new>() { return {src, dst, rhs}; }
+    MEMLAYOUT_APPLY_UNARY(src, dst, rhs)
+    MEMLAYOUT_APPLY_BINARY(Sstencil, MEMLAYOUT_EXPAND(src), MEMLAYOUT_EXPAND(dst), MEMLAYOUT_EXPAND(rhs))
     F<double> src, dst, rhs;
 };
 
 template <template <class> class F>
 struct PxPyPzM {
-    template<template <class> class F_new>
-    operator PxPyPzM<F_new>() { return {x, y, z, M}; }
+    MEMLAYOUT_APPLY_UNARY(x, y, z, M)
+    MEMLAYOUT_APPLY_BINARY(PxPyPzM, MEMLAYOUT_EXPAND(x), MEMLAYOUT_EXPAND(y), MEMLAYOUT_EXPAND(z), MEMLAYOUT_EXPAND(M))
     F<double> x, y, z, M;
 };
 
-constexpr wrapper::layout L = wrapper::layout::soa;
+constexpr memlayout::Layout L = memlayout::Layout::soa;
 
 /// Register Benchmarks ///
-template <typename wrapper_span, typename N>
+template <typename ArrayType, typename N>
 class Fixture1 : public benchmark::Fixture {
  public:
     static constexpr auto n = N::value;
-
-    template <template <class> class F_type>
-    using S = wrapper_span::template S_type<F_type>;
-
-    std::byte *buffer;
-    wrapper_span t;
-
-    void SetUp(::benchmark::State &state) override
-    {
-        std::size_t bytes = n * factory::get_size_in_bytes<S, L>();
-        buffer = new std::byte[bytes];
-        auto s = factory::buffer_wrapper<S, L>(buffer, bytes);
-        t = static_cast<wrapper_span>(s);
-    }
-
-    void TearDown(::benchmark::State &state) override { std::free(buffer); }
+    ArrayType t;
+    void SetUp(::benchmark::State &state) override { allocate<ArrayType>(t, n); }
+    void TearDown(::benchmark::State &state) override { deallocate<ArrayType>(t); }
 };
 
-using S2span = wrapper::wrapper<S2, std::span, L>;
-using S10span = wrapper::wrapper<S10, std::span, L>;
-using S32span = wrapper::wrapper<S32, std::span, L>;
-using S64span = wrapper::wrapper<S64, std::span, L>;
-using Snbodyspan = wrapper::wrapper<Snbody, std::span, L>;
-using Sstencilspan = wrapper::wrapper<Sstencil, std::span, L>;
-using PxPyPzMspan = wrapper::wrapper<PxPyPzM, std::span, L>;
+using S2ArrayType = memlayout::Wrapper<S2, memlayout::pointer, L>;
+using S10ArrayType = memlayout::Wrapper<S10, memlayout::pointer, L>;
+using S32ArrayType = memlayout::Wrapper<S32, memlayout::pointer, L>;
+using S64ArrayType = memlayout::Wrapper<S64, memlayout::pointer, L>;
+using SnbodyArrayType = memlayout::Wrapper<Snbody, memlayout::pointer, L>;
+using SstencilArrayType = memlayout::Wrapper<Sstencil, memlayout::pointer, L>;
+using PxPyPzMArrayType = memlayout::Wrapper<PxPyPzM, memlayout::pointer, L>;
 
-INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2span, N_Large);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2span, N);
-INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10span, N);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUStrided, S32span, N_Large);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64span, N);
-INSTANTIATE_BENCHMARKS_F1(BM_nbody, Snbodyspan, N);
-INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencilspan, N_Large);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2ArrayType, N_Large);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2ArrayType, N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10ArrayType, N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUStrided, S32ArrayType, N_Large);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64ArrayType, N);
+INSTANTIATE_BENCHMARKS_F1(BM_nbody, SnbodyArrayType, N);
+INSTANTIATE_BENCHMARKS_F1(BM_stencil, SstencilArrayType, N_Large);
 
-template <typename wrapper_span1, typename wrapper_span2, typename N>
+template <typename ArrayType1, typename ArrayType2, typename N>
 class Fixture2 : public benchmark::Fixture {
  public:
     static constexpr auto n = N::value;
-
-    template <template <class> class F_type>
-    using S1 = wrapper_span1::template S_type<F_type>;
-
-    template <template <class> class F_type>
-    using S2 = wrapper_span2::template S_type<F_type>;
-
-    std::byte *buffer1, *buffer2;
-    wrapper_span1 t1;
-    wrapper_span2 t2;
-
-    void SetUp(::benchmark::State &state) override
-    {
-        std::size_t bytes1 = n * factory::get_size_in_bytes<S1, L>();
-        buffer1 = new std::byte[bytes1];
-        std::size_t bytes2 = n * factory::get_size_in_bytes<S2, L>();
-        buffer2 = new std::byte[bytes2];
-
-        auto s1 = factory::buffer_wrapper<S1, L>(buffer1, bytes1);
-        auto s2 = factory::buffer_wrapper<S2, L>(buffer2, bytes2);
-        t1 = static_cast<wrapper_span1>(s1);
-        t2 = static_cast<wrapper_span2>(s2);
+    ArrayType1 t1;
+    ArrayType2 t2;
+    void SetUp(::benchmark::State &state) override {
+        allocate<ArrayType1>(t1, n);
+        allocate<ArrayType2>(t2, n);
     }
-
-    void TearDown(::benchmark::State &state) override { std::free(buffer1); std::free(buffer2); }
+    void TearDown(::benchmark::State &state) override {
+        deallocate<ArrayType1>(t1);
+        deallocate<ArrayType2>(t2);
+    }
 };
 
-INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzMspan, PxPyPzMspan, N_Large);
+INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzMArrayType, PxPyPzMArrayType, N_Large);
 
 BENCHMARK_MAIN();

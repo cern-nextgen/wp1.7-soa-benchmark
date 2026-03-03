@@ -57,7 +57,7 @@ target_include_directories(aos_boost PUBLIC boost)
 target_link_libraries(aos_boost Boost::boost)
 
 add_benchmark_executable(soa_wrapper soa_wrapper.cpp)
-target_include_directories(soa_wrapper PUBLIC wrapper)
+target_include_directories(soa_wrapper PUBLIC ${CMAKE_SOURCE_DIR}/memlayout)
 
 add_benchmark_executable(soa_boost soa_boost.cpp)
 target_include_directories(soa_boost PUBLIC boost)
