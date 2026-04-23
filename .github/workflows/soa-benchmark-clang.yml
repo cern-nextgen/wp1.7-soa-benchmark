@@ -21,8 +21,8 @@ jobs:
           CC: /usr/bin/clang
       - name: run benchmarks
         run: |
-          python3 run_benchmarks.py ${{github.workspace}} soa_versions.csv
-          python3 plot_benchmarks.py ${{github.workspace}} soa_versions.csv
+          python3 run_benchmarks.py ${{github.workspace}}
+          python3 plot_benchmarks.py ${{github.workspace}}
           echo "Files in Workspace Directory:"
           ls -l ${{github.workspace}}
       - name: collect artifacts

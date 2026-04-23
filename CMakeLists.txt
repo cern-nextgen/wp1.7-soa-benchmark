@@ -16,12 +16,12 @@ find_package(benchmark REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
 link_libraries(benchmark::benchmark Eigen3::Eigen)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+include_directories(${CMAKE_SOURCE_DIR})
 
-add_executable(soa_wrapper soa_wrapper.cpp)
-target_include_directories(soa_wrapper PUBLIC ${CMAKE_SOURCE_DIR}/memlayout)
+add_subdirectory(manual)
+add_subdirectory(memlayout)
 
-add_executable(soa_manual soa_manual.cpp)
-
-add_executable(aos_manual aos_manual.cpp)
-
-#add_subdirectory(refl)
+if(ENABLE_EDG)
+    add_subdirectory(refl)
+endif()

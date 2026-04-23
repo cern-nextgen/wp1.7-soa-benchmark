@@ -1,9 +1,7 @@
 #include <type_traits>
-
-#include "benchmark.h"
-#include "memlayout/wrapper.h"
-
 #include <Eigen/Core>
+#include "benchmarks/common.h"
+#include "wrapper.h"
 
 template <class T>
 T* malloc_helper(std::size_t n) {
@@ -26,7 +24,7 @@ void allocate(ArrayType& w, std::size_t n) {
     if constexpr (ArrayType::layout_type == memlayout::Layout::aos) {
         using value_type = std::remove_pointer<typename ArrayType::Data>::type;
         w.data = malloc_helper<value_type>(n);
-    } else {    
+    } else {
         w.apply(mallocator{n});
     }
 }
@@ -35,10 +33,10 @@ template <class ArrayType>
 void deallocate(ArrayType& w) {
     if constexpr (ArrayType::layout_type == memlayout::Layout::aos) {
         std::free(w.data);
-    } else {    
+    } else {
         w.apply(deallocator{});
     }
-};
+}
 
 template <template <class> class F>
 struct S2 {
@@ -111,47 +109,60 @@ struct PxPyPzM {
 
 constexpr memlayout::Layout L = memlayout::Layout::soa;
 
-/// Register Benchmarks ///
+using S2ArrayType       = memlayout::Wrapper<S2,       memlayout::pointer, L>;
+using S10ArrayType      = memlayout::Wrapper<S10,      memlayout::pointer, L>;
+using S32ArrayType      = memlayout::Wrapper<S32,      memlayout::pointer, L>;
+using S64ArrayType      = memlayout::Wrapper<S64,      memlayout::pointer, L>;
+using SnbodyArrayType   = memlayout::Wrapper<Snbody,   memlayout::pointer, L>;
+using SstencilArrayType = memlayout::Wrapper<Sstencil, memlayout::pointer, L>;
+using PxPyPzMArrayType  = memlayout::Wrapper<PxPyPzM,  memlayout::pointer, L>;
+
+/// Fixtures ///
+
 template <typename ArrayType, typename N>
 class Fixture1 : public benchmark::Fixture {
- public:
+public:
     static constexpr auto n = N::value;
     ArrayType t;
-    void SetUp(::benchmark::State &state) override { allocate<ArrayType>(t, n); }
-    void TearDown(::benchmark::State &state) override { deallocate<ArrayType>(t); }
+
+    void SetUp(benchmark::State &) override { allocate<ArrayType>(t, n); }
+    void TearDown(benchmark::State &) override { deallocate<ArrayType>(t); }
 };
-
-using S2ArrayType = memlayout::Wrapper<S2, memlayout::pointer, L>;
-using S10ArrayType = memlayout::Wrapper<S10, memlayout::pointer, L>;
-using S32ArrayType = memlayout::Wrapper<S32, memlayout::pointer, L>;
-using S64ArrayType = memlayout::Wrapper<S64, memlayout::pointer, L>;
-using SnbodyArrayType = memlayout::Wrapper<Snbody, memlayout::pointer, L>;
-using SstencilArrayType = memlayout::Wrapper<Sstencil, memlayout::pointer, L>;
-using PxPyPzMArrayType = memlayout::Wrapper<PxPyPzM, memlayout::pointer, L>;
-
-INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2ArrayType, N_Large);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2ArrayType, N);
-INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10ArrayType, N);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUStrided, S32ArrayType, N_Large);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64ArrayType, N);
-INSTANTIATE_BENCHMARKS_F1(BM_nbody, SnbodyArrayType, N);
-INSTANTIATE_BENCHMARKS_F1(BM_stencil, SstencilArrayType, N_Large);
 
 template <typename ArrayType1, typename ArrayType2, typename N>
 class Fixture2 : public benchmark::Fixture {
- public:
+public:
     static constexpr auto n = N::value;
     ArrayType1 t1;
     ArrayType2 t2;
-    void SetUp(::benchmark::State &state) override {
+
+    void SetUp(benchmark::State &) override {
         allocate<ArrayType1>(t1, n);
         allocate<ArrayType2>(t2, n);
     }
-    void TearDown(::benchmark::State &state) override {
+    void TearDown(benchmark::State &) override {
         deallocate<ArrayType1>(t1);
         deallocate<ArrayType2>(t2);
     }
 };
+
+/// Benchmarks ///
+
+#include "benchmarks/bm_easy.h"
+#include "benchmarks/bm_real.h"
+#include "benchmarks/bm_strided.h"
+#include "benchmarks/bm_hard.h"
+#include "benchmarks/bm_nbody.h"
+#include "benchmarks/bm_stencil.h"
+#include "benchmarks/bm_invmass.h"
+
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW,      S2ArrayType,       N_Large);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2ArrayType,       N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW,      S10ArrayType,      N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUStrided,     S32ArrayType,      N_Large);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW,      S64ArrayType,      N);
+INSTANTIATE_BENCHMARKS_F1(BM_nbody,          SnbodyArrayType,   N);
+INSTANTIATE_BENCHMARKS_F1(BM_stencil,        SstencilArrayType, N_Large);
 
 INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzMArrayType, PxPyPzMArrayType, N_Large);
 

@@ -1,13 +1,12 @@
-
 #define __cpp_lib_reflection 20250130 // eccp version
 
 #define EIGEN_SAFE_TO_USE_STANDARD_ASSERT_MACRO 0
 // #define RMPP_DEBUG
 
-#include "benchmark.h"
-#include <Eigen/Core>
-#include "rmpp.h"
 #include <vector>
+#include <Eigen/Core>
+#include "benchmarks/common.h"
+#include "rmpp.h"
 
 struct S2 {
     int &x0, &x1;
@@ -41,66 +40,81 @@ struct PxPyPzM {
     double &x, &y, &z, &M;
 };
 
-/// Register Benchmarks ///
+/// Fixtures ///
+
 template <typename S, typename N>
 class Fixture1 : public benchmark::Fixture {
- public:
+public:
     using SoA = rmpp::AoS2SoA<S, Alignment>;
 
-    std::byte *buffer;
+    std::byte *buffer = nullptr;
     SoA t;
 
     static constexpr auto n = N::value;
 
-    void SetUp(::benchmark::State &state /* unused */) override
+    void SetUp(benchmark::State &) override
     {
         auto byte_size = SoA::ComputeSize(n);
         buffer = reinterpret_cast<std::byte *>(aligned_alloc(Alignment, byte_size));
         t = SoA(buffer, byte_size, n);
     }
 
-    void TearDown(::benchmark::State &state /* unused */) override { std::free(buffer); }
+    void TearDown(benchmark::State &) override
+    {
+        std::free(buffer);
+        buffer = nullptr;
+    }
 
     Fixture1() : t(nullptr, 0, 0) {}
 };
 
-INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW, S2, N_Large);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2, N);
-INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW, S10, N);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW, S64, N);
-INSTANTIATE_BENCHMARKS_F1(BM_nbody, Snbody, N);
-INSTANTIATE_BENCHMARKS_F1(BM_stencil, Sstencil, N_Large);
-
 template <typename S1, typename S2, typename N>
 class Fixture2 : public benchmark::Fixture {
- public:
+public:
     using SoA1 = rmpp::AoS2SoA<S1, Alignment>;
     using SoA2 = rmpp::AoS2SoA<S2, Alignment>;
 
-    void *buffer1, *buffer2;
+    std::byte *buffer1 = nullptr, *buffer2 = nullptr;
     SoA1 t1;
     SoA2 t2;
 
     static constexpr auto n = N::value;
 
-    void SetUp(::benchmark::State &state /* unused */) override
+    void SetUp(benchmark::State &) override
     {
         auto byte_size1 = SoA1::ComputeSize(n);
         auto byte_size2 = SoA2::ComputeSize(n);
         buffer1 = reinterpret_cast<std::byte *>(aligned_alloc(Alignment, byte_size1));
         buffer2 = reinterpret_cast<std::byte *>(aligned_alloc(Alignment, byte_size2));
-        t1 = SoA1(reinterpret_cast<std::byte *>(buffer1), byte_size1, n);
-        t2 = SoA2(reinterpret_cast<std::byte *>(buffer2), byte_size2, n);
+        t1 = SoA1(buffer1, byte_size1, n);
+        t2 = SoA2(buffer2, byte_size2, n);
     }
 
-    void TearDown(::benchmark::State &state /* unused */) override
+    void TearDown(benchmark::State &) override
     {
-        std::free(buffer1);
-        std::free(buffer2);
+        std::free(buffer1); buffer1 = nullptr;
+        std::free(buffer2); buffer2 = nullptr;
     }
 
     Fixture2() : t1(nullptr, 0, 0), t2(nullptr, 0, 0) {}
 };
+
+/// Benchmarks ///
+
+#include "benchmarks/bm_easy.h"
+#include "benchmarks/bm_real.h"
+// bm_strided.h omitted: S32 is not defined for the reflection library
+#include "benchmarks/bm_hard.h"
+#include "benchmarks/bm_nbody.h"
+#include "benchmarks/bm_stencil.h"
+#include "benchmarks/bm_invmass.h"
+
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW,      S2,       N_Large);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2,       N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW,      S10,      N);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW,      S64,      N);
+INSTANTIATE_BENCHMARKS_F1(BM_nbody,          Snbody,   N);
+INSTANTIATE_BENCHMARKS_F1(BM_stencil,        Sstencil, N_Large);
 
 INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzM, PxPyPzM, N_Large);
 

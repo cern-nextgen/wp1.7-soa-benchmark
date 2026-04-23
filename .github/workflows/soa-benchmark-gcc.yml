@@ -18,8 +18,8 @@ jobs:
           cmake --build ${{github.workspace}}
       - name: run benchmarks
         run: |
-          python3 run_benchmarks.py ${{github.workspace}} soa_versions.csv
-          python3 plot_benchmarks.py ${{github.workspace}} soa_versions.csv
+          python3 run_benchmarks.py ${{github.workspace}}
+          python3 plot_benchmarks.py ${{github.workspace}}
           echo "Files in Workspace Directory:"
           ls -l ${{github.workspace}}
       - name: collect artifacts
@@ -34,9 +34,3 @@ jobs:
         with:
           name: soa-benchmark-results
           path: soa-benchmark-results
-      # - name: run soa_wrapper
-      #   run: |
-      #     ${{github.workspace}}/build/soa_wrapper
-      # - name: run soa_boost
-      #   run: |
-      #     ${{github.workspace}}/build/soa_boost

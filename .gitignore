@@ -5,6 +5,10 @@ Makefile
 cmake_install.cmake
 .vscode
 
+# Claude
+.claude
+CLAUDE.md
+
 # Build folders
 /build*
 
