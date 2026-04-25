@@ -7,10 +7,10 @@ import math
 import glob
 
 LABELS = {
-    "aos_manual":  "Manual AoS",
-    "soa_manual":  "Manual SoA",
-    "soa_wrapper": "Template Metaprogramming SoA",
-    "soa_refl":    "Reflection SoA",
+    "aos_manual":       "Manual AoS",
+    "soa_manual":       "Manual SoA",
+    "soa_wrapper":      "Template Metaprogramming SoA",
+    "soa_reflections":  "Reflection SoA",
 }
 
 def label_for(stem):

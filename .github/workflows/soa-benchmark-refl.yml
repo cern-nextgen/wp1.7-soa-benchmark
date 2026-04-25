@@ -1,23 +1,20 @@
-name: run benchmark with soa_refl
+name: run benchmark with soa_reflections
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - 'reflmempp'
-      - 'main'
+      - 'chep2026'
 
 jobs:
   soa-benchmark:
     runs-on: cern-nextgen-h100
-    container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark-refl:latest
+    container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark:latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
       - name: build and compile
         run: |
-          cmake -DENABLE_EDG=ON -B ${{github.workspace}}
+          cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -B ${{github.workspace}}
           cmake --build ${{github.workspace}} --verbose
       - name: run benchmarks
         run: |

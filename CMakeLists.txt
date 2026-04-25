@@ -21,7 +21,4 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 add_subdirectory(manual)
 add_subdirectory(memlayout)
-
-if(ENABLE_EDG)
-    add_subdirectory(refl)
-endif()
+add_subdirectory(reflections)
