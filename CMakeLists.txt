@@ -9,7 +9,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -Rpass-analysis=loop-vectorize -Rpass=loop-vectorize \
 -Rpass-missed=loop-vectorize -march=native -funroll-loops -ffast-math -funsafe-math-optimizations -ftime-report")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -march=native -funroll-loops -ffast-math") # -fopt-info-vec-missed -ftime-report
+    set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -march=native -funroll-loops -ffast-math") # -fopt-info-vec-missed -ftime-report -fno-tree-vectorize
 endif()
 
 find_package(benchmark REQUIRED)

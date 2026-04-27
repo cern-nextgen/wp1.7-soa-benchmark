@@ -20,6 +20,7 @@ using Vector3D = Eigen::Vector3d;
 using Matrix3D = Eigen::Matrix3d;
 
 constexpr std::size_t N[]       = {10, 100, 1000, 10000, 100000};
+//constexpr std::size_t N_medium[] = {1<<12, 1<<16, 1<<20, 1<<24, 1<<28};
 constexpr std::size_t N_Large[] = {10000, 100000, 1000000, 10000000, 100000000};
 constexpr size_t Alignment = 128;
 

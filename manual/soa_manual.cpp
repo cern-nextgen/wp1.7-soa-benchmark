@@ -66,7 +66,7 @@ struct S10 {
 };
 
 struct S32 {
-    float *__restrict__ x0,  *__restrict__ x1,  *__restrict__ x2,  *__restrict__ x3,
+    uint32_t *__restrict__ x0,  *__restrict__ x1,  *__restrict__ x2,  *__restrict__ x3,
           *__restrict__ x4,  *__restrict__ x5,  *__restrict__ x6,  *__restrict__ x7,
           *__restrict__ x8,  *__restrict__ x9,  *__restrict__ x10, *__restrict__ x11,
           *__restrict__ x12, *__restrict__ x13, *__restrict__ x14, *__restrict__ x15,
