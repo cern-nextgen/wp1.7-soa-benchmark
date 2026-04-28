@@ -82,4 +82,11 @@ INSTANTIATE_BENCHMARKS_F1(BM_stencil,        Sstencil, N_Large);
 
 INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, Particle, Particle, N_Large);
 
-BENCHMARK_MAIN();
+int main(int argc, char** argv) {
+    ::benchmark::Initialize(&argc, argv);
+    ::benchmark::AddCustomContext("name", "Manual AoS");
+    if (::benchmark::ReportUnrecognizedArguments(argc, argv)) return 1;
+    ::benchmark::RunSpecifiedBenchmarks();
+    ::benchmark::Shutdown();
+    return 0;
+}

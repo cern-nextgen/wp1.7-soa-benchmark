@@ -1,6 +1,6 @@
 #include "structs.h"
 
-constexpr memlayout::Layout L = memlayout::Layout::soa;
+constexpr memlayout::Layout L = memlayout::Layout::aos;
 
 using S2ArrayType       = memlayout::Wrapper<S2,       memlayout::pointer, L>;
 using S10ArrayType      = memlayout::Wrapper<S10,      memlayout::pointer, L>;
@@ -30,7 +30,7 @@ INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzMArrayType, PxPyPzMArrayType, 
 
 int main(int argc, char** argv) {
     ::benchmark::Initialize(&argc, argv);
-    ::benchmark::AddCustomContext("name", "Template SoA");
+    ::benchmark::AddCustomContext("name", "Template AoS");
     if (::benchmark::ReportUnrecognizedArguments(argc, argv)) return 1;
     ::benchmark::RunSpecifiedBenchmarks();
     ::benchmark::Shutdown();

@@ -100,4 +100,11 @@ INSTANTIATE_BENCHMARKS_F1(BM_stencil,        SstencilSoA, N_Large);
 
 INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzMSoA, PxPyPzMSoA, N_Large);
 
-BENCHMARK_MAIN();
+int main(int argc, char** argv) {
+    ::benchmark::Initialize(&argc, argv);
+    ::benchmark::AddCustomContext("name", "Reflection SoA");
+    if (::benchmark::ReportUnrecognizedArguments(argc, argv)) return 1;
+    ::benchmark::RunSpecifiedBenchmarks();
+    ::benchmark::Shutdown();
+    return 0;
+}
