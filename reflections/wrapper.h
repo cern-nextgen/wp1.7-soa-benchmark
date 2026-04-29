@@ -24,7 +24,7 @@ using const_pointer = const T *;
 //////////////// Reflection utilities
 
 template <class S>
-constexpr std::size_t count_members() {
+consteval std::size_t count_members() {
   return nonstatic_data_members_of(^^S, std::meta::access_context::unchecked()).size();
 }
 
@@ -43,7 +43,7 @@ namespace __impl {
 template <auto... vals>
 struct replicator_type {
   template <typename F>
-  constexpr auto operator>>(F body) const -> decltype(auto) {
+  [[gnu::always_inline]] constexpr auto operator>>(F body) const -> decltype(auto) {
     return body.template operator()<vals...>();
   }
 };
@@ -67,11 +67,11 @@ template <class SF>
 struct RandomAccessAt {
   size_t i;
   template <class... Args>
-  constexpr SF operator()(Args &...args) const {
+  [[gnu::always_inline]] constexpr SF operator()(Args &...args) const {
     return {args[i]...};
   }
   template <class... Args>
-  constexpr SF operator()(const Args &...args) const {
+  [[gnu::always_inline]] constexpr SF operator()(const Args &...args) const {
     return {args[i]...};
   }
 };
@@ -79,11 +79,11 @@ struct RandomAccessAt {
 template <class SF>
 struct AggregateConstructor {
   template <class... Args>
-  constexpr SF operator()(Args &...args) const {
+  [[gnu::always_inline]] constexpr SF operator()(Args &...args) const {
     return {args...};
   }
   template <class... Args>
-  constexpr SF operator()(const Args &...args) const {
+  [[gnu::always_inline]] constexpr SF operator()(const Args &...args) const {
     return {args...};
   }
 };
@@ -98,19 +98,25 @@ struct WrapperGeneratorBase {
   }
 
   class Wrapper : public Base {
+
+    struct apply_helper {
+      template <class Self, class FunctionObject, size_t... Is>
+      [[gnu::always_inline]] constexpr auto operator()(Self* self, FunctionObject&& f, std::index_sequence<Is...>) const {
+        return f(self->[:nsdms(^^Base)[Is]:]...);
+      }
+    };
+  
   public:
+
     template <class FunctionObject>
-    auto apply(FunctionObject &&f) {
-      auto construct_output = [&]<size_t... Is>(std::index_sequence<Is...>) {
-        return f(this->[:nsdms(^^Base)[Is]:]...);
-      };
+    [[gnu::always_inline]] constexpr auto apply(FunctionObject&& f) {
       constexpr auto indices = std::make_index_sequence<count_members<Base>()>{};
-      return construct_output(indices);
+      return apply_helper{}(this, std::forward<FunctionObject>(f), indices);
     }
 
     //////// Random Access operators
 
-    S operator[](size_t i) { return apply(RandomAccessAt<S>{i}); }
+    [[gnu::always_inline]] constexpr S operator[](size_t i) { return apply(RandomAccessAt<S>{i}); }
 
     ////// Constructors
 
