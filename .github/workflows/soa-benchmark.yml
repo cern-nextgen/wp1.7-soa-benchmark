@@ -32,47 +32,47 @@ jobs:
       - name: Plot AoS Large Benchmarks
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/aos_*"
+          libraries: "${{ env.OUTPUT_DIR }}/aos_*.json"
           benchmarks: "CPUStrided CPUEasyRW InvariantMass stencil"
           output: "${{ env.PLOTS_DIR }}/aos_large.${{ env.IMAGE_FILE_EXTENSION }}"
 
       - name: Plot AoS Small Benchmarks
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/aos_*"
+          libraries: "${{ env.OUTPUT_DIR }}/aos_*.json"
           benchmarks: "CPUEasyCompute CPURealRW CPUHardRW nbody"
           output: "${{ env.PLOTS_DIR }}/aos_small.${{ env.IMAGE_FILE_EXTENSION }}"
 
       - name: Plot SoA Large Benchmarks
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/soa_*"
+          libraries: "${{ env.OUTPUT_DIR }}/soa_*.json"
           benchmarks: "CPUStrided CPUEasyRW InvariantMass stencil"
           output: "${{ env.PLOTS_DIR }}/soa_large.${{ env.IMAGE_FILE_EXTENSION }}"
 
       - name: Plot SoA Small Benchmarks
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/soa_*"
+          libraries: "${{ env.OUTPUT_DIR }}/soa_*.json"
           benchmarks: "CPUEasyCompute CPURealRW CPUHardRW nbody"
           output: "${{ env.PLOTS_DIR }}/soa_small.${{ env.IMAGE_FILE_EXTENSION }}"
 
       - name: Plot Manual AoS vs SoA - CPUStrided
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/aos_manual ${{ env.OUTPUT_DIR }}/soa_manual"
+          libraries: "${{ env.OUTPUT_DIR }}/*_manual.json"
           benchmarks: "CPUStrided"
           output: "${{ env.PLOTS_DIR }}/manual_CPUStrided.${{ env.IMAGE_FILE_EXTENSION }}"
 
       - name: Plot Manual AoS vs SoA - Stencil
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/aos_manual ${{ env.OUTPUT_DIR }}/soa_manual"
+          libraries: "${{ env.OUTPUT_DIR }}/*_manual.json"
           benchmarks: "stencil"
           output: "${{ env.PLOTS_DIR }}/manual_stencil.${{ env.IMAGE_FILE_EXTENSION }}"
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: artifacts
           path: |
