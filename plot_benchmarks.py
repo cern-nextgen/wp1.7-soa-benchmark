@@ -41,7 +41,7 @@ if __name__ == "__main__":
     all_libraries  = list(dict.fromkeys(name for _, name in all_data))
 
     colors     = {bm:  plt.cm.tab10(i % 10)                      for i, bm  in enumerate(all_benchmarks)}
-    linestyles = {lib: ["-", "--", "-.", ":"][i % 4]              for i, lib in enumerate(all_libraries)}
+    linestyles = {lib: ["-", "--", ":", "-."][i % 4]              for i, lib in enumerate(all_libraries)}
 
     fig, ax = plt.subplots(figsize=(10, 6))
     time_unit = None
@@ -51,12 +51,11 @@ if __name__ == "__main__":
             time_unit = df["time_unit"].iloc[0]
         for bm in df["benchmark"].unique():
             df_mean = df[(df["benchmark"] == bm) & (df["aggregate_name"] == "mean")]
-            df_std  = df[(df["benchmark"] == bm) & (df["aggregate_name"] == "stddev")]
             if df_mean.empty:
                 continue
-            ax.errorbar(df_mean['n_elem'], df_mean['real_time'], yerr=df_std["real_time"],
-                        color=colors[bm], ls=linestyles[name], marker="o",
-                        label=f"{name} / {bm}")
+            ax.plot(df_mean['n_elem'], df_mean['real_time'],
+                    color=colors[bm], ls=linestyles[name], marker="o",
+                    label=f"{name} / {bm}")
 
     ax.set_xlabel('Number of Elements')
     ax.set_xscale('symlog')

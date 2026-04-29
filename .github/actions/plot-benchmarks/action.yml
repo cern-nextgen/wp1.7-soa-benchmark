@@ -1,0 +1,17 @@
+name: Plot Benchmarks
+inputs:
+  libraries:
+    required: true
+  benchmarks:
+    required: true
+  output:
+    required: true
+runs:
+  using: composite
+  steps:
+    - run: |
+        python3 ${GITHUB_WORKSPACE}/plot_benchmarks.py \
+          --libraries ${{ inputs.libraries }} \
+          --benchmarks ${{ inputs.benchmarks }} \
+          --output ${{ inputs.output }}
+      shell: bash

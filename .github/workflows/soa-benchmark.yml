@@ -1,0 +1,80 @@
+name: Run Benchmark
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'chep2026'
+
+jobs:
+  soa-benchmark:
+    runs-on: cern-nextgen-h100
+    container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark:chep2026
+    env:
+      BUILD_DIR: /root/build
+      OUTPUT_DIR: /root/output
+      PLOTS_DIR: /root/plots
+      IMAGE_FILE_EXTENSION: png
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Build and Compile
+        run: |
+          cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -B ${BUILD_DIR} -S ${GITHUB_WORKSPACE}
+          cmake --build ${BUILD_DIR}
+
+      - name: Run Benchmarks on CPU
+        run: |
+          mkdir -p ${OUTPUT_DIR} ${PLOTS_DIR}
+          python3 ${GITHUB_WORKSPACE}/run_benchmarks.py --executables ${BUILD_DIR}/aos_* ${BUILD_DIR}/soa_* --output ${OUTPUT_DIR}
+
+      - name: Plot AoS Large Benchmarks
+        uses: ./.github/actions/plot-benchmarks
+        with:
+          libraries: "${{ env.OUTPUT_DIR }}/aos_*"
+          benchmarks: "CPUStrided CPUEasyRW InvariantMass stencil"
+          output: "${{ env.PLOTS_DIR }}/aos_large.${{ env.IMAGE_FILE_EXTENSION }}"
+
+      - name: Plot AoS Small Benchmarks
+        uses: ./.github/actions/plot-benchmarks
+        with:
+          libraries: "${{ env.OUTPUT_DIR }}/aos_*"
+          benchmarks: "CPUEasyCompute CPURealRW CPUHardRW nbody"
+          output: "${{ env.PLOTS_DIR }}/aos_small.${{ env.IMAGE_FILE_EXTENSION }}"
+
+      - name: Plot SoA Large Benchmarks
+        uses: ./.github/actions/plot-benchmarks
+        with:
+          libraries: "${{ env.OUTPUT_DIR }}/soa_*"
+          benchmarks: "CPUStrided CPUEasyRW InvariantMass stencil"
+          output: "${{ env.PLOTS_DIR }}/soa_large.${{ env.IMAGE_FILE_EXTENSION }}"
+
+      - name: Plot SoA Small Benchmarks
+        uses: ./.github/actions/plot-benchmarks
+        with:
+          libraries: "${{ env.OUTPUT_DIR }}/soa_*"
+          benchmarks: "CPUEasyCompute CPURealRW CPUHardRW nbody"
+          output: "${{ env.PLOTS_DIR }}/soa_small.${{ env.IMAGE_FILE_EXTENSION }}"
+
+      - name: Plot Manual AoS vs SoA - CPUStrided
+        uses: ./.github/actions/plot-benchmarks
+        with:
+          libraries: "${{ env.OUTPUT_DIR }}/aos_manual ${{ env.OUTPUT_DIR }}/soa_manual"
+          benchmarks: "CPUStrided"
+          output: "${{ env.PLOTS_DIR }}/manual_CPUStrided.${{ env.IMAGE_FILE_EXTENSION }}"
+
+      - name: Plot Manual AoS vs SoA - Stencil
+        uses: ./.github/actions/plot-benchmarks
+        with:
+          libraries: "${{ env.OUTPUT_DIR }}/aos_manual ${{ env.OUTPUT_DIR }}/soa_manual"
+          benchmarks: "stencil"
+          output: "${{ env.PLOTS_DIR }}/manual_stencil.${{ env.IMAGE_FILE_EXTENSION }}"
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts
+          path: |
+            ${{ env.PLOTS_DIR }}
+            ${{ env.OUTPUT_DIR }}
