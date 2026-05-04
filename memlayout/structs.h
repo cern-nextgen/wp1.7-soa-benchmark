@@ -113,6 +113,7 @@ template <typename ArrayType, typename N>
 class Fixture1 : public benchmark::Fixture {
 public:
     static constexpr auto n = N::value;
+    static constexpr Backend backend = Backend::CPU;
     ArrayType t;
 
     void SetUp(benchmark::State &) override { allocate<ArrayType>(t, n); }
@@ -123,6 +124,7 @@ template <typename ArrayType1, typename ArrayType2, typename N>
 class Fixture2 : public benchmark::Fixture {
 public:
     static constexpr auto n = N::value;
+    static constexpr Backend backend = Backend::CPU;
     ArrayType1 t1;
     ArrayType2 t2;
 

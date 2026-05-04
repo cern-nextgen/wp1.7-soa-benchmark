@@ -1,60 +1,41 @@
 #define SOA_MANUAL
 
 #include <cstdlib>
-#include <meta>
-#include <vector>
 #include <Eigen/Core>
 #include "benchmarks/common.h"
 
-template <class T>
-T* alloc(size_t n) { return static_cast<T*>(std::malloc(n * sizeof(T))); }
+//////////////// Allocation helpers (no reflection)
 
-//////////////// Reflection helpers (same pattern as reflections/wrapper.h)
-
-namespace __impl {
-template <auto... vals>
-struct replicator_type {
-    template <typename F>
-    constexpr auto operator>>(F body) const -> decltype(auto) {
-        return body.template operator()<vals...>();
+struct mallocator {
+    std::size_t n;
+    template <class... Ptrs>
+    void operator()(Ptrs&... args) const {
+        ((args = static_cast<Ptrs>(std::malloc(n * sizeof(*args)))), ...);
     }
 };
-template <auto... vals>
-replicator_type<vals...> replicator = {};
-} // namespace __impl
 
-consteval auto nsdms(std::meta::info type) -> std::vector<std::meta::info> {
-    return nonstatic_data_members_of(type, std::meta::access_context::unchecked());
-}
-
-template <typename R>
-consteval auto expand_all(R range) {
-    std::vector<std::meta::info> args;
-    for (auto r : range)
-        args.push_back(reflect_constant(r));
-    return substitute(^^__impl::replicator, args);
-}
-
-//////////////// Generic allocate / deallocate over all pointer members
+struct deallocator {
+    template <class... Ptrs>
+    void operator()(Ptrs&... args) const {
+        ((std::free(args), args = nullptr), ...);
+    }
+};
 
 template <class S>
-void allocate(S& s, size_t n) {
-    [: expand_all(nsdms(^^S)) :] >> [&]<auto... Ms>() {
-        ((s.[:Ms:] = alloc<std::remove_pointer_t<typename[:type_of(Ms):]>>(n)), ...);
-    };
-}
+void allocate(S& s, std::size_t n) { s.apply(mallocator{n}); }
 
 template <class S>
-void deallocate(S& s) {
-    [: expand_all(nsdms(^^S)) :] >> [&]<auto... Ms>() {
-        (std::free(s.[:Ms:]), ...);
-    };
-}
+void deallocate(S& s) { s.apply(deallocator{}); }
 
-/// Data structures: SoA with raw pointers, one allocation per member array ///
+//////////////// Data structures: SoA with raw pointers, one allocation per member array
+
+#define SOA_APPLY(...) \
+    template <class F> void apply(F&& f) { f(__VA_ARGS__); } \
+    template <class F> void apply(F&& f) const { f(__VA_ARGS__); }
 
 struct S2 {
     int *__restrict__ x0, *__restrict__ x1;
+    SOA_APPLY(x0, x1)
 };
 
 struct S10 {
@@ -63,6 +44,7 @@ struct S10 {
     int *__restrict__ x4, *__restrict__ x5;
     Eigen::Vector3d *__restrict__ x6, *__restrict__ x7;
     Eigen::Matrix3d *__restrict__ x8, *__restrict__ x9;
+    SOA_APPLY(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9)
 };
 
 struct S32 {
@@ -74,6 +56,8 @@ struct S32 {
           *__restrict__ x20, *__restrict__ x21, *__restrict__ x22, *__restrict__ x23,
           *__restrict__ x24, *__restrict__ x25, *__restrict__ x26, *__restrict__ x27,
           *__restrict__ x28, *__restrict__ x29, *__restrict__ x30, *__restrict__ x31;
+    SOA_APPLY(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15,
+              x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x26, x27, x28, x29, x30, x31)
 };
 
 struct S64 {
@@ -101,19 +85,29 @@ struct S64 {
                     *__restrict__ x57, *__restrict__ x58, *__restrict__ x59,
                     *__restrict__ x60, *__restrict__ x61, *__restrict__ x62,
                     *__restrict__ x63;
+    SOA_APPLY(
+        x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12,
+        x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25,
+        x26, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38,
+        x39, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50,
+        x51, x52, x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63
+    )
 };
 
 struct Snbody {
     float *__restrict__ x, *__restrict__ y, *__restrict__ z;
     float *__restrict__ vx, *__restrict__ vy, *__restrict__ vz;
+    SOA_APPLY(x, y, z, vx, vy, vz)
 };
 
 struct Sstencil {
     double *__restrict__ src, *__restrict__ dst, *__restrict__ rhs;
+    SOA_APPLY(src, dst, rhs)
 };
 
 struct PxPyPzM {
     double *__restrict__ x, *__restrict__ y, *__restrict__ z, *__restrict__ M;
+    SOA_APPLY(x, y, z, M)
 };
 
 /// Fixtures ///
@@ -122,6 +116,7 @@ template <typename S, typename N>
 class Fixture1 : public benchmark::Fixture {
 public:
     static constexpr auto n = N::value;
+    static constexpr Backend backend = Backend::CPU;
     S t;
 
     void SetUp(benchmark::State &) override { allocate(t, n); }
@@ -132,6 +127,7 @@ template <typename S1, typename S2, typename N>
 class Fixture2 : public benchmark::Fixture {
 public:
     static constexpr auto n = N::value;
+    static constexpr Backend backend = Backend::CPU;
     S1 t1;
     S2 t2;
 

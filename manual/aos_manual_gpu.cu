@@ -1,0 +1,37 @@
+#define AOS_MANUAL
+
+#include <Eigen/Core>
+#include "benchmarks/common.h"
+
+struct S2 {
+    int x0, x1;
+};
+
+/// Fixtures ///
+
+template <typename S, typename N, Backend B = Backend::GPU>
+class Fixture1 : public benchmark::Fixture {
+public:
+    static constexpr auto n = N::value;
+    static constexpr Backend backend = B;
+    S* t = nullptr;
+
+    void SetUp(benchmark::State&) override   { t = backend_allocator<B>::template alloc<S>(n); }
+    void TearDown(benchmark::State&) override { backend_allocator<B>::free(t); t = nullptr; }
+};
+
+/// Benchmarks ///
+
+#include "benchmarks/bm_easy.h"
+
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW,      S2, N_GPU);
+INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2, N_GPU);
+
+int main(int argc, char** argv) {
+    ::benchmark::Initialize(&argc, argv);
+    ::benchmark::AddCustomContext("name", "Manual AoS (GPU)");
+    if (::benchmark::ReportUnrecognizedArguments(argc, argv)) return 1;
+    ::benchmark::RunSpecifiedBenchmarks();
+    ::benchmark::Shutdown();
+    return 0;
+}

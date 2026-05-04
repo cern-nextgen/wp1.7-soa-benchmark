@@ -3,10 +3,10 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <benchmark/benchmark.h>
-#include <format>
 #include <sstream>
 #include <string>
 #include <cstddef>
+#include "benchmarks/backend.h"
 
 #ifdef SOA_MANUAL
 #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ.MEMBER[INDEX]
@@ -22,6 +22,8 @@ using Matrix3D = Eigen::Matrix3d;
 constexpr std::size_t N[]       = {10, 100, 1000, 10000, 100000};
 //constexpr std::size_t N_medium[] = {1<<12, 1<<16, 1<<20, 1<<24, 1<<28};
 constexpr std::size_t N_Large[] = {10000, 100000, 1000000, 10000000, 100000000};
+// GPU sizes: skip the very small sizes where kernel launch overhead dominates
+constexpr std::size_t N_GPU[]   = {100000, 1000000, 10000000, 100000000, 1000000000};
 constexpr size_t Alignment = 128;
 
 // clang-format off
@@ -53,13 +55,9 @@ void CheckResult(benchmark::State &state, const Expected &expected, const Actual
                  const std::string &member_name)
 {
     if (expected != actual) {
-        state.SkipWithError(
-            std::format("Wrong result in {}: expected {}, got {}", member_name, ToString(expected), ToString(actual)));
+        std::stringstream ss;
+        ss << "Wrong result in " << member_name << ": expected " << ToString(expected) << ", got " << ToString(actual);
+        state.SkipWithError(ss.str());
     }
 }
 
-template <typename S, typename N>
-class Fixture1;
-
-template <typename T1, typename T2, typename N>
-class Fixture2;

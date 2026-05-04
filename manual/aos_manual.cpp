@@ -46,20 +46,33 @@ struct Particle {
 
 /// Fixtures ///
 
-template <typename S, typename N>
+template <typename S, typename N, Backend B = Backend::CPU>
 class Fixture1 : public benchmark::Fixture {
 public:
     static constexpr auto n = N::value;
-    S t[n];
-    // No dynamic allocation needed: the array is embedded in the (heap-allocated) fixture object
+    static constexpr Backend backend = B;
+    S* t = nullptr;
+
+    void SetUp(benchmark::State&) override   { t = backend_allocator<B>::template alloc<S>(n); }
+    void TearDown(benchmark::State&) override { backend_allocator<B>::free(t); t = nullptr; }
 };
 
-template <typename S1, typename S2, typename N>
+template <typename S1, typename S2, typename N, Backend B = Backend::CPU>
 class Fixture2 : public benchmark::Fixture {
 public:
     static constexpr auto n = N::value;
-    S1 t1[n];
-    S2 t2[n];
+    static constexpr Backend backend = B;
+    S1* t1 = nullptr;
+    S2* t2 = nullptr;
+
+    void SetUp(benchmark::State&) override {
+        t1 = backend_allocator<B>::template alloc<S1>(n);
+        t2 = backend_allocator<B>::template alloc<S2>(n);
+    }
+    void TearDown(benchmark::State&) override {
+        backend_allocator<B>::free(t1); t1 = nullptr;
+        backend_allocator<B>::free(t2); t2 = nullptr;
+    }
 };
 
 /// Benchmarks ///
