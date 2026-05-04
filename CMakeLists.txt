@@ -12,13 +12,13 @@ set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -march=native -funroll-loops -ffast-ma
 if (NOT DEFINED CMAKE_CUDA_HOST_COMPILER)
     set(CMAKE_CUDA_HOST_COMPILER /opt/rh/gcc-toolset-14/root/usr/bin/g++)
 endif()
-enable_language(CUDA)
-set(CMAKE_CUDA_STANDARD 20)
-set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
     set(CMAKE_CUDA_ARCHITECTURES 90)  # H100
 endif()
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -allow-unsupported-compiler --expt-relaxed-constexpr --extended-lambda")
+enable_language(CUDA)
+set(CMAKE_CUDA_STANDARD 20)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda")
 
 find_package(benchmark REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)

@@ -16,6 +16,8 @@ public:
     static constexpr Backend backend = B;
     S* t = nullptr;
 
+    using benchmark::Fixture::SetUp;
+    using benchmark::Fixture::TearDown;
     void SetUp(benchmark::State&) override   { t = backend_allocator<B>::template alloc<S>(n); }
     void TearDown(benchmark::State&) override { backend_allocator<B>::free(t); t = nullptr; }
 };
