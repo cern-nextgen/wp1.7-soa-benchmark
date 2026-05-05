@@ -19,15 +19,15 @@ using PxPyPzMArrayType  = memlayout::Wrapper<PxPyPzM,  memlayout::pointer, L>;
 #include "benchmarks/stencil.h"
 #include "benchmarks/invmass.h"
 
-INSTANTIATE_BENCHMARKS_F1(EasyRW,      S2ArrayType,       N_Large);
-INSTANTIATE_BENCHMARKS_F1(EasyCompute, S2ArrayType,       N);
-INSTANTIATE_BENCHMARKS_F1(RealRW,      S10ArrayType,      N);
-INSTANTIATE_BENCHMARKS_F1(Strided,     S32ArrayType,      N_Large);
-INSTANTIATE_BENCHMARKS_F1(HardRW,      S64ArrayType,      N);
-INSTANTIATE_BENCHMARKS_F1(NBody,       SnbodyArrayType,   N);
-INSTANTIATE_BENCHMARKS_F1(Stencil,     SstencilArrayType, N_Large);
+INSTANTIATE_BENCHMARKS_F1(EasyRW,      S2ArrayType,       N_Large, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(EasyCompute, S2ArrayType,       N, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(RealRW,      S10ArrayType,      N, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(Strided,     S32ArrayType,      N_Large, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(HardRW,      S64ArrayType,      N, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(NBody,       SnbodyArrayType,   N, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(Stencil,     SstencilArrayType, N_Large, CPUBackend);
 
-INSTANTIATE_BENCHMARKS_F2(InvariantMass, PxPyPzMArrayType, PxPyPzMArrayType, N_Large);
+INSTANTIATE_BENCHMARKS_F2(InvariantMass, PxPyPzMArrayType, PxPyPzMArrayType, N_Large, CPUBackend);
 
 int main(int argc, char** argv) {
     ::benchmark::Initialize(&argc, argv);

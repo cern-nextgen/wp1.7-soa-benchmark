@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstdlib>
+#include <type_traits>
 
 #ifdef __CUDACC__
 #include <cuda_runtime.h>
@@ -12,6 +13,12 @@
 #endif
 
 enum class Backend { CPU, GPU };
+
+// Type wrapper so Backend can be used as a *type* template argument
+// (Google Benchmark's BENCHMARK_TEMPLATE_INSTANTIATE_F only accepts type arguments).
+template <Backend B> using BackendType = std::integral_constant<Backend, B>;
+using CPUBackend = BackendType<Backend::CPU>;
+using GPUBackend = BackendType<Backend::GPU>;
 
 template <Backend B>
 struct backend_allocator;
