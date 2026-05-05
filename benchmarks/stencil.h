@@ -1,4 +1,6 @@
-#pragma once
+#ifndef BENCHMARKS_STENCIL_H
+#define BENCHMARKS_STENCIL_H
+
 #include "benchmarks/common.h"
 
 BENCHMARK_TEMPLATE_METHOD_F(Fixture1, Stencil)(benchmark::State &state)
@@ -42,3 +44,5 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, Stencil)(benchmark::State &state)
     state.counters["N^2_interactions"] =
         benchmark::Counter(static_cast<double>(n) * 2.0, benchmark::Counter::kIsRate);
 }
+
+#endif // BENCHMARKS_STENCIL_H

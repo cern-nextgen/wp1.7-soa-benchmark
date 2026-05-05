@@ -1,7 +1,7 @@
-#pragma once
+#ifndef BENCHMARKS_COMMON_H
+#define BENCHMARKS_COMMON_H
 
 #include <Eigen/Core>
-#include <Eigen/Dense>
 #include <benchmark/benchmark.h>
 #include <sstream>
 #include <string>
@@ -15,9 +15,6 @@
 #else
 #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ[INDEX].MEMBER
 #endif
-
-using Vector3D = Eigen::Vector3d;
-using Matrix3D = Eigen::Matrix3d;
 
 constexpr std::size_t N[]       = {10, 100, 1000, 10000, 100000};
 //constexpr std::size_t N_medium[] = {1<<12, 1<<16, 1<<20, 1<<24, 1<<28};
@@ -61,3 +58,4 @@ void CheckResult(benchmark::State &state, const Expected &expected, const Actual
     }
 }
 
+#endif // BENCHMARKS_COMMON_H

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MEMLAYOUT_STRUCTS_H
+#define MEMLAYOUT_STRUCTS_H
 
 #include <type_traits>
 #include <Eigen/Core>
@@ -137,3 +138,5 @@ public:
         deallocate<ArrayType2>(t2);
     }
 };
+
+#endif // MEMLAYOUT_STRUCTS_H

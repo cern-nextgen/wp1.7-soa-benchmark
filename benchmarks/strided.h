@@ -1,4 +1,6 @@
-#pragma once
+#ifndef BENCHMARKS_STRIDED_H
+#define BENCHMARKS_STRIDED_H
+
 #include "benchmarks/common.h"
 
 #include <cmath>
@@ -58,3 +60,5 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, Strided)(benchmark::State &state)
 
     state.counters["n_elem"] = n;
 }
+
+#endif // BENCHMARKS_STRIDED_H

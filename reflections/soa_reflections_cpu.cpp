@@ -85,6 +85,7 @@ public:
 /// Benchmarks ///
 
 #include "benchmarks/easy.h"
+#include "benchmarks/easycompute.h"
 #include "benchmarks/real.h"
 #include "benchmarks/strided.h"
 #include "benchmarks/hard.h"

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BENCHMARKS_BACKEND_H
+#define BENCHMARKS_BACKEND_H
 
 #include <cstddef>
 #include <cstdlib>
@@ -70,3 +71,5 @@ inline void parallel_for_n(std::size_t n, Body body) {
 #endif
     }
 }
+
+#endif // BENCHMARKS_BACKEND_H

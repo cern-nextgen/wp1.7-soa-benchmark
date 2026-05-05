@@ -1,13 +1,19 @@
-#pragma once
+#ifndef BENCHMARKS_HARD_H
+#define BENCHMARKS_HARD_H
+
 #include "benchmarks/common.h"
+
+#include <Eigen/Core>
 
 BENCHMARK_TEMPLATE_METHOD_F(Fixture1, HardRW)(benchmark::State &state)
 {
     auto n = this->n;
     auto &t = this->t;
 
-    const Matrix3D m = Matrix3D::Constant(2);
-    const Vector3D v = Vector3D::Constant(2);
+    const Eigen::Matrix3d m0 = Eigen::Matrix3d::Zero();
+    const Eigen::Vector3d v0 = Eigen::Vector3d::Zero();
+    const Eigen::Matrix3d m2 = Eigen::Matrix3d::Constant(2);
+    const Eigen::Vector3d v2 = Eigen::Vector3d::Constant(2);
 
     // clang-format off
     for (auto _ : state) {
@@ -28,19 +34,19 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, HardRW)(benchmark::State &state)
             MEMBER_ACCESS(t, x32, i) = 0;    MEMBER_ACCESS(t, x33, i) = 0;    MEMBER_ACCESS(t, x34, i) = 0;
             MEMBER_ACCESS(t, x35, i) = 0;    MEMBER_ACCESS(t, x36, i) = 0;    MEMBER_ACCESS(t, x37, i) = 0;
             MEMBER_ACCESS(t, x38, i) = 0;
-            MEMBER_ACCESS(t, x39, i) = Vector3D::Zero(); MEMBER_ACCESS(t, x40, i) = Vector3D::Zero();
-            MEMBER_ACCESS(t, x41, i) = Vector3D::Zero(); MEMBER_ACCESS(t, x42, i) = Vector3D::Zero();
-            MEMBER_ACCESS(t, x43, i) = Vector3D::Zero(); MEMBER_ACCESS(t, x44, i) = Vector3D::Zero();
-            MEMBER_ACCESS(t, x45, i) = Vector3D::Zero(); MEMBER_ACCESS(t, x46, i) = Vector3D::Zero();
-            MEMBER_ACCESS(t, x47, i) = Vector3D::Zero(); MEMBER_ACCESS(t, x48, i) = Vector3D::Zero();
-            MEMBER_ACCESS(t, x49, i) = Vector3D::Zero(); MEMBER_ACCESS(t, x50, i) = Vector3D::Zero();
-            MEMBER_ACCESS(t, x51, i) = Matrix3D::Zero(); MEMBER_ACCESS(t, x52, i) = Matrix3D::Zero();
-            MEMBER_ACCESS(t, x53, i) = Matrix3D::Zero(); MEMBER_ACCESS(t, x54, i) = Matrix3D::Zero();
-            MEMBER_ACCESS(t, x55, i) = Matrix3D::Zero(); MEMBER_ACCESS(t, x56, i) = Matrix3D::Zero();
-            MEMBER_ACCESS(t, x57, i) = Matrix3D::Zero(); MEMBER_ACCESS(t, x58, i) = Matrix3D::Zero();
-            MEMBER_ACCESS(t, x59, i) = Matrix3D::Zero(); MEMBER_ACCESS(t, x60, i) = Matrix3D::Zero();
-            MEMBER_ACCESS(t, x61, i) = Matrix3D::Zero(); MEMBER_ACCESS(t, x62, i) = Matrix3D::Zero();
-            MEMBER_ACCESS(t, x63, i) = Matrix3D::Zero();
+            MEMBER_ACCESS(t, x39, i) = v0; MEMBER_ACCESS(t, x40, i) = v0;
+            MEMBER_ACCESS(t, x41, i) = v0; MEMBER_ACCESS(t, x42, i) = v0;
+            MEMBER_ACCESS(t, x43, i) = v0; MEMBER_ACCESS(t, x44, i) = v0;
+            MEMBER_ACCESS(t, x45, i) = v0; MEMBER_ACCESS(t, x46, i) = v0;
+            MEMBER_ACCESS(t, x47, i) = v0; MEMBER_ACCESS(t, x48, i) = v0;
+            MEMBER_ACCESS(t, x49, i) = v0; MEMBER_ACCESS(t, x50, i) = v0;
+            MEMBER_ACCESS(t, x51, i) = m0; MEMBER_ACCESS(t, x52, i) = m0;
+            MEMBER_ACCESS(t, x53, i) = m0; MEMBER_ACCESS(t, x54, i) = m0;
+            MEMBER_ACCESS(t, x55, i) = m0; MEMBER_ACCESS(t, x56, i) = m0;
+            MEMBER_ACCESS(t, x57, i) = m0; MEMBER_ACCESS(t, x58, i) = m0;
+            MEMBER_ACCESS(t, x59, i) = m0; MEMBER_ACCESS(t, x60, i) = m0;
+            MEMBER_ACCESS(t, x61, i) = m0; MEMBER_ACCESS(t, x62, i) = m0;
+            MEMBER_ACCESS(t, x63, i) = m0;
         }
         state.ResumeTiming();
 
@@ -79,28 +85,28 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, HardRW)(benchmark::State &state)
         }
         #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
-            MEMBER_ACCESS(t, x39, i) += v; MEMBER_ACCESS(t, x40, i) += v; MEMBER_ACCESS(t, x41, i) += v;
-            MEMBER_ACCESS(t, x42, i) += v; MEMBER_ACCESS(t, x43, i) += v;
+            MEMBER_ACCESS(t, x39, i) += v2; MEMBER_ACCESS(t, x40, i) += v2; MEMBER_ACCESS(t, x41, i) += v2;
+            MEMBER_ACCESS(t, x42, i) += v2; MEMBER_ACCESS(t, x43, i) += v2;
         }
         #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
-            MEMBER_ACCESS(t, x44, i) += v; MEMBER_ACCESS(t, x45, i) += v; MEMBER_ACCESS(t, x46, i) += v;
-            MEMBER_ACCESS(t, x47, i) += v; MEMBER_ACCESS(t, x48, i) += v;
+            MEMBER_ACCESS(t, x44, i) += v2; MEMBER_ACCESS(t, x45, i) += v2; MEMBER_ACCESS(t, x46, i) += v2;
+            MEMBER_ACCESS(t, x47, i) += v2; MEMBER_ACCESS(t, x48, i) += v2;
         }
         #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
-            MEMBER_ACCESS(t, x49, i) += v; MEMBER_ACCESS(t, x50, i) += v; MEMBER_ACCESS(t, x51, i) += m;
-            MEMBER_ACCESS(t, x52, i) += m; MEMBER_ACCESS(t, x53, i) += m;
+            MEMBER_ACCESS(t, x49, i) += v2; MEMBER_ACCESS(t, x50, i) += v2; MEMBER_ACCESS(t, x51, i) += m0;
+            MEMBER_ACCESS(t, x52, i) += m0; MEMBER_ACCESS(t, x53, i) += m0;
         }
         #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
-            MEMBER_ACCESS(t, x54, i) += m; MEMBER_ACCESS(t, x55, i) += m; MEMBER_ACCESS(t, x56, i) += m;
-            MEMBER_ACCESS(t, x57, i) += m; MEMBER_ACCESS(t, x58, i) += m;
+            MEMBER_ACCESS(t, x54, i) += m0; MEMBER_ACCESS(t, x55, i) += m0; MEMBER_ACCESS(t, x56, i) += m0;
+            MEMBER_ACCESS(t, x57, i) += m0; MEMBER_ACCESS(t, x58, i) += m0;
         }
         #pragma clang loop vectorize(assume_safety)
         for (int i = 0; i < n; ++i) {
-            MEMBER_ACCESS(t, x59, i) += m; MEMBER_ACCESS(t, x60, i) += m; MEMBER_ACCESS(t, x61, i) += m;
-            MEMBER_ACCESS(t, x62, i) += m; MEMBER_ACCESS(t, x63, i) += m;
+            MEMBER_ACCESS(t, x59, i) += m0; MEMBER_ACCESS(t, x60, i) += m0; MEMBER_ACCESS(t, x61, i) += m0;
+            MEMBER_ACCESS(t, x62, i) += m0; MEMBER_ACCESS(t, x63, i) += m0;
         }
     }
 
@@ -144,32 +150,34 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, HardRW)(benchmark::State &state)
         CheckResult(state, 2, MEMBER_ACCESS(t, x36, i), "x36");
         CheckResult(state, 2, MEMBER_ACCESS(t, x37, i), "x37");
         CheckResult(state, 2, MEMBER_ACCESS(t, x38, i), "x38");
-        CheckResult(state, v, MEMBER_ACCESS(t, x39, i), "x39");
-        CheckResult(state, v, MEMBER_ACCESS(t, x40, i), "x40");
-        CheckResult(state, v, MEMBER_ACCESS(t, x41, i), "x41");
-        CheckResult(state, v, MEMBER_ACCESS(t, x42, i), "x42");
-        CheckResult(state, v, MEMBER_ACCESS(t, x43, i), "x43");
-        CheckResult(state, v, MEMBER_ACCESS(t, x44, i), "x44");
-        CheckResult(state, v, MEMBER_ACCESS(t, x45, i), "x45");
-        CheckResult(state, v, MEMBER_ACCESS(t, x46, i), "x46");
-        CheckResult(state, v, MEMBER_ACCESS(t, x47, i), "x47");
-        CheckResult(state, v, MEMBER_ACCESS(t, x48, i), "x48");
-        CheckResult(state, v, MEMBER_ACCESS(t, x49, i), "x49");
-        CheckResult(state, v, MEMBER_ACCESS(t, x50, i), "x50");
-        CheckResult(state, m, MEMBER_ACCESS(t, x51, i), "x51");
-        CheckResult(state, m, MEMBER_ACCESS(t, x52, i), "x52");
-        CheckResult(state, m, MEMBER_ACCESS(t, x53, i), "x53");
-        CheckResult(state, m, MEMBER_ACCESS(t, x54, i), "x54");
-        CheckResult(state, m, MEMBER_ACCESS(t, x55, i), "x55");
-        CheckResult(state, m, MEMBER_ACCESS(t, x56, i), "x56");
-        CheckResult(state, m, MEMBER_ACCESS(t, x57, i), "x57");
-        CheckResult(state, m, MEMBER_ACCESS(t, x58, i), "x58");
-        CheckResult(state, m, MEMBER_ACCESS(t, x59, i), "x59");
-        CheckResult(state, m, MEMBER_ACCESS(t, x60, i), "x60");
-        CheckResult(state, m, MEMBER_ACCESS(t, x61, i), "x61");
-        CheckResult(state, m, MEMBER_ACCESS(t, x62, i), "x62");
-        CheckResult(state, m, MEMBER_ACCESS(t, x63, i), "x63");
+        CheckResult(state, v2, MEMBER_ACCESS(t, x39, i), "x39");
+        CheckResult(state, v2, MEMBER_ACCESS(t, x40, i), "x40");
+        CheckResult(state, v2, MEMBER_ACCESS(t, x41, i), "x41");
+        CheckResult(state, v2, MEMBER_ACCESS(t, x42, i), "x42");
+        CheckResult(state, v2, MEMBER_ACCESS(t, x43, i), "x43");
+        CheckResult(state, v2, MEMBER_ACCESS(t, x44, i), "x44");
+        CheckResult(state, v2, MEMBER_ACCESS(t, x45, i), "x45");
+        CheckResult(state, v2, MEMBER_ACCESS(t, x46, i), "x46");
+        CheckResult(state, v2, MEMBER_ACCESS(t, x47, i), "x47");
+        CheckResult(state, v2, MEMBER_ACCESS(t, x48, i), "x48");
+        CheckResult(state, v2, MEMBER_ACCESS(t, x49, i), "x49");
+        CheckResult(state, v2, MEMBER_ACCESS(t, x50, i), "x50");
+        CheckResult(state, m2, MEMBER_ACCESS(t, x51, i), "x51");
+        CheckResult(state, m2, MEMBER_ACCESS(t, x52, i), "x52");
+        CheckResult(state, m2, MEMBER_ACCESS(t, x53, i), "x53");
+        CheckResult(state, m2, MEMBER_ACCESS(t, x54, i), "x54");
+        CheckResult(state, m2, MEMBER_ACCESS(t, x55, i), "x55");
+        CheckResult(state, m2, MEMBER_ACCESS(t, x56, i), "x56");
+        CheckResult(state, m2, MEMBER_ACCESS(t, x57, i), "x57");
+        CheckResult(state, m2, MEMBER_ACCESS(t, x58, i), "x58");
+        CheckResult(state, m2, MEMBER_ACCESS(t, x59, i), "x59");
+        CheckResult(state, m2, MEMBER_ACCESS(t, x60, i), "x60");
+        CheckResult(state, m2, MEMBER_ACCESS(t, x61, i), "x61");
+        CheckResult(state, m2, MEMBER_ACCESS(t, x62, i), "x62");
+        CheckResult(state, m2, MEMBER_ACCESS(t, x63, i), "x63");
     }
     // clang-format on
     state.counters["n_elem"] = n;
 }
+
+#endif // BENCHMARKS_HARD_H

@@ -11,6 +11,7 @@ using SstencilArrayType = memlayout::Wrapper<Sstencil, memlayout::pointer, L>;
 using PxPyPzMArrayType  = memlayout::Wrapper<PxPyPzM,  memlayout::pointer, L>;
 
 #include "benchmarks/easy.h"
+#include "benchmarks/easycompute.h"
 #include "benchmarks/real.h"
 #include "benchmarks/strided.h"
 #include "benchmarks/hard.h"

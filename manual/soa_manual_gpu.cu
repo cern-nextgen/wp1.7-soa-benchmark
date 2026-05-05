@@ -58,6 +58,7 @@ public:
 /// Benchmarks ///
 
 #include "benchmarks/easy.h"
+#include "benchmarks/easycompute.h"
 
 INSTANTIATE_BENCHMARKS_F1(EasyRW,      S2, N_GPU);
 INSTANTIATE_BENCHMARKS_F1(EasyCompute, S2, N_GPU);

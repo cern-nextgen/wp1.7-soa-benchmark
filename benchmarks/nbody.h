@@ -1,5 +1,9 @@
-#pragma once
+#ifndef BENCHMARKS_NBODY_H
+#define BENCHMARKS_NBODY_H
+
 #include "benchmarks/common.h"
+
+#include <cmath>
 
 BENCHMARK_TEMPLATE_METHOD_F(Fixture1, NBody)(benchmark::State &state)
 {
@@ -59,3 +63,5 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, NBody)(benchmark::State &state)
     state.counters["N^2_interactions"] =
         benchmark::Counter(static_cast<double>(n) * static_cast<double>(n), benchmark::Counter::kIsRate);
 }
+
+#endif // BENCHMARKS_NBODY_H

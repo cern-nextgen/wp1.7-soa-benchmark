@@ -1,5 +1,9 @@
-#pragma once
+#ifndef BENCHMARKS_INVMASS_H
+#define BENCHMARKS_INVMASS_H
+
 #include "benchmarks/common.h"
+
+#include <cmath>
 
 inline double rand_double()
 {
@@ -73,3 +77,5 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture2, InvariantMass)(benchmark::State &state)
 
     state.counters["n_elem"] = static_cast<double>(n);
 }
+
+#endif // BENCHMARKS_INVMASS_H
