@@ -47,34 +47,34 @@ struct Particle {
 
 /// Fixtures ///
 
-template <typename S, typename N, typename BT = CPUBackend>
+template <class S, class N, class BackendType>
 class Fixture1 : public benchmark::Fixture {
 public:
     static constexpr auto n = N::value;
-    static constexpr Backend backend = BT::value;
+    static constexpr Backend backend = BackendType::value;
     S* t = nullptr;
 
     using benchmark::Fixture::SetUp;
     using benchmark::Fixture::TearDown;
-    void SetUp(benchmark::State&) override   { t = backend_allocator<backend>::template alloc<S>(n); }
-    void TearDown(benchmark::State&) override { backend_allocator<backend>::free(t); t = nullptr; }
+    void SetUp(benchmark::State&)    { t = backend_allocator<backend>::template alloc<S>(n); }
+    void TearDown(benchmark::State&)  { backend_allocator<backend>::free(t); t = nullptr; }
 };
 
-template <typename S1, typename S2, typename N, typename BT = CPUBackend>
+template <class S1, class S2, class N, class BackendType>
 class Fixture2 : public benchmark::Fixture {
 public:
     static constexpr auto n = N::value;
-    static constexpr Backend backend = BT::value;
+    static constexpr Backend backend = BackendType::value;
     S1* t1 = nullptr;
     S2* t2 = nullptr;
 
     using benchmark::Fixture::SetUp;
     using benchmark::Fixture::TearDown;
-    void SetUp(benchmark::State&) override {
+    void SetUp(benchmark::State&)  {
         t1 = backend_allocator<backend>::template alloc<S1>(n);
         t2 = backend_allocator<backend>::template alloc<S2>(n);
     }
-    void TearDown(benchmark::State&) override {
+    void TearDown(benchmark::State&)  {
         backend_allocator<backend>::free(t1); t1 = nullptr;
         backend_allocator<backend>::free(t2); t2 = nullptr;
     }

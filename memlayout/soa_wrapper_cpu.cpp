@@ -1,4 +1,4 @@
-#include "structs.h"
+#include "memlayout/structs.h"
 
 constexpr memlayout::Layout L = memlayout::Layout::soa;
 

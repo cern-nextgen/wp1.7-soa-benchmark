@@ -62,27 +62,27 @@ using PxPyPzMSoA  = Wrapper<PxPyPzM,  pointer>;
 
 /// Fixtures ///
 
-template <typename ArrayType, typename N, typename BT = CPUBackend>
+template <class ArrayType, class N, class BackendType>
 class Fixture1 : public benchmark::Fixture {
 public:
     static constexpr auto n = N::value;
-    static constexpr Backend backend = BT::value;
+    static constexpr Backend backend = BackendType::value;
     ArrayType t;
 
-    void SetUp(benchmark::State&) override { allocate(t, n); }
-    void TearDown(benchmark::State&) override { deallocate(t); }
+    void SetUp(benchmark::State&)  { allocate(t, n); }
+    void TearDown(benchmark::State&)  { deallocate(t); }
 };
 
-template <typename ArrayType1, typename ArrayType2, typename N, typename BT = CPUBackend>
+template <class ArrayType1, class ArrayType2, class N, class BackendType>
 class Fixture2 : public benchmark::Fixture {
 public:
     static constexpr auto n = N::value;
-    static constexpr Backend backend = BT::value;
+    static constexpr Backend backend = BackendType::value;
     ArrayType1 t1;
     ArrayType2 t2;
 
-    void SetUp(benchmark::State&) override { allocate(t1, n); allocate(t2, n); }
-    void TearDown(benchmark::State&) override { deallocate(t1); deallocate(t2); }
+    void SetUp(benchmark::State&)  { allocate(t1, n); allocate(t2, n); }
+    void TearDown(benchmark::State&)  { deallocate(t1); deallocate(t2); }
 };
 
 #endif // REFLECTIONS_STRUCTS_H

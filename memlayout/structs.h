@@ -110,30 +110,36 @@ struct PxPyPzM {
     F<double> x, y, z, M;
 };
 
-template <typename ArrayType, typename N, typename BT = CPUBackend>
+template <class ArrayType, class N, class BackendType>
 class Fixture1 : public benchmark::Fixture {
 public:
     static constexpr auto n = N::value;
-    static constexpr Backend backend = BT::value;
+    static constexpr Backend backend = BackendType::value;
     ArrayType t;
 
-    void SetUp(benchmark::State &) override { allocate<ArrayType>(t, n); }
-    void TearDown(benchmark::State &) override { deallocate<ArrayType>(t); }
+    using benchmark::Fixture::SetUp;
+    using benchmark::Fixture::TearDown;
+    
+    void SetUp(benchmark::State &)  { allocate<ArrayType>(t, n); }
+    void TearDown(benchmark::State &)  { deallocate<ArrayType>(t); }
 };
 
-template <typename ArrayType1, typename ArrayType2, typename N, typename BT = CPUBackend>
+template <class ArrayType1, class ArrayType2, class N, class BackendType>
 class Fixture2 : public benchmark::Fixture {
 public:
     static constexpr auto n = N::value;
-    static constexpr Backend backend = BT::value;
+    static constexpr Backend backend = BackendType::value;
     ArrayType1 t1;
     ArrayType2 t2;
 
-    void SetUp(benchmark::State &) override {
+    using benchmark::Fixture::SetUp;
+    using benchmark::Fixture::TearDown;
+
+    void SetUp(benchmark::State &)  {
         allocate<ArrayType1>(t1, n);
         allocate<ArrayType2>(t2, n);
     }
-    void TearDown(benchmark::State &) override {
+    void TearDown(benchmark::State &)  {
         deallocate<ArrayType1>(t1);
         deallocate<ArrayType2>(t2);
     }

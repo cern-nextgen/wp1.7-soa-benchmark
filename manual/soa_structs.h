@@ -115,31 +115,33 @@ struct PxPyPzM {
 
 /// Fixtures ///
 
-template <typename S, typename N, typename BT = CPUBackend>
+template <class S, class N, class BackendType>
 class Fixture1 : public benchmark::Fixture {
 public:
     static constexpr auto n = N::value;
-    static constexpr Backend backend = BT::value;
+    static constexpr Backend backend = BackendType::value;
     S t;
 
     using benchmark::Fixture::SetUp;
     using benchmark::Fixture::TearDown;
-    void SetUp(benchmark::State&) override   { allocate<backend>(t, n); }
-    void TearDown(benchmark::State&) override { deallocate<backend>(t); }
+
+    void SetUp(benchmark::State&)    { allocate<backend>(t, n); }
+    void TearDown(benchmark::State&)  { deallocate<backend>(t); }
 };
 
-template <typename S1, typename S2, typename N, typename BT = CPUBackend>
+template <class S1, class S2, class N, class BackendType>
 class Fixture2 : public benchmark::Fixture {
 public:
     static constexpr auto n = N::value;
-    static constexpr Backend backend = BT::value;
+    static constexpr Backend backend = BackendType::value;
     S1 t1;
     S2 t2;
 
     using benchmark::Fixture::SetUp;
     using benchmark::Fixture::TearDown;
-    void SetUp(benchmark::State&) override   { allocate<backend>(t1, n); allocate<backend>(t2, n); }
-    void TearDown(benchmark::State&) override { deallocate<backend>(t1); deallocate<backend>(t2); }
+    
+    void SetUp(benchmark::State&)    { allocate<backend>(t1, n); allocate<backend>(t2, n); }
+    void TearDown(benchmark::State&)  { deallocate<backend>(t1); deallocate<backend>(t2); }
 };
 
 #endif // MANUAL_SOA_STRUCTS_H

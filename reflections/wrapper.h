@@ -88,7 +88,7 @@ struct AggregateConstructor {
   }
 };
 
-template <typename S, template <class> class F>
+template <class S, template <class> class F>
 struct WrapperGeneratorBase {
   struct Base;
 
@@ -155,7 +155,7 @@ struct WrapperGenerator<T, pointer> : public WrapperGeneratorBase<T, pointer> {
   // TODO: iterator support
 };
 
-template <typename S, template <class> class F>
+template <class S, template <class> class F>
 using Wrapper = WrapperGenerator<S, F>::Wrapper;
 
 #endif // WRAPPER_H
