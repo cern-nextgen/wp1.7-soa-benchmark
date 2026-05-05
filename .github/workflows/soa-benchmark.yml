@@ -9,7 +9,7 @@ on:
 jobs:
   soa-benchmark:
     runs-on: cern-nextgen-h100
-    container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark:chep2026
+    container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark@sha256:e1ff3cfcd17edd6e92c9558182c093d08ecabeef2882dac92df8a2459be7b7cb
     env:
       BUILD_DIR: /root/build
       OUTPUT_DIR: /root/output
@@ -24,52 +24,99 @@ jobs:
           cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -B ${BUILD_DIR} -S ${GITHUB_WORKSPACE}
           cmake --build ${BUILD_DIR}
 
-      - name: Run Benchmarks on CPU
+      - name: Run CPU Benchmarks
         run: |
           mkdir -p ${OUTPUT_DIR} ${PLOTS_DIR}
-          python3 ${GITHUB_WORKSPACE}/run_benchmarks.py --executables ${BUILD_DIR}/aos_* ${BUILD_DIR}/soa_* --output ${OUTPUT_DIR}
+          python3 ${GITHUB_WORKSPACE}/run_benchmarks.py --executables ${BUILD_DIR}/aos_*_cpu ${BUILD_DIR}/soa_*_cpu --output ${OUTPUT_DIR}
 
-      - name: Plot AoS Large Benchmarks
+      - name: Run GPU Benchmarks
+        run: |
+          mkdir -p ${OUTPUT_DIR} ${PLOTS_DIR}
+          python3 ${GITHUB_WORKSPACE}/run_benchmarks.py --executables ${BUILD_DIR}/aos_*_gpu ${BUILD_DIR}/soa_*_gpu --output ${OUTPUT_DIR}
+
+      - name: Plot AoS CPU Large Benchmarks
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/aos_*.json"
-          benchmarks: "CPUStrided CPUEasyRW InvariantMass stencil"
+          libraries: "${{ env.OUTPUT_DIR }}/aos_*_cpu.json"
+          benchmarks: "Strided EasyRW InvariantMass Stencil"
           output: "${{ env.PLOTS_DIR }}/aos_large.${{ env.IMAGE_FILE_EXTENSION }}"
 
-      - name: Plot AoS Small Benchmarks
+      - name: Plot AoS CPU Small Benchmarks
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/aos_*.json"
-          benchmarks: "CPUEasyCompute CPURealRW CPUHardRW nbody"
+          libraries: "${{ env.OUTPUT_DIR }}/aos_*_cpu.json"
+          benchmarks: "EasyCompute RealRW HardRW NBody"
           output: "${{ env.PLOTS_DIR }}/aos_small.${{ env.IMAGE_FILE_EXTENSION }}"
 
-      - name: Plot SoA Large Benchmarks
+      - name: Plot SoA CPU Large Benchmarks
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/soa_*.json"
-          benchmarks: "CPUStrided CPUEasyRW InvariantMass stencil"
+          libraries: "${{ env.OUTPUT_DIR }}/soa_*_cpu.json"
+          benchmarks: "Strided EasyRW InvariantMass Stencil"
           output: "${{ env.PLOTS_DIR }}/soa_large.${{ env.IMAGE_FILE_EXTENSION }}"
 
-      - name: Plot SoA Small Benchmarks
+      - name: Plot SoA CPU Small Benchmarks
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/soa_*.json"
-          benchmarks: "CPUEasyCompute CPURealRW CPUHardRW nbody"
+          libraries: "${{ env.OUTPUT_DIR }}/soa_*_cpu.json"
+          benchmarks: "EasyCompute RealRW HardRW NBody"
           output: "${{ env.PLOTS_DIR }}/soa_small.${{ env.IMAGE_FILE_EXTENSION }}"
 
-      - name: Plot Manual AoS vs SoA - CPUStrided
+      - name: Plot Manual CPU AoS vs SoA - Strided
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/*_manual.json"
-          benchmarks: "CPUStrided"
-          output: "${{ env.PLOTS_DIR }}/manual_CPUStrided.${{ env.IMAGE_FILE_EXTENSION }}"
+          libraries: "${{ env.OUTPUT_DIR }}/*_manual_cpu.json"
+          benchmarks: "Strided"
+          output: "${{ env.PLOTS_DIR }}/manual_cpu_strided.${{ env.IMAGE_FILE_EXTENSION }}"
 
-      - name: Plot Manual AoS vs SoA - Stencil
+      - name: Plot Manual CPU AoS vs SoA - Stencil
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/*_manual.json"
-          benchmarks: "stencil"
-          output: "${{ env.PLOTS_DIR }}/manual_stencil.${{ env.IMAGE_FILE_EXTENSION }}"
+          libraries: "${{ env.OUTPUT_DIR }}/*_manual_cpu.json"
+          benchmarks: "Stencil"
+          output: "${{ env.PLOTS_DIR }}/manual_cpu_stencil.${{ env.IMAGE_FILE_EXTENSION }}"
+
+      - name: Plot AoS GPU Large Benchmarks
+        uses: ./.github/actions/plot-benchmarks
+        with:
+          libraries: "${{ env.OUTPUT_DIR }}/aos_*_gpu.json"
+          benchmarks: "Strided EasyRW InvariantMass Stencil"
+          output: "${{ env.PLOTS_DIR }}/aos_gpu_large.${{ env.IMAGE_FILE_EXTENSION }}"
+
+      - name: Plot AoS GPU Small Benchmarks
+        uses: ./.github/actions/plot-benchmarks
+        with:
+          libraries: "${{ env.OUTPUT_DIR }}/aos_*_gpu.json"
+          benchmarks: "EasyCompute RealRW HardRW NBody"
+          output: "${{ env.PLOTS_DIR }}/aos_gpu_small.${{ env.IMAGE_FILE_EXTENSION }}"
+
+      - name: Plot SoA GPU Large Benchmarks
+        uses: ./.github/actions/plot-benchmarks
+        with:
+          libraries: "${{ env.OUTPUT_DIR }}/soa_*_gpu.json"
+          benchmarks: "Strided EasyRW InvariantMass Stencil"
+          output: "${{ env.PLOTS_DIR }}/soa_gpu_large.${{ env.IMAGE_FILE_EXTENSION }}"
+
+      - name: Plot SoA GPU Small Benchmarks
+        uses: ./.github/actions/plot-benchmarks
+        with:
+          libraries: "${{ env.OUTPUT_DIR }}/soa_*_gpu.json"
+          benchmarks: "EasyCompute RealRW HardRW NBody"
+          output: "${{ env.PLOTS_DIR }}/soa_gpu_small.${{ env.IMAGE_FILE_EXTENSION }}"
+
+      - name: Plot Manual GPU AoS vs SoA - Strided
+        uses: ./.github/actions/plot-benchmarks
+        with:
+          libraries: "${{ env.OUTPUT_DIR }}/*_manual_gpu.json"
+          benchmarks: "Strided"
+          output: "${{ env.PLOTS_DIR }}/manual_gpu_strided.${{ env.IMAGE_FILE_EXTENSION }}"
+
+      - name: Plot Manual GPU AoS vs SoA - Stencil
+        uses: ./.github/actions/plot-benchmarks
+        with:
+          libraries: "${{ env.OUTPUT_DIR }}/*_manual_gpu.json"
+          benchmarks: "Stencil"
+          output: "${{ env.PLOTS_DIR }}/manual_gpu_stencil.${{ env.IMAGE_FILE_EXTENSION }}"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v6

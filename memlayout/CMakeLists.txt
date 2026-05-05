@@ -1,2 +1,2 @@
-add_executable(soa_wrapper soa_wrapper.cpp)
-add_executable(aos_wrapper aos_wrapper.cpp)
+add_executable(soa_wrapper_cpu soa_wrapper_cpu.cpp)
+add_executable(aos_wrapper_cpu aos_wrapper_cpu.cpp)

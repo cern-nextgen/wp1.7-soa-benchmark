@@ -1,7 +1,7 @@
 #pragma once
 #include "benchmarks/common.h"
 
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPURealRW)(benchmark::State &state)
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, RealRW)(benchmark::State &state)
 {
     auto n = this->n;
     auto &t = this->t;

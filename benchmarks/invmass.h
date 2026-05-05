@@ -6,7 +6,7 @@ inline double rand_double()
     return static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
 }
 
-BENCHMARK_TEMPLATE_METHOD_F(Fixture2, BM_InvariantMass)(benchmark::State &state)
+BENCHMARK_TEMPLATE_METHOD_F(Fixture2, InvariantMass)(benchmark::State &state)
 {
     auto n = this->n;
     auto &v1 = this->t1;

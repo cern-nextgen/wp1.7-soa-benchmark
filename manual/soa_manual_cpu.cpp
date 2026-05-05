@@ -137,27 +137,27 @@ public:
 
 /// Benchmarks ///
 
-#include "benchmarks/bm_easy.h"
-#include "benchmarks/bm_real.h"
-#include "benchmarks/bm_strided.h"
-#include "benchmarks/bm_hard.h"
-#include "benchmarks/bm_nbody.h"
-#include "benchmarks/bm_stencil.h"
-#include "benchmarks/bm_invmass.h"
+#include "benchmarks/easy.h"
+#include "benchmarks/real.h"
+#include "benchmarks/strided.h"
+#include "benchmarks/hard.h"
+#include "benchmarks/nbody.h"
+#include "benchmarks/stencil.h"
+#include "benchmarks/invmass.h"
 
-INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW,      S2,       N_Large);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2,       N);
-INSTANTIATE_BENCHMARKS_F1(BM_CPURealRW,      S10,      N);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUStrided,     S32,      N_Large);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUHardRW,      S64,      N);
-INSTANTIATE_BENCHMARKS_F1(BM_nbody,          Snbody,   N);
-INSTANTIATE_BENCHMARKS_F1(BM_stencil,        Sstencil, N_Large);
+INSTANTIATE_BENCHMARKS_F1(EasyRW,      S2,       N_Large);
+INSTANTIATE_BENCHMARKS_F1(EasyCompute, S2,       N);
+INSTANTIATE_BENCHMARKS_F1(RealRW,      S10,      N);
+INSTANTIATE_BENCHMARKS_F1(Strided,     S32,      N_Large);
+INSTANTIATE_BENCHMARKS_F1(HardRW,      S64,      N);
+INSTANTIATE_BENCHMARKS_F1(NBody,       Snbody,   N);
+INSTANTIATE_BENCHMARKS_F1(Stencil,     Sstencil, N_Large);
 
-INSTANTIATE_BENCHMARKS_F2(BM_InvariantMass, PxPyPzM, PxPyPzM, N_Large);
+INSTANTIATE_BENCHMARKS_F2(InvariantMass, PxPyPzM, PxPyPzM, N_Large);
 
 int main(int argc, char** argv) {
     ::benchmark::Initialize(&argc, argv);
-    ::benchmark::AddCustomContext("name", "Manual SoA");
+    ::benchmark::AddCustomContext("name", "Manual SoA CPU");
     if (::benchmark::ReportUnrecognizedArguments(argc, argv)) return 1;
     ::benchmark::RunSpecifiedBenchmarks();
     ::benchmark::Shutdown();

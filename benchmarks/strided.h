@@ -4,7 +4,7 @@
 #include <cmath>
 #include <string>
 
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUStrided)(benchmark::State &state)
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, Strided)(benchmark::State &state)
 {
     auto n = this->n;
     auto &t = this->t;

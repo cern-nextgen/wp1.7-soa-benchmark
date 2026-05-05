@@ -13,7 +13,7 @@ def read_data(filename):
         name = data.get("context", {}).get("name", stem)
         df = pd.DataFrame.from_dict(data["benchmarks"]).astype({"real_time": float})
         df = df[df["run_type"] == "aggregate"]
-        df["benchmark"] = df["name"].apply(lambda x: x.split('/')[1].split('_')[1])
+        df["benchmark"] = df["name"].apply(lambda x: x.split('/')[1])
         return df, name
 
 if __name__ == "__main__":

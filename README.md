@@ -7,9 +7,8 @@ git clone https://github.com/cern-nextgen/wp1.7-soa-benchmark.git
 cd wp1.7-soa-benchmark
 cmake -B build
 cmake --build build
-./build/soa_boost
-./build/soa_wrapper
-./build/soa_manual
+./build/soa_wrapper_cpu
+./build/soa_manual_cpu
 ```
 
 for running vtune compilare, specify vtune in the name of build folder, like this:

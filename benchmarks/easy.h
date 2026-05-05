@@ -6,7 +6,7 @@
 // (extended lambdas cannot appear inside private class methods, which BENCHMARK_TEMPLATE_METHOD_F generates).
 
 template <Backend B, class T>
-void run_BM_CPUEasyRW(benchmark::State &state, std::size_t n, T t)
+void run_EasyRW(benchmark::State &state, std::size_t n, T t)
 {
     for (auto _ : state) {
         state.PauseTiming();
@@ -32,7 +32,7 @@ void run_BM_CPUEasyRW(benchmark::State &state, std::size_t n, T t)
 }
 
 template <Backend B, class T>
-void run_BM_CPUEasyCompute(benchmark::State &state, std::size_t n, T t)
+void run_EasyCompute(benchmark::State &state, std::size_t n, T t)
 {
     for (auto _ : state) {
         state.PauseTiming();
@@ -66,14 +66,14 @@ void run_BM_CPUEasyCompute(benchmark::State &state, std::size_t n, T t)
     state.counters["n_elem"] = n;
 }
 
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUEasyRW)(benchmark::State &state)
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, EasyRW)(benchmark::State &state)
 {
     constexpr Backend B = std::remove_reference_t<decltype(*this)>::backend;
-    run_BM_CPUEasyRW<B>(state, this->n, this->t);
+    run_EasyRW<B>(state, this->n, this->t);
 }
 
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_CPUEasyCompute)(benchmark::State &state)
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, EasyCompute)(benchmark::State &state)
 {
     constexpr Backend B = std::remove_reference_t<decltype(*this)>::backend;
-    run_BM_CPUEasyCompute<B>(state, this->n, this->t);
+    run_EasyCompute<B>(state, this->n, this->t);
 }

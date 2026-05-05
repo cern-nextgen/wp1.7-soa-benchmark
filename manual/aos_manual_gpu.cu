@@ -24,14 +24,14 @@ public:
 
 /// Benchmarks ///
 
-#include "benchmarks/bm_easy.h"
+#include "benchmarks/easy.h"
 
-INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyRW,      S2, N_GPU);
-INSTANTIATE_BENCHMARKS_F1(BM_CPUEasyCompute, S2, N_GPU);
+INSTANTIATE_BENCHMARKS_F1(EasyRW,      S2, N_GPU);
+INSTANTIATE_BENCHMARKS_F1(EasyCompute, S2, N_GPU);
 
 int main(int argc, char** argv) {
     ::benchmark::Initialize(&argc, argv);
-    ::benchmark::AddCustomContext("name", "Manual AoS (GPU)");
+    ::benchmark::AddCustomContext("name", "Manual AoS GPU");
     if (::benchmark::ReportUnrecognizedArguments(argc, argv)) return 1;
     ::benchmark::RunSpecifiedBenchmarks();
     ::benchmark::Shutdown();

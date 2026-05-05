@@ -1,2 +1,2 @@
-add_executable(soa_reflections soa_reflections.cpp)
-target_compile_options(soa_reflections PRIVATE -freflection)
+add_executable(soa_reflections_cpu soa_reflections_cpu.cpp)
+target_compile_options(soa_reflections_cpu PRIVATE -freflection)

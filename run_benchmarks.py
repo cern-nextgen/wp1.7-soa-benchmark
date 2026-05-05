@@ -21,4 +21,5 @@ if __name__ == "__main__":
         out = os.path.join(args.output, name + ".json")
         subprocess.run([exe, "--benchmark_out_format=json", f"--benchmark_out={out}",
                         "--benchmark_counters_tabular=true", "--benchmark_repetitions=3",
-                        f"--benchmark_filter={benchmark_filter}", "--benchmark_min_warmup_time=2"])
+                        f"--benchmark_filter={benchmark_filter}", "--benchmark_min_warmup_time=2",
+                        "--benchmark_report_aggregates_only=true"])

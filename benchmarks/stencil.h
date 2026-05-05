@@ -1,7 +1,7 @@
 #pragma once
 #include "benchmarks/common.h"
 
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, BM_stencil)(benchmark::State &state)
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, Stencil)(benchmark::State &state)
 {
     auto n = this->n;
     auto &t = this->t;
