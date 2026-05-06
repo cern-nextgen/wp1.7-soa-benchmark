@@ -5,11 +5,9 @@
 
 #include <Eigen/Core>
 
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, HardRW)(benchmark::State &state)
+template <Backend B, class T>
+void run_HardRW(benchmark::State &state, std::size_t n, T t)
 {
-    auto n = this->n;
-    auto &t = this->t;
-
     const Eigen::Matrix3d m0 = Eigen::Matrix3d::Zero();
     const Eigen::Vector3d v0 = Eigen::Vector3d::Zero();
     const Eigen::Matrix3d m2 = Eigen::Matrix3d::Constant(2);
@@ -18,7 +16,7 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, HardRW)(benchmark::State &state)
     // clang-format off
     for (auto _ : state) {
         state.PauseTiming();
-        for (int i = 0; i < n; ++i) {
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x0,  i) = 0.f;  MEMBER_ACCESS(t, x1,  i) = 0.f;  MEMBER_ACCESS(t, x2,  i) = 0.f;
             MEMBER_ACCESS(t, x3,  i) = 0.f;  MEMBER_ACCESS(t, x4,  i) = 0.f;  MEMBER_ACCESS(t, x5,  i) = 0.f;
             MEMBER_ACCESS(t, x6,  i) = 0.f;  MEMBER_ACCESS(t, x7,  i) = 0.f;  MEMBER_ACCESS(t, x8,  i) = 0.f;
@@ -47,70 +45,67 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, HardRW)(benchmark::State &state)
             MEMBER_ACCESS(t, x59, i) = m0; MEMBER_ACCESS(t, x60, i) = m0;
             MEMBER_ACCESS(t, x61, i) = m0; MEMBER_ACCESS(t, x62, i) = m0;
             MEMBER_ACCESS(t, x63, i) = m0;
-        }
+        });
+        backend_allocator<B>::synchronize();
         state.ResumeTiming();
 
-        for (int i = 0; i < n; ++i) {
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x0,  i) += 2.f; MEMBER_ACCESS(t, x1,  i) += 2.f; MEMBER_ACCESS(t, x2,  i) += 2.f;
             MEMBER_ACCESS(t, x3,  i) += 2.f; MEMBER_ACCESS(t, x4,  i) += 2.f;
-        }
-        for (int i = 0; i < n; ++i) {
+        });
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x5,  i) += 2.f; MEMBER_ACCESS(t, x6,  i) += 2.f; MEMBER_ACCESS(t, x7,  i) += 2.f;
             MEMBER_ACCESS(t, x8,  i) += 2.f; MEMBER_ACCESS(t, x9,  i) += 2.f;
-        }
-        for (int i = 0; i < n; ++i) {
+        });
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x10, i) += 2.f; MEMBER_ACCESS(t, x11, i) += 2.f; MEMBER_ACCESS(t, x12, i) += 2.f;
-        }
-        for (int i = 0; i < n; ++i) {
+        });
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x13, i) += 2.0; MEMBER_ACCESS(t, x14, i) += 2.0; MEMBER_ACCESS(t, x15, i) += 2.0;
             MEMBER_ACCESS(t, x16, i) += 2.0; MEMBER_ACCESS(t, x17, i) += 2.0;
-        }
-        for (int i = 0; i < n; ++i) {
+        });
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x18, i) += 2.0; MEMBER_ACCESS(t, x19, i) += 2.0; MEMBER_ACCESS(t, x20, i) += 2.0;
             MEMBER_ACCESS(t, x21, i) += 2.0; MEMBER_ACCESS(t, x22, i) += 2.0;
-        }
-        for (int i = 0; i < n; ++i) {
+        });
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x23, i) += 2.0; MEMBER_ACCESS(t, x24, i) += 2.0; MEMBER_ACCESS(t, x25, i) += 2.0;
-        }
-        for (int i = 0; i < n; ++i) {
+        });
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x26, i) += 2; MEMBER_ACCESS(t, x27, i) += 2; MEMBER_ACCESS(t, x28, i) += 2;
             MEMBER_ACCESS(t, x29, i) += 2; MEMBER_ACCESS(t, x30, i) += 2;
-        }
-        for (int i = 0; i < n; ++i) {
+        });
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x31, i) += 2; MEMBER_ACCESS(t, x32, i) += 2; MEMBER_ACCESS(t, x33, i) += 2;
             MEMBER_ACCESS(t, x34, i) += 2; MEMBER_ACCESS(t, x35, i) += 2;
-        }
-        for (int i = 0; i < n; ++i) {
+        });
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x36, i) += 2; MEMBER_ACCESS(t, x37, i) += 2; MEMBER_ACCESS(t, x38, i) += 2;
-        }
-        #pragma clang loop vectorize(assume_safety)
-        for (int i = 0; i < n; ++i) {
+        });
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x39, i) += v2; MEMBER_ACCESS(t, x40, i) += v2; MEMBER_ACCESS(t, x41, i) += v2;
             MEMBER_ACCESS(t, x42, i) += v2; MEMBER_ACCESS(t, x43, i) += v2;
-        }
-        #pragma clang loop vectorize(assume_safety)
-        for (int i = 0; i < n; ++i) {
+        });
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x44, i) += v2; MEMBER_ACCESS(t, x45, i) += v2; MEMBER_ACCESS(t, x46, i) += v2;
             MEMBER_ACCESS(t, x47, i) += v2; MEMBER_ACCESS(t, x48, i) += v2;
-        }
-        #pragma clang loop vectorize(assume_safety)
-        for (int i = 0; i < n; ++i) {
+        });
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x49, i) += v2; MEMBER_ACCESS(t, x50, i) += v2; MEMBER_ACCESS(t, x51, i) += m0;
             MEMBER_ACCESS(t, x52, i) += m0; MEMBER_ACCESS(t, x53, i) += m0;
-        }
-        #pragma clang loop vectorize(assume_safety)
-        for (int i = 0; i < n; ++i) {
+        });
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x54, i) += m0; MEMBER_ACCESS(t, x55, i) += m0; MEMBER_ACCESS(t, x56, i) += m0;
             MEMBER_ACCESS(t, x57, i) += m0; MEMBER_ACCESS(t, x58, i) += m0;
-        }
-        #pragma clang loop vectorize(assume_safety)
-        for (int i = 0; i < n; ++i) {
+        });
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
             MEMBER_ACCESS(t, x59, i) += m0; MEMBER_ACCESS(t, x60, i) += m0; MEMBER_ACCESS(t, x61, i) += m0;
             MEMBER_ACCESS(t, x62, i) += m0; MEMBER_ACCESS(t, x63, i) += m0;
-        }
+        });
     }
 
-    for (int i = 0; i < n; ++i) {
+    backend_allocator<B>::synchronize();
+    for (std::size_t i = 0; i < n; ++i) {
         CheckResult(state, 2.f, MEMBER_ACCESS(t, x0,  i), "x0");
         CheckResult(state, 2.f, MEMBER_ACCESS(t, x1,  i), "x1");
         CheckResult(state, 2.f, MEMBER_ACCESS(t, x2,  i), "x2");
@@ -178,6 +173,12 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, HardRW)(benchmark::State &state)
     }
     // clang-format on
     state.counters["n_elem"] = n;
+}
+
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, HardRW)(benchmark::State &state)
+{
+    constexpr Backend B = std::remove_reference_t<decltype(*this)>::backend;
+    run_HardRW<B>(state, this->n, this->t);
 }
 
 #endif // BENCHMARKS_HARD_H

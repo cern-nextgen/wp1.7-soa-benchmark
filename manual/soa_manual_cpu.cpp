@@ -1,6 +1,9 @@
 #define SOA_MANUAL
 
+#include <benchmarks/common.h>
+
 #include "manual/soa_structs.h"
+
 using namespace manual;
 
 #include "benchmarks/easy.h"
@@ -12,15 +15,15 @@ using namespace manual;
 #include "benchmarks/stencil.h"
 #include "benchmarks/invmass.h"
 
-INSTANTIATE_BENCHMARKS_F1(EasyRW,      S2,       N_Large, CPUBackend);
-INSTANTIATE_BENCHMARKS_F1(EasyCompute, S2,       N, CPUBackend);
-INSTANTIATE_BENCHMARKS_F1(RealRW,      S10,      N, CPUBackend);
-INSTANTIATE_BENCHMARKS_F1(Strided,     S32,      N_Large, CPUBackend);
-INSTANTIATE_BENCHMARKS_F1(HardRW,      S64,      N, CPUBackend);
-INSTANTIATE_BENCHMARKS_F1(NBody,       Snbody,   N, CPUBackend);
-INSTANTIATE_BENCHMARKS_F1(Stencil,     Sstencil, N_Large, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(EasyRW,      manual::S2,       N_Large, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(EasyCompute, manual::S2,       N, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(RealRW,      manual::S10,      N, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(Strided,     manual::S32,      N_Large, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(HardRW,      manual::S64,      N, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(NBody,       manual::Snbody,   N, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(Stencil,     manual::Sstencil, N_Large, CPUBackend);
 
-INSTANTIATE_BENCHMARKS_F2(InvariantMass, PxPyPzM, PxPyPzM, N_Large, CPUBackend);
+INSTANTIATE_BENCHMARKS_F2(InvariantMass, manual::PxPyPzM, manual::PxPyPzM, N_Large, CPUBackend);
 
 int main(int argc, char** argv) {
     ::benchmark::Initialize(&argc, argv);

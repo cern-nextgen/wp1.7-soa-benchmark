@@ -6,12 +6,10 @@
 #include <cmath>
 #include <string>
 
-BENCHMARK_TEMPLATE_METHOD_F(Fixture1, Strided)(benchmark::State &state)
+template <Backend B, class T>
+void run_Strided(benchmark::State &state, std::size_t n, T t)
 {
-    auto n = this->n;
-    auto &t = this->t;
-
-    for (size_t i = 0; i < n; ++i) {
+    parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
         MEMBER_ACCESS(t, x0,  i) = 0;
         MEMBER_ACCESS(t, x1,  i) = i; MEMBER_ACCESS(t, x2,  i) = i;
         MEMBER_ACCESS(t, x3,  i) = i; MEMBER_ACCESS(t, x4,  i) = i;
@@ -29,12 +27,13 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, Strided)(benchmark::State &state)
         MEMBER_ACCESS(t, x27, i) = i; MEMBER_ACCESS(t, x28, i) = i;
         MEMBER_ACCESS(t, x29, i) = i; MEMBER_ACCESS(t, x30, i) = i;
         MEMBER_ACCESS(t, x31, i) = i;
-    }
+    });
+    backend_allocator<B>::synchronize();
 
-    constexpr size_t stride = 23;
+    constexpr std::size_t stride = 23;
 
     for (auto _ : state) {
-        for (size_t j = 0; j < n; ++j) {
+        parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t j) mutable {
             std::size_t i = (j * stride) % n;
             MEMBER_ACCESS(t, x0, i) = (uint32_t)std::sqrt(
                 MEMBER_ACCESS(t, x1,  i) + MEMBER_ACCESS(t, x2,  i) + MEMBER_ACCESS(t, x3,  i) +
@@ -48,10 +47,11 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, Strided)(benchmark::State &state)
                 MEMBER_ACCESS(t, x25, i) + MEMBER_ACCESS(t, x26, i) + MEMBER_ACCESS(t, x27, i) +
                 MEMBER_ACCESS(t, x28, i) + MEMBER_ACCESS(t, x29, i) + MEMBER_ACCESS(t, x30, i) +
                 MEMBER_ACCESS(t, x31, i));
-        }
+        });
     }
 
-    for (size_t j = 0; j < n; ++j) {
+    backend_allocator<B>::synchronize();
+    for (std::size_t j = 0; j < n; ++j) {
         std::size_t i = j * stride % n;
         uint32_t expected = (uint32_t)std::sqrt(31 * i);
         uint32_t obtained = MEMBER_ACCESS(t, x0, i);
@@ -59,6 +59,12 @@ BENCHMARK_TEMPLATE_METHOD_F(Fixture1, Strided)(benchmark::State &state)
     }
 
     state.counters["n_elem"] = n;
+}
+
+BENCHMARK_TEMPLATE_METHOD_F(Fixture1, Strided)(benchmark::State &state)
+{
+    constexpr Backend B = std::remove_reference_t<decltype(*this)>::backend;
+    run_Strided<B>(state, this->n, this->t);
 }
 
 #endif // BENCHMARKS_STRIDED_H

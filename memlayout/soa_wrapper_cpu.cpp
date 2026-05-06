@@ -1,5 +1,17 @@
+#include <benchmarks/common.h>
+
 #include "memlayout/structs.h"
+
 using namespace memlayout;
+
+#include "benchmarks/easy.h"
+#include "benchmarks/easycompute.h"
+#include "benchmarks/real.h"
+#include "benchmarks/strided.h"
+#include "benchmarks/hard.h"
+#include "benchmarks/nbody.h"
+#include "benchmarks/stencil.h"
+#include "benchmarks/invmass.h"
 
 constexpr memlayout::Layout L = memlayout::Layout::soa;
 
@@ -10,15 +22,6 @@ using S64ArrayType      = memlayout::Wrapper<S64,      memlayout::pointer, L>;
 using SnbodyArrayType   = memlayout::Wrapper<Snbody,   memlayout::pointer, L>;
 using SstencilArrayType = memlayout::Wrapper<Sstencil, memlayout::pointer, L>;
 using PxPyPzMArrayType  = memlayout::Wrapper<PxPyPzM,  memlayout::pointer, L>;
-
-#include "benchmarks/easy.h"
-#include "benchmarks/easycompute.h"
-#include "benchmarks/real.h"
-#include "benchmarks/strided.h"
-#include "benchmarks/hard.h"
-#include "benchmarks/nbody.h"
-#include "benchmarks/stencil.h"
-#include "benchmarks/invmass.h"
 
 INSTANTIATE_BENCHMARKS_F1(EasyRW,      S2ArrayType,       N_Large, CPUBackend);
 INSTANTIATE_BENCHMARKS_F1(EasyCompute, S2ArrayType,       N, CPUBackend);

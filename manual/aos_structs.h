@@ -39,12 +39,8 @@ struct Sstencil {
     double src, dst, rhs;
 };
 
-// Realistic AoS particle with extra fields beyond (x,y,z,M) to model real-world padding cost
-struct Particle {
-    int id;
+struct PxPyPzM {
     double x, y, z, M;
-    double fX, fY, fZ, fM;
-    double poscovmatrix[9];
 };
 
 /// Fixtures ///
