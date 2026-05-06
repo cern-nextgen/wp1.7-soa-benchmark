@@ -6,38 +6,39 @@
 #include "benchmarks/common.h"
 #include "wrapper.h"
 
-template <class T>
-T* malloc_helper(std::size_t n) {
-    return reinterpret_cast<T*>(std::malloc(n * sizeof(T)));
-}
-
+template <Backend B>
 struct mallocator {
     std::size_t n;
     template <class ...Args>
-    void operator()(Args*& ...args) const { ((args = malloc_helper<Args>(n)), ...); }
+    void operator()(Args*& ...args) const {
+        ((args = backend_allocator<B>::template alloc<Args>(n)), ...);
+    }
 };
 
+template <Backend B>
 struct deallocator {
     template <class ...Args>
-    void operator()(Args*& ...args) const { ((std::free(args), args = nullptr), ...); }
+    void operator()(Args*& ...args) const {
+        ((backend_allocator<B>::free(args), args = nullptr), ...);
+    }
 };
 
-template <class ArrayType>
+template <Backend B, class ArrayType>
 void allocate(ArrayType& w, std::size_t n) {
     if constexpr (ArrayType::layout_type == memlayout::Layout::aos) {
         using value_type = std::remove_pointer<typename ArrayType::Data>::type;
-        w.data = malloc_helper<value_type>(n);
+        w.data = backend_allocator<B>::template alloc<value_type>(n);
     } else {
-        w.apply(mallocator{n});
+        w.apply(mallocator<B>{n});
     }
 }
 
-template <class ArrayType>
+template <Backend B, class ArrayType>
 void deallocate(ArrayType& w) {
     if constexpr (ArrayType::layout_type == memlayout::Layout::aos) {
-        std::free(w.data);
+        backend_allocator<B>::free(w.data);
     } else {
-        w.apply(deallocator{});
+        w.apply(deallocator<B>{});
     }
 }
 
@@ -120,8 +121,8 @@ public:
     using benchmark::Fixture::SetUp;
     using benchmark::Fixture::TearDown;
     
-    void SetUp(benchmark::State &)  { allocate<ArrayType>(t, n); }
-    void TearDown(benchmark::State &)  { deallocate<ArrayType>(t); }
+    void SetUp(benchmark::State &)  { allocate<backend>(t, n); }
+    void TearDown(benchmark::State &)  { deallocate<backend>(t); }
 };
 
 template <class ArrayType1, class ArrayType2, class N, class BackendType>
@@ -136,12 +137,12 @@ public:
     using benchmark::Fixture::TearDown;
 
     void SetUp(benchmark::State &)  {
-        allocate<ArrayType1>(t1, n);
-        allocate<ArrayType2>(t2, n);
+        allocate<backend>(t1, n);
+        allocate<backend>(t2, n);
     }
     void TearDown(benchmark::State &)  {
-        deallocate<ArrayType1>(t1);
-        deallocate<ArrayType2>(t2);
+        deallocate<backend>(t1);
+        deallocate<backend>(t2);
     }
 };
 
