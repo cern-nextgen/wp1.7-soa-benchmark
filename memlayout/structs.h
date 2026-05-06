@@ -6,6 +6,8 @@
 #include "benchmarks/common.h"
 #include "wrapper.h"
 
+namespace memlayout {
+
 template <Backend B>
 struct mallocator {
     std::size_t n;
@@ -145,5 +147,7 @@ public:
         deallocate<backend>(t2);
     }
 };
+
+} // namespace memlayout
 
 #endif // MEMLAYOUT_STRUCTS_H

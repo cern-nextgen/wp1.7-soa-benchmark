@@ -1,4 +1,5 @@
 #include "reflections/structs.h"
+using namespace reflections;
 
 #include "benchmarks/easy.h"
 #include "benchmarks/easycompute.h"

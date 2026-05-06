@@ -1,4 +1,5 @@
 #include "memlayout/structs.h"
+using namespace memlayout;
 
 constexpr memlayout::Layout L = memlayout::Layout::aos;
 

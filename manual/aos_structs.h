@@ -4,6 +4,8 @@
 #include <Eigen/Core>
 #include "benchmarks/common.h"
 
+namespace manual {
+
 struct S2 {
     int x0, x1;
 };
@@ -79,5 +81,7 @@ public:
         backend_allocator<backend>::free(t2); t2 = nullptr;
     }
 };
+
+} // namespace manual
 
 #endif // MANUAL_AOS_STRUCTS_H

@@ -1,6 +1,7 @@
 #define SOA_MANUAL
 
 #include "manual/soa_structs.h"
+using namespace manual;
 
 #include "benchmarks/easy.h"
 #include "benchmarks/easycompute.h"

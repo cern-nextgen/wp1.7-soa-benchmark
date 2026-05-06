@@ -1,6 +1,7 @@
 #define AOS_MANUAL
 
 #include "manual/aos_structs.h"
+using namespace manual;
 
 #include "benchmarks/easy.h"
 #include "benchmarks/easycompute.h"

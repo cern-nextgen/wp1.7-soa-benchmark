@@ -6,6 +6,8 @@
 #include "benchmarks/common.h"
 #include "reflections/wrapper.h"
 
+namespace reflections {
+
 struct mallocator {
     std::size_t n;
     template <class... Args>
@@ -84,5 +86,7 @@ public:
     void SetUp(benchmark::State&)  { allocate(t1, n); allocate(t2, n); }
     void TearDown(benchmark::State&)  { deallocate(t1); deallocate(t2); }
 };
+
+} // namespace reflections
 
 #endif // REFLECTIONS_STRUCTS_H

@@ -5,6 +5,8 @@
 #include <Eigen/Core>
 #include "benchmarks/common.h"
 
+namespace manual {
+
 //////////////// Allocation helpers (Backend-templated)
 
 template <Backend B>
@@ -143,5 +145,7 @@ public:
     void SetUp(benchmark::State&)    { allocate<backend>(t1, n); allocate<backend>(t2, n); }
     void TearDown(benchmark::State&)  { deallocate<backend>(t1); deallocate<backend>(t2); }
 };
+
+} // namespace manual
 
 #endif // MANUAL_SOA_STRUCTS_H
