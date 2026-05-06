@@ -91,16 +91,16 @@ void run_HardRW(benchmark::State &state, std::size_t n, T t)
             MEMBER_ACCESS(t, x47, i) += v2; MEMBER_ACCESS(t, x48, i) += v2;
         });
         parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
-            MEMBER_ACCESS(t, x49, i) += v2; MEMBER_ACCESS(t, x50, i) += v2; MEMBER_ACCESS(t, x51, i) += m0;
-            MEMBER_ACCESS(t, x52, i) += m0; MEMBER_ACCESS(t, x53, i) += m0;
+            MEMBER_ACCESS(t, x49, i) += v2; MEMBER_ACCESS(t, x50, i) += v2; MEMBER_ACCESS(t, x51, i) += m2;
+            MEMBER_ACCESS(t, x52, i) += m2; MEMBER_ACCESS(t, x53, i) += m2;
         });
         parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
-            MEMBER_ACCESS(t, x54, i) += m0; MEMBER_ACCESS(t, x55, i) += m0; MEMBER_ACCESS(t, x56, i) += m0;
-            MEMBER_ACCESS(t, x57, i) += m0; MEMBER_ACCESS(t, x58, i) += m0;
+            MEMBER_ACCESS(t, x54, i) += m2; MEMBER_ACCESS(t, x55, i) += m2; MEMBER_ACCESS(t, x56, i) += m2;
+            MEMBER_ACCESS(t, x57, i) += m2; MEMBER_ACCESS(t, x58, i) += m2;
         });
         parallel_for_n<B>(n, [=] BACKEND_HOST_DEVICE (std::size_t i) mutable {
-            MEMBER_ACCESS(t, x59, i) += m0; MEMBER_ACCESS(t, x60, i) += m0; MEMBER_ACCESS(t, x61, i) += m0;
-            MEMBER_ACCESS(t, x62, i) += m0; MEMBER_ACCESS(t, x63, i) += m0;
+            MEMBER_ACCESS(t, x59, i) += m2; MEMBER_ACCESS(t, x60, i) += m2; MEMBER_ACCESS(t, x61, i) += m2;
+            MEMBER_ACCESS(t, x62, i) += m2; MEMBER_ACCESS(t, x63, i) += m2;
         });
     }
 
