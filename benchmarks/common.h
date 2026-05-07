@@ -16,11 +16,13 @@
 #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ[INDEX].MEMBER
 #endif
 
-constexpr std::size_t N[]       = {10, 100, 1000, 10000, 100000};
-//constexpr std::size_t N_medium[] = {1<<12, 1<<16, 1<<20, 1<<24, 1<<28};
-constexpr std::size_t N_Large[] = {10000, 100000, 1000000, 10000000, 100000000};
-// GPU sizes: skip the very small sizes where kernel launch overhead dominates
-constexpr std::size_t N_GPU[]   = {100000, 1000000, 10000000, 100000000, 1000000000};
+constexpr std::size_t N_small_cpu[] = {10, 100, 1000, 10000, 100000};
+constexpr std::size_t N_large_cpu[] = {10000, 100000, 1000000, 10000000, 100000000};
+// GPU sizes: shifted up vs. CPU (kernel launch overhead dominates at small n);
+// upper end capped to fit in ~42 GB VRAM for the largest structs (S64 ~1.4 KB/elem
+// for HardRW, S32 ~128 B/elem for Strided, InvariantMass holds two PxPyPzM arrays).
+constexpr std::size_t N_small_gpu[] = {1000, 10000, 100000, 1000000, 10000000};
+constexpr std::size_t N_large_gpu[] = {100000, 1000000, 10000000, 100000000, 200000000};
 
 // clang-format off
 #define INSTANTIATE_BENCHMARKS_F1(Benchmark, Type, Sizes, Backend) \

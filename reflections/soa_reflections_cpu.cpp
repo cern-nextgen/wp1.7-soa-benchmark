@@ -10,15 +10,15 @@ using namespace reflections;
 #include "benchmarks/stencil.h"
 #include "benchmarks/invmass.h"
 
-INSTANTIATE_BENCHMARKS_F1(EasyRW,      S2SoA,       N_Large, CPUBackend);
-INSTANTIATE_BENCHMARKS_F1(EasyCompute, S2SoA,       N, CPUBackend);
-INSTANTIATE_BENCHMARKS_F1(RealRW,      S10SoA,      N, CPUBackend);
-INSTANTIATE_BENCHMARKS_F1(Strided,     S32SoA,      N_Large, CPUBackend);
-INSTANTIATE_BENCHMARKS_F1(HardRW,      S64SoA,      N, CPUBackend);
-INSTANTIATE_BENCHMARKS_F1(NBody,       SnbodySoA,   N, CPUBackend);
-INSTANTIATE_BENCHMARKS_F1(Stencil,     SstencilSoA, N_Large, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(EasyRW,      S2SoA,       N_large_cpu, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(EasyCompute, S2SoA,       N_small_cpu, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(RealRW,      S10SoA,      N_small_cpu, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(Strided,     S32SoA,      N_large_cpu, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(HardRW,      S64SoA,      N_small_cpu, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(NBody,       SnbodySoA,   N_small_cpu, CPUBackend);
+INSTANTIATE_BENCHMARKS_F1(Stencil,     SstencilSoA, N_large_cpu, CPUBackend);
 
-INSTANTIATE_BENCHMARKS_F2(InvariantMass, PxPyPzMSoA, PxPyPzMSoA, N_Large, CPUBackend);
+INSTANTIATE_BENCHMARKS_F2(InvariantMass, PxPyPzMSoA, PxPyPzMSoA, N_large_cpu, CPUBackend);
 
 int main(int argc, char** argv) {
     ::benchmark::Initialize(&argc, argv);
