@@ -8,7 +8,16 @@ on:
 
 jobs:
   soa-benchmark:
+    name: soa-benchmark-${{ matrix.backend }}
     runs-on: cern-nextgen-h100
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - backend: cpu
+            cmake_targets: "aos_manual_cpu soa_manual_cpu aos_wrapper_cpu soa_wrapper_cpu soa_reflections_cpu"
+          - backend: gpu
+            cmake_targets: "aos_manual_gpu soa_manual_gpu aos_wrapper_gpu soa_wrapper_gpu"
     container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark@sha256:e1ff3cfcd17edd6e92c9558182c093d08ecabeef2882dac92df8a2459be7b7cb
     env:
       BUILD_DIR: /root/build
@@ -19,109 +28,62 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v6
 
-      - name: Build and Compile
+      - name: Build and Compile (${{ matrix.backend }})
         run: |
           cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -B ${BUILD_DIR} -S ${GITHUB_WORKSPACE}
-          cmake --build ${BUILD_DIR}
+          cmake --build ${BUILD_DIR} --target ${{ matrix.cmake_targets }}
 
-      - name: Run CPU Benchmarks
+      - name: Run Benchmarks (${{ matrix.backend }})
         run: |
           mkdir -p ${OUTPUT_DIR} ${PLOTS_DIR}
-          python3 ${GITHUB_WORKSPACE}/run_benchmarks.py --executables ${BUILD_DIR}/aos_*_cpu ${BUILD_DIR}/soa_*_cpu --output ${OUTPUT_DIR}
+          python3 ${GITHUB_WORKSPACE}/run_benchmarks.py --executables ${BUILD_DIR}/aos_*_${{ matrix.backend }} ${BUILD_DIR}/soa_*_${{ matrix.backend }} --output ${OUTPUT_DIR}
 
-      - name: Run GPU Benchmarks
-        run: |
-          mkdir -p ${OUTPUT_DIR} ${PLOTS_DIR}
-          python3 ${GITHUB_WORKSPACE}/run_benchmarks.py --executables ${BUILD_DIR}/aos_*_gpu ${BUILD_DIR}/soa_*_gpu --output ${OUTPUT_DIR}
-
-      - name: Plot AoS CPU Large Benchmarks
+      - name: Plot AoS Large Benchmarks (${{ matrix.backend }})
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/aos_*_cpu.json"
+          libraries: "${{ env.OUTPUT_DIR }}/aos_*_${{ matrix.backend }}.json"
           benchmarks: "Strided EasyRW InvariantMass Stencil"
-          output: "${{ env.PLOTS_DIR }}/aos_large.${{ env.IMAGE_FILE_EXTENSION }}"
+          output: "${{ env.PLOTS_DIR }}/aos_${{ matrix.backend }}_large.${{ env.IMAGE_FILE_EXTENSION }}"
 
-      - name: Plot AoS CPU Small Benchmarks
+      - name: Plot AoS Small Benchmarks (${{ matrix.backend }})
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/aos_*_cpu.json"
+          libraries: "${{ env.OUTPUT_DIR }}/aos_*_${{ matrix.backend }}.json"
           benchmarks: "EasyCompute RealRW HardRW NBody"
-          output: "${{ env.PLOTS_DIR }}/aos_small.${{ env.IMAGE_FILE_EXTENSION }}"
+          output: "${{ env.PLOTS_DIR }}/aos_${{ matrix.backend }}_small.${{ env.IMAGE_FILE_EXTENSION }}"
 
-      - name: Plot SoA CPU Large Benchmarks
+      - name: Plot SoA Large Benchmarks (${{ matrix.backend }})
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/soa_*_cpu.json"
+          libraries: "${{ env.OUTPUT_DIR }}/soa_*_${{ matrix.backend }}.json"
           benchmarks: "Strided EasyRW InvariantMass Stencil"
-          output: "${{ env.PLOTS_DIR }}/soa_large.${{ env.IMAGE_FILE_EXTENSION }}"
+          output: "${{ env.PLOTS_DIR }}/soa_${{ matrix.backend }}_large.${{ env.IMAGE_FILE_EXTENSION }}"
 
-      - name: Plot SoA CPU Small Benchmarks
+      - name: Plot SoA Small Benchmarks (${{ matrix.backend }})
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/soa_*_cpu.json"
+          libraries: "${{ env.OUTPUT_DIR }}/soa_*_${{ matrix.backend }}.json"
           benchmarks: "EasyCompute RealRW HardRW NBody"
-          output: "${{ env.PLOTS_DIR }}/soa_small.${{ env.IMAGE_FILE_EXTENSION }}"
+          output: "${{ env.PLOTS_DIR }}/soa_${{ matrix.backend }}_small.${{ env.IMAGE_FILE_EXTENSION }}"
 
-      - name: Plot Manual CPU AoS vs SoA - Strided
+      - name: Plot Manual AoS vs SoA - Strided (${{ matrix.backend }})
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/*_manual_cpu.json"
+          libraries: "${{ env.OUTPUT_DIR }}/*_manual_${{ matrix.backend }}.json"
           benchmarks: "Strided"
-          output: "${{ env.PLOTS_DIR }}/manual_cpu_strided.${{ env.IMAGE_FILE_EXTENSION }}"
+          output: "${{ env.PLOTS_DIR }}/manual_${{ matrix.backend }}_strided.${{ env.IMAGE_FILE_EXTENSION }}"
 
-      - name: Plot Manual CPU AoS vs SoA - Stencil
+      - name: Plot Manual AoS vs SoA - Stencil (${{ matrix.backend }})
         uses: ./.github/actions/plot-benchmarks
         with:
-          libraries: "${{ env.OUTPUT_DIR }}/*_manual_cpu.json"
+          libraries: "${{ env.OUTPUT_DIR }}/*_manual_${{ matrix.backend }}.json"
           benchmarks: "Stencil"
-          output: "${{ env.PLOTS_DIR }}/manual_cpu_stencil.${{ env.IMAGE_FILE_EXTENSION }}"
-
-      - name: Plot AoS GPU Large Benchmarks
-        uses: ./.github/actions/plot-benchmarks
-        with:
-          libraries: "${{ env.OUTPUT_DIR }}/aos_*_gpu.json"
-          benchmarks: "Strided EasyRW InvariantMass Stencil"
-          output: "${{ env.PLOTS_DIR }}/aos_gpu_large.${{ env.IMAGE_FILE_EXTENSION }}"
-
-      - name: Plot AoS GPU Small Benchmarks
-        uses: ./.github/actions/plot-benchmarks
-        with:
-          libraries: "${{ env.OUTPUT_DIR }}/aos_*_gpu.json"
-          benchmarks: "EasyCompute RealRW HardRW NBody"
-          output: "${{ env.PLOTS_DIR }}/aos_gpu_small.${{ env.IMAGE_FILE_EXTENSION }}"
-
-      - name: Plot SoA GPU Large Benchmarks
-        uses: ./.github/actions/plot-benchmarks
-        with:
-          libraries: "${{ env.OUTPUT_DIR }}/soa_*_gpu.json"
-          benchmarks: "Strided EasyRW InvariantMass Stencil"
-          output: "${{ env.PLOTS_DIR }}/soa_gpu_large.${{ env.IMAGE_FILE_EXTENSION }}"
-
-      - name: Plot SoA GPU Small Benchmarks
-        uses: ./.github/actions/plot-benchmarks
-        with:
-          libraries: "${{ env.OUTPUT_DIR }}/soa_*_gpu.json"
-          benchmarks: "EasyCompute RealRW HardRW NBody"
-          output: "${{ env.PLOTS_DIR }}/soa_gpu_small.${{ env.IMAGE_FILE_EXTENSION }}"
-
-      - name: Plot Manual GPU AoS vs SoA - Strided
-        uses: ./.github/actions/plot-benchmarks
-        with:
-          libraries: "${{ env.OUTPUT_DIR }}/*_manual_gpu.json"
-          benchmarks: "Strided"
-          output: "${{ env.PLOTS_DIR }}/manual_gpu_strided.${{ env.IMAGE_FILE_EXTENSION }}"
-
-      - name: Plot Manual GPU AoS vs SoA - Stencil
-        uses: ./.github/actions/plot-benchmarks
-        with:
-          libraries: "${{ env.OUTPUT_DIR }}/*_manual_gpu.json"
-          benchmarks: "Stencil"
-          output: "${{ env.PLOTS_DIR }}/manual_gpu_stencil.${{ env.IMAGE_FILE_EXTENSION }}"
+          output: "${{ env.PLOTS_DIR }}/manual_${{ matrix.backend }}_stencil.${{ env.IMAGE_FILE_EXTENSION }}"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: artifacts
+          name: ${{ matrix.backend }}-artifacts
           path: |
             ${{ env.PLOTS_DIR }}
             ${{ env.OUTPUT_DIR }}
