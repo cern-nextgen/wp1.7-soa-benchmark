@@ -16,7 +16,7 @@ def read_data(filename):
             continue
         row = dict(entry)
         row["real_time"] = float(row["real_time"])
-        row["benchmark"] = row["name"].split('/')[1]
+        row["benchmark"] = row["run_name"].split('/')[1]
         rows.append(row)
     return rows, name
 
