@@ -9,14 +9,16 @@ on:
 jobs:
   soa-benchmark:
     name: soa-benchmark-${{ matrix.backend }}
-    runs-on: cern-nextgen-h100
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - backend: cpu
+            runner: cern-nextgen-h100-.5
             cmake_targets: "aos_manual_cpu soa_manual_cpu aos_wrapper_cpu soa_wrapper_cpu soa_reflections_cpu"
           - backend: gpu
+            runner: cern-nextgen-h100-.5
             cmake_targets: "aos_manual_gpu soa_manual_gpu aos_wrapper_gpu soa_wrapper_gpu"
     container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark@sha256:e1ff3cfcd17edd6e92c9558182c093d08ecabeef2882dac92df8a2459be7b7cb
     env:
