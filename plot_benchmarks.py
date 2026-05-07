@@ -6,15 +6,19 @@ import json
 import glob
 
 def read_data(filename):
-    import pandas as pd
     stem = os.path.splitext(os.path.basename(filename))[0]
     with open(filename, "r") as f:
         data = json.load(f)
-        name = data.get("context", {}).get("name", stem)
-        df = pd.DataFrame.from_dict(data["benchmarks"]).astype({"real_time": float})
-        df = df[df["run_type"] == "aggregate"]
-        df["benchmark"] = df["name"].apply(lambda x: x.split('/')[1])
-        return df, name
+    name = data.get("context", {}).get("name", stem)
+    rows = []
+    for entry in data["benchmarks"]:
+        if entry.get("run_type") != "aggregate":
+            continue
+        row = dict(entry)
+        row["real_time"] = float(row["real_time"])
+        row["benchmark"] = row["name"].split('/')[1]
+        rows.append(row)
+    return rows, name
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -30,14 +34,14 @@ if __name__ == "__main__":
 
     all_data = []
     for f in json_files:
-        df, name = read_data(f)
+        rows, name = read_data(f)
         if args.benchmarks:
-            df = df[df["benchmark"].isin(args.benchmarks)]
-        if not df.empty:
-            all_data.append((df, name))
+            rows = [r for r in rows if r["benchmark"] in args.benchmarks]
+        if rows:
+            all_data.append((rows, name))
 
     # Preserve insertion order for deterministic assignment
-    all_benchmarks = list(dict.fromkeys(bm for df, _ in all_data for bm in df["benchmark"].unique()))
+    all_benchmarks = list(dict.fromkeys(r["benchmark"] for rows, _ in all_data for r in rows))
     all_libraries  = list(dict.fromkeys(name for _, name in all_data))
 
     colors     = {bm:  plt.cm.tab10(i % 10)                      for i, bm  in enumerate(all_benchmarks)}
@@ -46,14 +50,16 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(figsize=(10, 6))
     time_unit = None
 
-    for df, name in all_data:
+    for rows, name in all_data:
         if time_unit is None:
-            time_unit = df["time_unit"].iloc[0]
-        for bm in df["benchmark"].unique():
-            df_mean = df[(df["benchmark"] == bm) & (df["aggregate_name"] == "mean")]
-            if df_mean.empty:
+            time_unit = rows[0]["time_unit"]
+        for bm in dict.fromkeys(r["benchmark"] for r in rows):
+            mean_rows = [r for r in rows if r["benchmark"] == bm and r.get("aggregate_name") == "mean"]
+            if not mean_rows:
                 continue
-            ax.plot(df_mean['n_elem'], df_mean['real_time'],
+            xs = [r["n_elem"] for r in mean_rows]
+            ys = [r["real_time"] for r in mean_rows]
+            ax.plot(xs, ys,
                     color=colors[bm], ls=linestyles[name], marker="o",
                     label=f"{name} / {bm}")
 
