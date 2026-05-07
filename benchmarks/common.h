@@ -16,28 +16,28 @@
 #define MEMBER_ACCESS(OBJ, MEMBER, INDEX) OBJ[INDEX].MEMBER
 #endif
 
-constexpr std::size_t N_small_cpu[] = {10, 100, 1000, 10000, 100000};
+constexpr std::size_t N_small_cpu[] = {100, 1000, 10000, 100000, 1000000};
 constexpr std::size_t N_large_cpu[] = {10000, 100000, 1000000, 10000000, 100000000};
 // GPU sizes: shifted up vs. CPU (kernel launch overhead dominates at small n);
 // upper end capped to fit in ~42 GB VRAM for the largest structs (S64 ~1.4 KB/elem
 // for HardRW, S32 ~128 B/elem for Strided, InvariantMass holds two PxPyPzM arrays).
-constexpr std::size_t N_small_gpu[] = {1000, 10000, 100000, 1000000, 10000000};
-constexpr std::size_t N_large_gpu[] = {100000, 1000000, 10000000, 100000000, 200000000};
+constexpr std::size_t N_small_gpu[] = {100, 1000, 10000, 100000, 1000000};
+constexpr std::size_t N_large_gpu[] = {10000, 100000, 1000000, 10000000, 100000000};
 
 // clang-format off
 #define INSTANTIATE_BENCHMARKS_F1(Benchmark, Type, Sizes, Backend) \
-    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, Benchmark, Type, std::integral_constant<size_t, Sizes[0]>, Backend)->Unit(benchmark::kMillisecond); \
-    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, Benchmark, Type, std::integral_constant<size_t, Sizes[1]>, Backend)->Unit(benchmark::kMillisecond); \
-    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, Benchmark, Type, std::integral_constant<size_t, Sizes[2]>, Backend)->Unit(benchmark::kMillisecond); \
-    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, Benchmark, Type, std::integral_constant<size_t, Sizes[3]>, Backend)->Unit(benchmark::kMillisecond); \
-    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, Benchmark, Type, std::integral_constant<size_t, Sizes[4]>, Backend)->Unit(benchmark::kMillisecond);
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, Benchmark, Type, std::integral_constant<std::size_t, Sizes[0]>, Backend)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, Benchmark, Type, std::integral_constant<std::size_t, Sizes[1]>, Backend)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, Benchmark, Type, std::integral_constant<std::size_t, Sizes[2]>, Backend)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, Benchmark, Type, std::integral_constant<std::size_t, Sizes[3]>, Backend)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture1, Benchmark, Type, std::integral_constant<std::size_t, Sizes[4]>, Backend)->Unit(benchmark::kMillisecond);
 
 #define INSTANTIATE_BENCHMARKS_F2(Benchmark, Type1, Type2, Sizes, Backend) \
-    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, Benchmark, Type1, Type2, std::integral_constant<size_t, Sizes[0]>, Backend)->Unit(benchmark::kMillisecond); \
-    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, Benchmark, Type1, Type2, std::integral_constant<size_t, Sizes[1]>, Backend)->Unit(benchmark::kMillisecond); \
-    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, Benchmark, Type1, Type2, std::integral_constant<size_t, Sizes[2]>, Backend)->Unit(benchmark::kMillisecond); \
-    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, Benchmark, Type1, Type2, std::integral_constant<size_t, Sizes[3]>, Backend)->Unit(benchmark::kMillisecond); \
-    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, Benchmark, Type1, Type2, std::integral_constant<size_t, Sizes[4]>, Backend)->Unit(benchmark::kMillisecond);
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, Benchmark, Type1, Type2, std::integral_constant<std::size_t, Sizes[0]>, Backend)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, Benchmark, Type1, Type2, std::integral_constant<std::size_t, Sizes[1]>, Backend)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, Benchmark, Type1, Type2, std::integral_constant<std::size_t, Sizes[2]>, Backend)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, Benchmark, Type1, Type2, std::integral_constant<std::size_t, Sizes[3]>, Backend)->Unit(benchmark::kMillisecond); \
+    BENCHMARK_TEMPLATE_INSTANTIATE_F(Fixture2, Benchmark, Type1, Type2, std::integral_constant<std::size_t, Sizes[4]>, Backend)->Unit(benchmark::kMillisecond);
 // clang-format on
 
 template <typename T>
