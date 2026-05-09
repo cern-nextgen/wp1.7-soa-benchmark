@@ -66,7 +66,7 @@ __global__ void parallel_for_n_kernel(std::size_t n, Body body) {
 #endif
 
 template <Backend B, class Body>
-inline void parallel_for_n(std::size_t n, Body body) {
+[[gnu::flatten]] inline void parallel_for_n(std::size_t n, Body body) {
     if constexpr (B == Backend::CPU) {
         for (std::size_t i = 0; i < n; ++i) body(i);
     } else {

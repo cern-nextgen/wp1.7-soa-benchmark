@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(BUILD_GPU "Build CUDA GPU benchmark targets" ON)
 
-set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -march=native -funroll-loops -ffast-math") # -fopt-info-vec-missed -ftime-report -fno-tree-vectorize
+set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -march=native -funroll-loops -ffast-math") # -fopt-info-vec-missed -ftime-report -fno-tree-vectorize -fopt-info-inline-optimized-missed=inline.txt
 
 if (NOT DEFINED CMAKE_CUDA_HOST_COMPILER)
     set(CMAKE_CUDA_HOST_COMPILER /opt/rh/gcc-toolset-14/root/usr/bin/g++)
