@@ -16,25 +16,25 @@ template <class ReturnType>
 struct RandomAccessAt {
     memlayout::size_t i;
     template <class... Args>
-    constexpr ReturnType operator()(Args& ...args) const { return {args[i]...}; }
+    [[gnu::always_inline]] constexpr ReturnType operator()(Args& ...args) const { return {args[i]...}; }
     template <class... Args>
-    constexpr ReturnType operator()(const Args& ...args) const { return {args[i]...}; }
+    [[gnu::always_inline]] constexpr ReturnType operator()(const Args& ...args) const { return {args[i]...}; }
 };
 
 template <class ReturnType>
 struct GetPointer {
     template <class... Args>
-    constexpr ReturnType operator()(Args& ...args) const { return {&args...}; }
+    [[gnu::always_inline]] constexpr ReturnType operator()(Args& ...args) const { return {&args...}; }
     template <class... Args>
-    constexpr ReturnType operator()(const Args& ...args) const { return {&args...}; }
+    [[gnu::always_inline]] constexpr ReturnType operator()(const Args& ...args) const { return {&args...}; }
 };
 
 template <class ReturnType>
 struct AggregateConstructor {
     template <class... Args>
-    constexpr ReturnType operator()(Args& ...args) const { return {args...}; }
+    [[gnu::always_inline]] constexpr ReturnType operator()(Args& ...args) const { return {args...}; }
     template <class... Args>
-    constexpr ReturnType operator()(const Args& ...args) const { return {args...}; }
+    [[gnu::always_inline]] constexpr ReturnType operator()(const Args& ...args) const { return {args...}; }
 };
 
 struct FirstMember {
@@ -47,20 +47,20 @@ struct FirstMember {
 template <class ReturnType>
 struct PreIncrement {
     template <class... Args>
-    constexpr ReturnType operator()(Args& ...args) const { return {++args...}; }
+    [[gnu::always_inline]] constexpr ReturnType operator()(Args& ...args) const { return {++args...}; }
 };
 
 template <class ReturnType>
 struct PreDecrement {
     template <class... Args>
-    constexpr ReturnType operator()(Args& ...args) const { return {--args...}; }
+    [[gnu::always_inline]] constexpr ReturnType operator()(Args& ...args) const { return {--args...}; }
 };
 
 template <class ReturnType>
 struct Advance {
     ptrdiff_t i;
     template <class... Args>
-    constexpr ReturnType operator()(const Args& ...args) const { return {(args + i)...}; }
+    [[gnu::always_inline]] constexpr ReturnType operator()(const Args& ...args) const { return {(args + i)...}; }
 };
 
 struct CopyAssignment {
@@ -148,11 +148,11 @@ struct Wrapper<Struct, Container, Layout::soa> : public Struct<Container> {
     template <template <class> class other_Container>
     constexpr Wrapper(const Struct<other_Container>& other) : Base{other.apply(AggregateConstructor<Base>{})} {}
 
-    constexpr Wrapper<Struct, reference> operator[] (size_t i) { return Base::apply(RandomAccessAt<Struct<reference>>{i}); }
-    constexpr Wrapper<Struct, const_reference> operator[] (size_t i) const { return Base::apply(RandomAccessAt<Struct<const_reference>>{i}); }
+    [[gnu::always_inline]] constexpr Wrapper<Struct, reference> operator[] (size_t i) { return Base::apply(RandomAccessAt<Struct<reference>>{i}); }
+    [[gnu::always_inline]] constexpr Wrapper<Struct, const_reference> operator[] (size_t i) const { return Base::apply(RandomAccessAt<Struct<const_reference>>{i}); }
 
-    constexpr Wrapper<Struct, reference> operator*() { return operator[](0); }
-    constexpr Wrapper<Struct, const_reference> operator*(ptrdiff_t) const { return operator[](0); }
+    [[gnu::always_inline]] constexpr Wrapper<Struct, reference> operator*() { return operator[](0); }
+    [[gnu::always_inline]] constexpr Wrapper<Struct, const_reference> operator*(ptrdiff_t) const { return operator[](0); }
 };
 
 template <template <template <class> class> class Struct>
@@ -218,13 +218,13 @@ struct Wrapper<Struct, pointer, Layout::soa> : public Struct<pointer> {
     constexpr Wrapper() = default;
     constexpr Wrapper(Base b) : Base{static_cast<Base&&>(b)} {}
 
-    constexpr Wrapper<Struct, reference> operator[] (size_t i) { return Base::apply(RandomAccessAt<Struct<reference>>{i}); }
-    constexpr const Wrapper<Struct, const_reference> operator[] (size_t i) const { return Base::apply(RandomAccessAt<Struct<const_reference>>{i}); }
+    [[gnu::always_inline]] constexpr Wrapper<Struct, reference> operator[] (size_t i) { return Base::apply(RandomAccessAt<Struct<reference>>{i}); }
+    [[gnu::always_inline]] constexpr const Wrapper<Struct, const_reference> operator[] (size_t i) const { return Base::apply(RandomAccessAt<Struct<const_reference>>{i}); }
 
-    constexpr Wrapper<Struct, reference> operator*() { return operator[](0); }
-    constexpr Wrapper<Struct, const_reference> operator*() const { return operator[](0); }
-    constexpr Wrapper<Struct, reference> operator->() { return operator[](0); }
-    constexpr Wrapper<Struct, const_reference> operator->() const { return operator[](0); }
+    [[gnu::always_inline]] constexpr Wrapper<Struct, reference> operator*() { return operator[](0); }
+    [[gnu::always_inline]] constexpr Wrapper<Struct, const_reference> operator*() const { return operator[](0); }
+    [[gnu::always_inline]] constexpr Wrapper<Struct, reference> operator->() { return operator[](0); }
+    [[gnu::always_inline]] constexpr Wrapper<Struct, const_reference> operator->() const { return operator[](0); }
 
     constexpr bool operator==(const Wrapper& other) const { return Base::apply(FirstMember{}) == other.apply(FirstMember{}); }
     constexpr bool operator!=(const Wrapper& other) const { return !this->operator==(other); }
@@ -249,9 +249,9 @@ struct Wrapper<Struct, const_pointer, Layout::soa> : public Struct<const_pointer
     constexpr Wrapper(Base b) : Base{static_cast<Base&&>(b)} {}
     constexpr Wrapper(const Struct<pointer>& other) : Base(other.apply(AggregateConstructor<Base>{})) {}
 
-    constexpr Wrapper<Struct, const_reference> operator[] (size_t i) const { return Base::apply(RandomAccessAt<Struct<const_reference>>{i}); }
-    constexpr Wrapper<Struct, const_reference> operator*() const { return operator[](0); }
-    constexpr Wrapper<Struct, const_reference> operator->() const { return operator[](0); }
+    [[gnu::always_inline]] constexpr Wrapper<Struct, const_reference> operator[] (size_t i) const { return Base::apply(RandomAccessAt<Struct<const_reference>>{i}); }
+    [[gnu::always_inline]] constexpr Wrapper<Struct, const_reference> operator*() const { return operator[](0); }
+    [[gnu::always_inline]] constexpr Wrapper<Struct, const_reference> operator->() const { return operator[](0); }
 
     constexpr bool operator==(const Wrapper& other) const { return Base::apply(FirstMember{}) == other.apply(FirstMember{}); }
     constexpr bool operator!=(const Wrapper& other) const { return !this->operator==(other); }
@@ -271,20 +271,20 @@ struct Wrapper<Struct, const_pointer, Layout::soa> : public Struct<const_pointer
 
 #define MEMLAYOUT_APPLY_UNARY(...)\
     template <class Function>\
-    __attribute__((flatten)) constexpr auto apply(Function&& f) { return f(__VA_ARGS__); }\
+    [[gnu::always_inline]] constexpr auto apply(Function&& f) { return f(__VA_ARGS__); }\
     template <class Function>\
-    __attribute__((flatten)) constexpr auto apply(Function&& f) const { return f(__VA_ARGS__); }\
+    [[gnu::always_inline]] constexpr auto apply(Function&& f) const { return f(__VA_ARGS__); }\
 
 #define MEMLAYOUT_EXPAND(m) f(m, other.m)
 
 #define MEMLAYOUT_APPLY_BINARY(STRUCT_NAME, ...)\
     template <template <class> class other_Container, class Function>\
-    __attribute__((flatten)) constexpr STRUCT_NAME apply(STRUCT_NAME<other_Container>& other, Function&& f) { return {__VA_ARGS__}; }\
+    [[gnu::always_inline]] constexpr STRUCT_NAME apply(STRUCT_NAME<other_Container>& other, Function&& f) { return {__VA_ARGS__}; }\
     template <template <class> class other_Container, class Function>\
-    __attribute__((flatten)) constexpr STRUCT_NAME apply(STRUCT_NAME<other_Container>& other, Function&& f) const { return {__VA_ARGS__}; }\
+    [[gnu::always_inline]] constexpr STRUCT_NAME apply(STRUCT_NAME<other_Container>& other, Function&& f) const { return {__VA_ARGS__}; }\
     template <template <class> class other_Container, class Function>\
-    __attribute__((flatten)) constexpr STRUCT_NAME apply(const STRUCT_NAME<other_Container>& other, Function&& f) { return {__VA_ARGS__}; }\
+    [[gnu::always_inline]] constexpr STRUCT_NAME apply(const STRUCT_NAME<other_Container>& other, Function&& f) { return {__VA_ARGS__}; }\
     template <template <class> class other_Container, class Function>\
-    __attribute__((flatten)) constexpr STRUCT_NAME apply(const STRUCT_NAME<other_Container>& other, Function&& f) const { return {__VA_ARGS__}; }\
+    [[gnu::always_inline]] constexpr STRUCT_NAME apply(const STRUCT_NAME<other_Container>& other, Function&& f) const { return {__VA_ARGS__}; }\
 
 #endif  // WRAPPER_H
