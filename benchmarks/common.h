@@ -21,8 +21,8 @@ constexpr std::size_t N_large_cpu[] = {10000, 100000, 1000000, 10000000, 1000000
 // GPU sizes: shifted up vs. CPU (kernel launch overhead dominates at small n);
 // upper end capped to fit in ~42 GB VRAM for the largest structs (S64 ~1.4 KB/elem
 // for HardRW, S32 ~128 B/elem for Strided, InvariantMass holds two PxPyPzM arrays).
-constexpr std::size_t N_small_gpu[] = {100, 1000, 10000, 100000, 1000000};
-constexpr std::size_t N_large_gpu[] = {10000, 100000, 1000000, 10000000, 100000000};
+constexpr std::size_t N_small_gpu[] = {100000, 500000, 2500000, 12500000, 62500000};
+constexpr std::size_t N_large_gpu[] = {100000, 500000, 2500000, 12500000, 62500000};
 
 // clang-format off
 #define INSTANTIATE_BENCHMARKS_F1(Benchmark, Type, Sizes, Backend) \
