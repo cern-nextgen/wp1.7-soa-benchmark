@@ -10,7 +10,7 @@ jobs:
     env:
       BUILD_DIR: ${{github.workspace}}-vtune
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: build and compile
         run: |
           cmake -B "$BUILD_DIR"
@@ -31,7 +31,7 @@ jobs:
           echo "Files in Results Directory:"
           ls -l soa-benchmark-results
       - name: upload results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: soa-benchmark-results
           path: soa-benchmark-results

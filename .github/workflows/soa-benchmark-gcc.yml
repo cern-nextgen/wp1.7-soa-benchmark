@@ -11,7 +11,7 @@ jobs:
     runs-on: cern-nextgen-h100
     container: registry.cern.ch/ngt-wp1.7/wp1.7-soa-benchmark:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: build and compile
         run: |
           cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -B ${{github.workspace}}
@@ -30,7 +30,7 @@ jobs:
           echo "Files in Results Directory:"
           ls -l soa-benchmark-results
       - name: upload results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: soa-benchmark-results
           path: soa-benchmark-results
