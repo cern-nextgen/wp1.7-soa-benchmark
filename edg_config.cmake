@@ -110,7 +110,7 @@ function(add_edg_executable target sources)
     target_link_directories(${target} PUBLIC ${LIBGCC_PATH} ${LIBSTDC_PATH} $ENV{EDG_BASE}/lib)
 
     # target_link_directories isn't working for these directories
-    target_link_options(${target} PUBLIC -L/usr/lib -L/lib -L/usr/lib/x86_64-linux-gnu)
+    target_link_options(${target} PUBLIC -L/usr/lib -L/usr/lib64 -L/lib -L/usr/lib/x86_64-linux-gnu)
 
     get_target_property(link_dirs ${target} LINK_DIRECTORIES)
 
