@@ -10,7 +10,8 @@ GENERATE_SOA_LAYOUT(SoALayout,
     SOA_COLUMN(int, x0),
     SOA_COLUMN(int, x1))
 
-using SoA = SoALayout<>;
+using SoA = SoALayout<cms::soa::CacheLineSize::defaultSize, cms::soa::AlignmentEnforcement::enforced>;
+using SoAView = SoA::ViewTemplate<cms::soa::RestrictQualify::enabled, cms::soa::RangeChecking::Default>;
 
 GENERATE_SOA_LAYOUT(MediumSoALayout,
     SOA_COLUMN(float, x0),
@@ -24,7 +25,8 @@ GENERATE_SOA_LAYOUT(MediumSoALayout,
     SOA_EIGEN_COLUMN(Eigen::Matrix3d, x8),
     SOA_EIGEN_COLUMN(Eigen::Matrix3d, x9))
 
-using MediumSoA = MediumSoALayout<>;
+using MediumSoA = MediumSoALayout<cms::soa::CacheLineSize::defaultSize, cms::soa::AlignmentEnforcement::enforced>;
+using MediumSoAView = MediumSoA::ViewTemplate<cms::soa::RestrictQualify::enabled, cms::soa::RangeChecking::Default>;
 
 GENERATE_SOA_LAYOUT(ModerateSoALayout,
     SOA_COLUMN(float, x0),
@@ -60,7 +62,8 @@ GENERATE_SOA_LAYOUT(ModerateSoALayout,
     SOA_COLUMN(int, x30),
     SOA_COLUMN(int, x31))
 
-using ModerateSoA = ModerateSoALayout<>;
+using ModerateSoA = ModerateSoALayout<cms::soa::CacheLineSize::defaultSize, cms::soa::AlignmentEnforcement::enforced>;
+using ModerateSoAView = ModerateSoA::ViewTemplate<cms::soa::RestrictQualify::enabled, cms::soa::RangeChecking::Default>;
 
 GENERATE_SOA_LAYOUT(BigSoALayout,
     SOA_COLUMN(float, x0),
@@ -128,7 +131,8 @@ GENERATE_SOA_LAYOUT(BigSoALayout,
     SOA_EIGEN_COLUMN(Eigen::Matrix3d, x62),
     SOA_EIGEN_COLUMN(Eigen::Matrix3d, x63))
 
-using BigSoA = BigSoALayout<>;
+using BigSoA = BigSoALayout<cms::soa::CacheLineSize::defaultSize, cms::soa::AlignmentEnforcement::enforced>;
+using BigSoAView = BigSoA::ViewTemplate<cms::soa::RestrictQualify::enabled, cms::soa::RangeChecking::Default>;
 
 GENERATE_SOA_LAYOUT(SoANbodyLayout,
     SOA_COLUMN(float, x),
@@ -138,21 +142,24 @@ GENERATE_SOA_LAYOUT(SoANbodyLayout,
     SOA_COLUMN(float, vy),
     SOA_COLUMN(float, vz))
 
-using SoANbody = SoANbodyLayout<>;
+using SoANbody = SoANbodyLayout<cms::soa::CacheLineSize::defaultSize, cms::soa::AlignmentEnforcement::enforced>;
+using SoANbodyView = SoANbody::ViewTemplate<cms::soa::RestrictQualify::enabled, cms::soa::RangeChecking::Default>;
 
 GENERATE_SOA_LAYOUT(Stencil,
     SOA_COLUMN(double, src),
     SOA_COLUMN(double, dst),
     SOA_COLUMN(double, rhs))
 
-using SoAStencil = Stencil<>;
+using SoAStencil = Stencil<cms::soa::CacheLineSize::defaultSize, cms::soa::AlignmentEnforcement::enforced>;
+using SoAStencilView = SoAStencil::ViewTemplate<cms::soa::RestrictQualify::enabled, cms::soa::RangeChecking::Default>;
 
 GENERATE_SOA_LAYOUT(PxPyPzM,
     SOA_COLUMN(double, x),
     SOA_COLUMN(double, y),
     SOA_COLUMN(double, z),
     SOA_COLUMN(double, M))
-using SoAPxPyPzM = PxPyPzM<>;
+using SoAPxPyPzM = PxPyPzM<cms::soa::CacheLineSize::defaultSize, cms::soa::AlignmentEnforcement::enforced>;
+using SoAPxPyPzMView = SoAPxPyPzM::ViewTemplate<cms::soa::RestrictQualify::enabled, cms::soa::RangeChecking::Default>;
 
 /// Register Benchmarks ///
 template <typename SoA, typename N>
