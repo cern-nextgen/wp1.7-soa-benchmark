@@ -352,22 +352,36 @@ struct Wrapper<Struct, const_reference, Layout::soa> : public Struct<const_refer
 
 }  // namespace memlayout
 
-#define MEMLAYOUT_APPLY_UNARY(...)\
-    template <class Function>\
-    __attribute__((always_inline)) constexpr auto apply(Function&& f) { return f(__VA_ARGS__); }\
-    template <class Function>\
-    __attribute__((always_inline)) constexpr auto apply(Function&& f) const { return f(__VA_ARGS__); }\
+#define MEMLAYOUT_PARENS ()
+ 
+#define MEMLAYOUT_EXPAND(...) MEMLAYOUT_EXPAND4(MEMLAYOUT_EXPAND4(MEMLAYOUT_EXPAND4(__VA_ARGS__)))
+#define MEMLAYOUT_EXPAND4(...) MEMLAYOUT_EXPAND3(MEMLAYOUT_EXPAND3(MEMLAYOUT_EXPAND3(__VA_ARGS__)))
+#define MEMLAYOUT_EXPAND3(...) MEMLAYOUT_EXPAND2(MEMLAYOUT_EXPAND2(MEMLAYOUT_EXPAND2(__VA_ARGS__)))
+#define MEMLAYOUT_EXPAND2(...) MEMLAYOUT_EXPAND1(MEMLAYOUT_EXPAND1(MEMLAYOUT_EXPAND1(__VA_ARGS__)))
+#define MEMLAYOUT_EXPAND1(...) __VA_ARGS__
+ 
+#define MEMLAYOUT_FOR_EACH(macro, ...) \
+    __VA_OPT__(MEMLAYOUT_EXPAND(MEMLAYOUT_FOR_EACH_HELPER(macro, __VA_ARGS__)))
+#define MEMLAYOUT_FOR_EACH_HELPER(macro, a1, ...) \
+    macro(a1) \
+    __VA_OPT__(, MEMLAYOUT_FOR_EACH_AGAIN MEMLAYOUT_PARENS (macro, __VA_ARGS__))
+#define MEMLAYOUT_FOR_EACH_AGAIN() MEMLAYOUT_FOR_EACH_HELPER
 
-#define MEMLAYOUT_EXPAND(m) f(m, other.m)
+#define MEMLAYOUT_UNARY_ONE(m) m
+#define MEMLAYOUT_BINARY_ONE(m) f(m, other.m)
 
-#define MEMLAYOUT_APPLY_BINARY(STRUCT_NAME, ...)\
+#define MEMLAYOUT_APPLY(STRUCT_NAME, ...)\
+    template <class Function>\
+    __attribute__((always_inline)) constexpr auto apply(Function&& f) { return f(MEMLAYOUT_FOR_EACH(MEMLAYOUT_UNARY_ONE, __VA_ARGS__)); }\
+    template <class Function>\
+    __attribute__((always_inline)) constexpr auto apply(Function&& f) const { return f(MEMLAYOUT_FOR_EACH(MEMLAYOUT_UNARY_ONE, __VA_ARGS__)); }\
     template <template <class> class other_Container, class Function>\
-    __attribute__((always_inline)) constexpr STRUCT_NAME apply(STRUCT_NAME<other_Container>& other, Function&& f) { return {__VA_ARGS__}; }\
+    __attribute__((always_inline)) constexpr STRUCT_NAME apply(STRUCT_NAME<other_Container>& other, Function&& f) { return {MEMLAYOUT_FOR_EACH(MEMLAYOUT_BINARY_ONE, __VA_ARGS__)}; }\
     template <template <class> class other_Container, class Function>\
-    __attribute__((always_inline)) constexpr STRUCT_NAME apply(STRUCT_NAME<other_Container>& other, Function&& f) const { return {__VA_ARGS__}; }\
+    __attribute__((always_inline)) constexpr STRUCT_NAME apply(STRUCT_NAME<other_Container>& other, Function&& f) const { return {MEMLAYOUT_FOR_EACH(MEMLAYOUT_BINARY_ONE, __VA_ARGS__)}; }\
     template <template <class> class other_Container, class Function>\
-    __attribute__((always_inline)) constexpr STRUCT_NAME apply(const STRUCT_NAME<other_Container>& other, Function&& f) { return {__VA_ARGS__}; }\
+    __attribute__((always_inline)) constexpr STRUCT_NAME apply(const STRUCT_NAME<other_Container>& other, Function&& f) { return {MEMLAYOUT_FOR_EACH(MEMLAYOUT_BINARY_ONE, __VA_ARGS__)}; }\
     template <template <class> class other_Container, class Function>\
-    __attribute__((always_inline)) constexpr STRUCT_NAME apply(const STRUCT_NAME<other_Container>& other, Function&& f) const { return {__VA_ARGS__}; }\
+    __attribute__((always_inline)) constexpr STRUCT_NAME apply(const STRUCT_NAME<other_Container>& other, Function&& f) const { return {MEMLAYOUT_FOR_EACH(MEMLAYOUT_BINARY_ONE, __VA_ARGS__)}; }\
 
 #endif  // MEMLAYOUT_H
