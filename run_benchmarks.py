@@ -4,8 +4,6 @@ import pandas as pd
 
 if __name__ == "__main__":
 
-    benchmark_filter = sys.argv[3] if len(sys.argv) > 3 else "BM_stencil"
-
     if len(sys.argv) > 2:
         output_dir = sys.argv[1]
         csvfile = sys.argv[2]
