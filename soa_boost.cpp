@@ -166,7 +166,7 @@ template <typename SoA, typename N>
 class Fixture1 : public benchmark::Fixture {
  public:
     std::byte *buffer;
-    using SoAView = typename SoA::template ViewTemplate<cms::soa::RestrictQualify::enabled, cms::soa::RangeChecking::Default>;
+    using SoAView = typename SoA::template ViewTemplate<cms::soa::RestrictQualify::enabled, cms::soa::RangeChecking::disabled>;
     SoAView t;
 
     static constexpr auto n = N::value;
