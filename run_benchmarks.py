@@ -17,7 +17,8 @@ if __name__ == "__main__":
             for f in soa_versions:
                 filename = f"{output_dir}/{f}"
                 subprocess.run([f"{filename}", "--benchmark_out_format=json", f"--benchmark_out={filename}.json",
-                                "--benchmark_counters_tabular=true", "--benchmark_repetitions=3", "--benchmark_min_warmup_time=2"])
+                                "--benchmark_enable_random_interleaving=true", "--benchmark_counters_tabular=true",
+                                "--benchmark_repetitions=3", "--benchmark_min_warmup_time=2"])
     else:
         print("python run_benchmarks.py <output_dir> <csvfile>")
         print("Provide a CSV file with the SoA versions to benchmark and their labels")
